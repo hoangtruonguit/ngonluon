@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CineStream | Advanced Search &amp; Results</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec1337",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221013",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: "Spline Sans", sans-serif;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #482329;
+            border-radius: 10px;
+        }
+        .poster-overlay {
+            background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 50%);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-white min-h-screen">
+<div class="flex flex-col h-screen">
+<!-- TopNavBar -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-primary/20 px-10 py-3 bg-background-light dark:bg-background-dark sticky top-0 z-50">
+<div class="flex items-center gap-4 text-white">
+<div class="size-8 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl">movie</span>
+</div>
+<h2 class="text-white dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">CineStream</h2>
+</div>
+<div class="flex flex-1 justify-center max-w-2xl px-8">
+<div class="w-full relative">
+<label class="flex flex-col min-w-40 h-10 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+<div class="text-primary/70 flex border-none bg-primary/10 items-center justify-center pl-4 rounded-l-lg" data-size="24px">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden text-white focus:outline-0 focus:ring-0 border-none bg-primary/10 focus:border-none h-full placeholder:text-primary/40 px-4 pr-2 text-sm font-normal leading-normal" placeholder="Search movies, actors, or directors" value="Inception"/>
+<div class="flex items-center justify-center rounded-r-lg border-none bg-primary/10 pr-4">
+<button class="text-primary/70 hover:text-primary">
+<span class="material-symbols-outlined">cancel</span>
+</button>
+</div>
+</div>
+</label>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<nav class="flex items-center gap-6">
+<a class="text-white/80 hover:text-primary text-sm font-medium transition-colors" href="#">Movies</a>
+<a class="text-white/80 hover:text-primary text-sm font-medium transition-colors" href="#">TV Shows</a>
+<a class="text-white/80 hover:text-primary text-sm font-medium transition-colors" href="#">My List</a>
+</nav>
+<div class="flex gap-2">
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-primary/10 text-white hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary" data-alt="User profile avatar portrait" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDDnmkJkJzqn8QCJhKi2axC31pGE74IItrp6YFsJy72D6WFxOjn37TiHJ7G2-d9sXuQDyE1lvSqR_n-rr0JUqwnLBVKJz9WU6w9uxNDzvyXdxcixPHbK9_ELPfDP6Pj16l12Rvf0RJU8NosngzXL4-bcttvzW53yzGF6begzTiBtddeMZD0q3wUxRWm6PtAU-Hq06lNZ9dHvCOfqtxstUTxI4h6UVir5K20E5eQ7AywqBKEgoonbzpSInshP0aqTnuQRe_s8IWhbnY");'></div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- SideNavBar / Filters -->
+<aside class="w-72 border-r border-primary/20 bg-background-light dark:bg-background-dark flex flex-col overflow-y-auto custom-scrollbar">
+<div class="p-6 space-y-8">
+<div>
+<h3 class="text-white text-lg font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">filter_list</span>
+                            Filters
+                        </h3>
+<!-- Search Context -->
+<div class="flex flex-wrap gap-2 mb-6">
+<div class="flex items-center gap-1 bg-primary px-3 py-1 rounded-full text-xs font-medium">
+                                Inception
+                                <span class="material-symbols-outlined text-[14px] cursor-pointer">close</span>
+</div>
+</div>
+<!-- Genre Section -->
+<div class="mb-6">
+<p class="text-primary text-sm font-bold uppercase tracking-wider mb-3">Genre</p>
+<div class="space-y-2">
+<label class="flex items-center gap-3 cursor-pointer group">
+<input checked="" class="rounded border-primary/40 bg-transparent text-primary focus:ring-primary h-4 w-4" type="checkbox"/>
+<span class="text-sm text-white/70 group-hover:text-white">Action</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input checked="" class="rounded border-primary/40 bg-transparent text-primary focus:ring-primary h-4 w-4" type="checkbox"/>
+<span class="text-sm text-white/70 group-hover:text-white">Sci-Fi</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="rounded border-primary/40 bg-transparent text-primary focus:ring-primary h-4 w-4" type="checkbox"/>
+<span class="text-sm text-white/70 group-hover:text-white">Drama</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="rounded border-primary/40 bg-transparent text-primary focus:ring-primary h-4 w-4" type="checkbox"/>
+<span class="text-sm text-white/70 group-hover:text-white">Thriller</span>
+</label>
+</div>
+</div>
+<!-- Year Section -->
+<div class="mb-6">
+<p class="text-primary text-sm font-bold uppercase tracking-wider mb-3">Release Year</p>
+<div class="grid grid-cols-2 gap-2">
+<input class="bg-primary/5 border border-primary/20 rounded px-2 py-1 text-xs text-white placeholder:text-white/30" placeholder="From" type="text"/>
+<input class="bg-primary/5 border border-primary/20 rounded px-2 py-1 text-xs text-white placeholder:text-white/30" placeholder="To" type="text"/>
+</div>
+</div>
+<!-- Rating Section -->
+<div class="mb-6">
+<div class="flex justify-between items-center mb-3">
+<p class="text-primary text-sm font-bold uppercase tracking-wider">Min. Rating</p>
+<span class="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded font-bold">7.5+</span>
+</div>
+<input class="w-full h-1.5 bg-primary/20 rounded-lg appearance-none cursor-pointer accent-primary" type="range"/>
+</div>
+<!-- Language Section -->
+<div>
+<p class="text-primary text-sm font-bold uppercase tracking-wider mb-3">Language</p>
+<select class="w-full bg-primary/10 border border-primary/20 rounded-lg text-sm text-white px-3 py-2 focus:ring-1 focus:ring-primary focus:outline-none">
+<option>English</option>
+<option>Spanish</option>
+<option>French</option>
+<option>Japanese</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Bottom Reset -->
+<div class="mt-auto p-6 border-t border-primary/20">
+<button class="w-full py-2 text-sm font-bold text-white/60 hover:text-white transition-colors">
+                        Reset all filters
+                    </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto custom-scrollbar bg-background-light dark:bg-background-dark p-8">
+<!-- Breadcrumbs & Stats -->
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-2">
+<a class="text-primary/60 text-sm font-medium hover:text-primary" href="#">Search</a>
+<span class="text-white/30 text-sm">/</span>
+<span class="text-white text-sm font-medium">Results for 'Inception'</span>
+</div>
+<p class="text-white/50 text-xs">Found 42 results in 0.24s</p>
+</div>
+<!-- Movies Section -->
+<section class="mb-12">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-white text-2xl font-bold flex items-center gap-3">
+                            Movies
+                            <span class="text-xs font-normal text-white/40 uppercase tracking-widest bg-white/5 px-2 py-1 rounded">12 Results</span>
+</h3>
+<a class="text-primary text-sm font-semibold hover:underline" href="#">See all</a>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+<!-- Movie Card 1 -->
+<div class="group relative bg-primary/5 rounded-xl overflow-hidden hover:ring-2 hover:ring-primary transition-all duration-300">
+<div class="aspect-[2/3] relative">
+<img class="w-full h-full object-cover" data-alt="Dark dramatic movie poster aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcWJ7tBTXCVQW8qAurXZiJjKHwrWpitcGOOz3I4GOOJ0ROodlN_-ZJ1avYj1THdccwVLo7BCpfqGUGWSyIF4YRosfSmftHVJlW-U-kOdyBIWuw39-y5RJGkaucC86mj7nrNTo1Nf1CORB3rA2dqujyjVAuiTUXvTQqOkNTEBFkpCfU1YEUNjgthKJQCZEP5Ig9vjGtKT35-5NctbsL7A5YAg5JYMe87XcneZUzZNjB5Sp9a08p88sTEpm5hv1dnXN29diYImRN_yo"/>
+<div class="poster-overlay absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+<button class="w-full bg-primary py-2 rounded-lg font-bold text-sm mb-2 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span> Watch Now
+                                    </button>
+<button class="w-full bg-white/10 backdrop-blur-md py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span> My List
+                                    </button>
+</div>
+<div class="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="text-xs font-bold text-white">8.8</span>
+</div>
+</div>
+<div class="p-3">
+<h4 class="text-white font-bold text-sm truncate">Inception</h4>
+<p class="text-white/50 text-xs mt-1">2010 • Sci-Fi / Action</p>
+</div>
+</div>
+<!-- Movie Card 2 -->
+<div class="group relative bg-primary/5 rounded-xl overflow-hidden hover:ring-2 hover:ring-primary transition-all duration-300">
+<div class="aspect-[2/3] relative">
+<img class="w-full h-full object-cover" data-alt="Epic cinematic movie poster with blue highlights" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0fOeq8l5jIBas1djqPAo2aUxZNPJ7hDJh0NqcpSe4YzUJsr6owHoFb6K9toMcyUHa1X3Qh3xsaFvO17-6iXEvQ1xagBbFY4Lv_I0TSIEHHesgdaRpLq_ubSKzsFKra-96eo18FtUONLOrGc1Y4Oqa9OZSV5oeOtLmwJRhs_aPXxsH0ffsPAxj0TemFiVHNAt1JmsksMIhfzHbwcDGmdEn5EfiaoHAYERLcGTsishtWFfAQfVWpOrKmszJtzb11j_jAHNfUjDh27A"/>
+<div class="poster-overlay absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+<button class="w-full bg-primary py-2 rounded-lg font-bold text-sm mb-2 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span> Watch Now
+                                    </button>
+</div>
+<div class="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="text-xs font-bold text-white">8.5</span>
+</div>
+</div>
+<div class="p-3">
+<h4 class="text-white font-bold text-sm truncate">Interstellar</h4>
+<p class="text-white/50 text-xs mt-1">2014 • Adventure / Drama</p>
+</div>
+</div>
+<!-- Movie Card 3 -->
+<div class="group relative bg-primary/5 rounded-xl overflow-hidden hover:ring-2 hover:ring-primary transition-all duration-300">
+<div class="aspect-[2/3] relative">
+<img class="w-full h-full object-cover" data-alt="Classic style movie poster illustration" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeklwDyH9jCYdJeFKYZYDcodDAY4WlI8G2hhsHUpmeKfv9jLM109YdRu65bOPa3DHKiW6xgYtFsl6FRzNvNLHInKbfyvfwe64PK-l5L928BCGDVPRm7wGQrG4HHANwZdpUAqxWaS3TfNzGEmHOzgL_9Eapnq0bp6GveeqZSUCTbrwtJcf0bRdqhXX2b4x9BmZv4SV1hOh2xNBFMUBmarhxB-bRw-ZGRtLgYdzuYLrfYB-HTVOPlQP5C7ee9AYrxCn7fLhNSVQOYcQ"/>
+<div class="poster-overlay absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+<button class="w-full bg-primary py-2 rounded-lg font-bold text-sm mb-2 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span> Watch Now
+                                    </button>
+</div>
+<div class="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="text-xs font-bold text-white">7.8</span>
+</div>
+</div>
+<div class="p-3">
+<h4 class="text-white font-bold text-sm truncate">Inception: The Beginning</h4>
+<p class="text-white/50 text-xs mt-1">2021 • Documentary</p>
+</div>
+</div>
+<!-- Movie Card 4 -->
+<div class="group relative bg-primary/5 rounded-xl overflow-hidden hover:ring-2 hover:ring-primary transition-all duration-300">
+<div class="aspect-[2/3] relative">
+<img class="w-full h-full object-cover" data-alt="High contrast thriller movie poster" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLU7pPWygVer1QEaRX-Ca27CV7lH1TTvA0qoiXVkeMCuE7V0l8uEMtJopjryP9JrKixAABEZKlcUcWPxITpvYRJTsP6beFV4As6dv6qKnpMYCjbIajC8Kw-6AUuUnGyrxT-1qhoawrKJvORC7E9FKR7BrlpatAJuF5b3-oZK-bnnf1xrb1dZPBBTAHLZ3TallI7gANJo_8i9ZONtIh10eDcYSWg2I43dygTm3uddm5FSZzn-1tADEL-6ITuJcNQ7qP_V1ZLHIJiPw"/>
+<div class="poster-overlay absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+<button class="w-full bg-primary py-2 rounded-lg font-bold text-sm mb-2 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span> Watch Now
+                                    </button>
+</div>
+<div class="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="text-xs font-bold text-white">8.1</span>
+</div>
+</div>
+<div class="p-3">
+<h4 class="text-white font-bold text-sm truncate">Tenet</h4>
+<p class="text-white/50 text-xs mt-1">2020 • Action / Sci-Fi</p>
+</div>
+</div>
+<!-- Movie Card 5 -->
+<div class="group relative bg-primary/5 rounded-xl overflow-hidden hover:ring-2 hover:ring-primary transition-all duration-300">
+<div class="aspect-[2/3] relative">
+<img class="w-full h-full object-cover" data-alt="Vintage film reel and camera aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCekYcwvS6YKCMvOkOXafzjbSdvSpy7rCRlwQ9KYp-Su69UAA0Ha0iZ56UDudgZQq_ywe4iiU6pb11XQJ4qLvU6DzK0jlJgap8whEXDkv3-1z8Rq52xO7KyzxAxlEbiNBZrSFs5oC4_8xMb5lHztv2LS0PKYVK_497icqxdMvJYCdej-dHm1gxq0AR4EpblgfLKeAK6IUrEZdx_DPKF1JZ5BnVGA6mqmlpk0hd-kCV70WoXkHsCwGQaLrIyA3-6Vksl5NV-2tZqTtA"/>
+<div class="poster-overlay absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+<button class="w-full bg-primary py-2 rounded-lg font-bold text-sm mb-2 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span> Watch Now
+                                    </button>
+</div>
+<div class="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-yellow-500" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="text-xs font-bold text-white">9.0</span>
+</div>
+</div>
+<div class="p-3">
+<h4 class="text-white font-bold text-sm truncate">The Dark Knight</h4>
+<p class="text-white/50 text-xs mt-1">2008 • Action / Crime</p>
+</div>
+</div>
+</div>
+</section>
+<!-- TV Shows Section -->
+<section class="mb-12">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-white text-2xl font-bold flex items-center gap-3">
+                            TV Shows
+                            <span class="text-xs font-normal text-white/40 uppercase tracking-widest bg-white/5 px-2 py-1 rounded">5 Results</span>
+</h3>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+<div class="group relative bg-primary/5 rounded-xl overflow-hidden hover:ring-2 hover:ring-primary transition-all duration-300">
+<div class="aspect-[16/9] relative">
+<img class="w-full h-full object-cover" data-alt="Cinematic TV show wide still" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8y30D_iBkLgWJ2X3eEBDsWzj4VDb7tAuArZ-qRA8EpraWOXFE2V9tqIzrail05QHDYiLJCtfry38H_H9D-iWVb8T2sny0Oh9zn_bAJYGUKW8P2dHC5jP8mwMHkAyO-AnGW3a8wfnYv0dssnUcC4k3Bdjd2sNWs6m55tjd8L-ltJW4zw_CMYtCVMV0rZWHD6OVZYrJWIsd4lkq1-vAsnvo4HbnkmEOwXT6yKC8GdSCoH7CgeOFonbiL2EenZCiX0xPqxvt4FmQD_c"/>
+<div class="absolute bottom-2 left-2 bg-primary px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">New Season</div>
+</div>
+<div class="p-3">
+<h4 class="text-white font-bold text-sm truncate">Dreamscapes</h4>
+<p class="text-white/50 text-xs mt-1">2 Seasons • Sci-Fi Mystery</p>
+</div>
+</div>
+<div class="group relative bg-primary/5 rounded-xl overflow-hidden hover:ring-2 hover:ring-primary transition-all duration-300">
+<div class="aspect-[16/9] relative">
+<img class="w-full h-full object-cover" data-alt="Neon lighting in futuristic city landscape" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCebxf9qnf3zLlZr8svQkGqNk53L9uITxzgAlwsf2Lrk9itN14cvvW1QxW0NyNRESumb06KWsERtqfhyX1XFPGzNLEzxqSTo4nmCwX-pWEw2Rau7os7zGrvTAWSlTVn-FXYI2yBuCaIcYZZEwuH8jb7mlh_8Ji1ckpZXdm3PJoIFcjPMIP30Nn2u1x-7d8FaLET-s9rEwMgLlqlxAxCMrO8WOThSrL4iflvzV4ns_LUQ_5HX3tPVXjq7-3SpoEB7obDZqvRB35XCDY"/>
+</div>
+<div class="p-3">
+<h4 class="text-white font-bold text-sm truncate">The Architect</h4>
+<p class="text-white/50 text-xs mt-1">Limited Series • Thriller</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Actors & Directors Section -->
+<section>
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-white text-2xl font-bold flex items-center gap-3">
+                            Actors &amp; Directors
+                        </h3>
+</div>
+<div class="flex flex-wrap gap-8">
+<!-- Actor 1 -->
+<div class="flex flex-col items-center gap-3 group cursor-pointer">
+<div class="relative size-24 rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-primary transition-all p-1">
+<div class="size-full rounded-full overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform" data-alt="Professional headshot of male actor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDekGVLrk5Qi5AwH85wIH6fHl7UVXBEO_XlqSuWk5Yx-4oExk1gsAkK_P3vtGcq0j7Ly7jEeG5qOEa7mR5eC7ejQaqJEKD0O_o4TL60JARemhIdGzfOJUItoZj6Gs8Dr2hOylmR4QclS2Mcoje6prjZatIg9M-37yWpdauJVV3o-U6eedhZX3S7vyN5EX0EEHB8dR1-ZFMJnAsPBTfpVJUXgm9hZGeTu-Jt7qJjNQRkJu-vN1J3cdRkwLhNPezTY80_KHNUr7tOPFI"/>
+</div>
+</div>
+<div class="text-center">
+<h4 class="text-white font-bold text-sm">Leonardo DiCaprio</h4>
+<p class="text-white/40 text-xs mt-0.5">Known for: Inception</p>
+</div>
+</div>
+<!-- Actor 2 -->
+<div class="flex flex-col items-center gap-3 group cursor-pointer">
+<div class="relative size-24 rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-primary transition-all p-1">
+<div class="size-full rounded-full overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform" data-alt="Professional headshot of female actor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtFdK-kCZ-xQAKk-90ymrPAYiwm0piSpfIgrQ9_QwNuViZdHricD9Ulh_a3-O-TRp4wIiNDN50VzfRYnLUC-r7jhRIFttKIsesiTwqQSyQ7GvsJ_cwCKvj0XqgLwDJ-1bpeKOM4RkffjQe2t4EHb-hha253EYBJbiTlF-oZai_h74-Phc2liHhOT_TM35EmZbHokqeB_b5G7zHEaSmEWJ7sNYaxp_-PlOiU_YYde_ng-J9AeBP6KWRbPt_QTatXSrMPNaY8qRzV48"/>
+</div>
+</div>
+<div class="text-center">
+<h4 class="text-white font-bold text-sm">Marion Cotillard</h4>
+<p class="text-white/40 text-xs mt-0.5">Known for: Inception</p>
+</div>
+</div>
+<!-- Director -->
+<div class="flex flex-col items-center gap-3 group cursor-pointer">
+<div class="relative size-24 rounded-full overflow-hidden ring-2 ring-primary transition-all p-1">
+<div class="size-full rounded-full overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform" data-alt="Professional headshot of a director" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhGo-fue_tcDO_A5e2h6cxRuHwMtppWOC0H0aaKl7dWaj-nrqPS3qeFsIT23vbAkYecyynJJEGhjtWbPQfL43_O3ShboI1i7FZYk4AcJ-5XEJXX9ylHTzfNNb-7jI3m8_i60RmfnDv0XLx0j1rmjM2nhjc6Te6ZsSrlIiE5efERbbxdTPVY7-nZ_lz3ZkzejWJ8sn5H3JOAEnoe341WplS84Tufns_DYiBOvgrkjhXEdOcUzSa6CQP8hC_JMuUu4izR-5U-QJ3NMw"/>
+</div>
+<div class="absolute bottom-1 right-1 bg-primary size-5 rounded-full flex items-center justify-center border-2 border-background-dark">
+<span class="material-symbols-outlined text-[12px] font-bold">check</span>
+</div>
+</div>
+<div class="text-center">
+<h4 class="text-white font-bold text-sm">Christopher Nolan</h4>
+<p class="text-primary text-xs mt-0.5 font-bold">Director</p>
+</div>
+</div>
+<!-- Actor 3 -->
+<div class="flex flex-col items-center gap-3 group cursor-pointer">
+<div class="relative size-24 rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-primary transition-all p-1">
+<div class="size-full rounded-full overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform" data-alt="Professional headshot portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuClk_C95mWwDeF3jWb6B4zFR8nHUKI0NN1d2ltDOkl0TBSFaBWTiFE1iOUSLX76F5MZPvt6O09hfJVsFjBxZbfYMxtAAI2X1ZFFJcsXJaMtT6sTmWDeDcbl0PP6Ra5fS07Yt_5r9n-rpLAMYUO-4jkmZUdaeDNSxzMpjUeuUu2k8vmn2jga5BljEa4pgIaEsvMtoHcr3CbV61qdN32gq67uw22-LHkSMqp54A-pZPmSBpzLM5y0G4rdJUKk9X4OWh37PB9UEjbGH9Y"/>
+</div>
+</div>
+<div class="text-center">
+<h4 class="text-white font-bold text-sm">Elliot Page</h4>
+<p class="text-white/40 text-xs mt-0.5">Known for: Inception</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+</div>
+</body></html>

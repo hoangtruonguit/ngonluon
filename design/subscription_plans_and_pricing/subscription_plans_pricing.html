@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Subscription Plans and Pricing | CineStream</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec1337",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#0a0a0a",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .premium-glow {
+            box-shadow: 0 0 20px rgba(236, 19, 55, 0.2);
+            border: 2px solid #ec1337;
+        }
+        body {
+            font-family: 'Spline Sans', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen">
+<div class="relative flex flex-col w-full overflow-x-hidden">
+<!-- Navigation Header -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-white/10 px-6 md:px-20 py-4 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-50">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 text-primary">
+<div class="size-8 flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl">movie_filter</span>
+</div>
+<h2 class="text-slate-900 dark:text-white text-xl font-black leading-tight tracking-tight">CineStream</h2>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="#">Movies</a>
+<a class="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="#">TV Shows</a>
+<a class="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="#">Originals</a>
+<a class="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="#">My List</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<label class="hidden lg:flex items-stretch rounded-lg h-10 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 overflow-hidden">
+<div class="flex items-center justify-center px-3 text-slate-400">
+<span class="material-symbols-outlined text-xl">search</span>
+</div>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-48 placeholder:text-slate-500" placeholder="Search titles..." type="text"/>
+</label>
+<div class="size-10 rounded-full border border-primary p-0.5">
+<div class="w-full h-full rounded-full bg-cover bg-center" data-alt="User profile avatar circle" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDUgmwQmN9qaax3G4WHKt00MldFGb6bJTqtPVJP-Zvf9b4PnFfXOP6HlTA0o_MxzqySZtsXhgF_eKI34Mq2EWpS8mEEzX-coRql2bZC_2IhHPYhKE9Yw09WBXd3nA64x5YNwcKQrFZQA7nrY3c_f_UelLGiwbJH1EIJldkbqfWaeDBc_crj_jua9K0PBe5lHM5G1iYT_u1ZhVrgvk-0uTOx1tRWxo2zmpPzQhHCPgZXUUmzoAvXtYIYOAPqWrklIVUQqUI95uzO4kg")'></div>
+</div>
+</div>
+</header>
+<main class="flex-1 flex flex-col items-center justify-start py-12 px-4 md:px-20 relative overflow-hidden">
+<!-- Background Decorative Element -->
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-primary/10 blur-[120px] rounded-full -z-10"></div>
+<!-- Page Heading -->
+<div class="max-w-4xl w-full text-center mb-12">
+<h1 class="text-4xl md:text-6xl font-black text-slate-900 dark:text-white mb-4 tracking-tight">Choose your cinematic journey</h1>
+<p class="text-lg text-slate-500 dark:text-slate-400">Pick the plan that fits your viewing style. No hidden fees, cancel anytime.</p>
+</div>
+<!-- Billing Toggle -->
+<div class="flex items-center justify-center w-full mb-12">
+<div class="flex h-12 w-full max-w-md items-center justify-center rounded-xl bg-slate-100 dark:bg-white/5 p-1 border border-slate-200 dark:border-white/10">
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-4 transition-all has-[:checked]:bg-white dark:has-[:checked]:bg-primary has-[:checked]:shadow-lg text-slate-500 dark:text-slate-400 has-[:checked]:text-slate-900 dark:has-[:checked]:text-white text-sm font-bold">
+<span class="truncate">Monthly</span>
+<input class="hidden" name="billing-cycle" type="radio" value="monthly"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-4 transition-all has-[:checked]:bg-white dark:has-[:checked]:bg-primary has-[:checked]:shadow-lg text-slate-500 dark:text-slate-400 has-[:checked]:text-slate-900 dark:has-[:checked]:text-white text-sm font-bold">
+<span class="truncate flex items-center gap-2">Yearly <span class="bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded-full">Save 20%</span></span>
+<input checked="" class="hidden" name="billing-cycle" type="radio" value="yearly"/>
+</label>
+</div>
+</div>
+<!-- Pricing Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl items-end mb-24">
+<!-- Basic Plan -->
+<div class="glass-card flex flex-col gap-8 rounded-2xl p-8 hover:scale-[1.02] transition-transform">
+<div class="flex flex-col gap-2">
+<h3 class="text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-widest">Starter</h3>
+<h2 class="text-slate-900 dark:text-white text-2xl font-black">Basic</h2>
+<div class="flex items-baseline gap-1 mt-4">
+<span class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter">$9.99</span>
+<span class="text-slate-500 dark:text-slate-400 font-medium">/month</span>
+</div>
+</div>
+<div class="flex flex-col gap-5 border-t border-slate-200 dark:border-white/10 pt-8">
+<div class="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                            720p Video Quality
+                        </div>
+<div class="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                            1 Device Screen
+                        </div>
+<div class="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                            Ad-supported streaming
+                        </div>
+<div class="flex items-center gap-3 text-sm text-slate-400 line-through">
+<span class="material-symbols-outlined text-slate-400 text-xl">cancel</span>
+                            Offline Downloads
+                        </div>
+</div>
+<button class="w-full h-12 rounded-xl bg-slate-900 dark:bg-white/10 text-white font-bold text-sm hover:bg-slate-800 dark:hover:bg-white/20 transition-colors">
+                        Get Started
+                    </button>
+</div>
+<!-- Premium Plan (Highlighted) -->
+<div class="glass-card premium-glow relative flex flex-col gap-8 rounded-2xl p-8 scale-105 z-10 bg-slate-900 shadow-2xl">
+<div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg">
+                        Most Popular
+                    </div>
+<div class="flex flex-col gap-2">
+<h3 class="text-primary text-sm font-bold uppercase tracking-widest">Ultimate</h3>
+<h2 class="text-white text-3xl font-black">Premium</h2>
+<div class="flex items-baseline gap-1 mt-4">
+<span class="text-5xl md:text-6xl font-black text-white tracking-tighter">$19.99</span>
+<span class="text-slate-400 font-medium">/month</span>
+</div>
+</div>
+<div class="flex flex-col gap-5 border-t border-white/10 pt-8">
+<div class="flex items-center gap-3 text-sm text-slate-200">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                            4K + HDR Video Quality
+                        </div>
+<div class="flex items-center gap-3 text-sm text-slate-200">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                            4 Screens Simultaneously
+                        </div>
+<div class="flex items-center gap-3 text-sm text-slate-200">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                            Completely Ad-free
+                        </div>
+<div class="flex items-center gap-3 text-sm text-slate-200">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                            Unlimited Downloads
+                        </div>
+<div class="flex items-center gap-3 text-sm text-slate-200">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                            Spatial Audio + Dolby Atmos
+                        </div>
+</div>
+<button class="w-full h-14 rounded-xl bg-primary text-white font-black text-sm shadow-xl shadow-primary/30 hover:bg-red-600 transition-all uppercase tracking-wider">
+                        Upgrade Now
+                    </button>
+</div>
+<!-- Standard Plan -->
+<div class="glass-card flex flex-col gap-8 rounded-2xl p-8 hover:scale-[1.02] transition-transform">
+<div class="flex flex-col gap-2">
+<h3 class="text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-widest">Recommended</h3>
+<h2 class="text-slate-900 dark:text-white text-2xl font-black">Standard</h2>
+<div class="flex items-baseline gap-1 mt-4">
+<span class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter">$15.49</span>
+<span class="text-slate-500 dark:text-slate-400 font-medium">/month</span>
+</div>
+</div>
+<div class="flex flex-col gap-5 border-t border-slate-200 dark:border-white/10 pt-8">
+<div class="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                            1080p Full HD Quality
+                        </div>
+<div class="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                            2 Screens Simultaneously
+                        </div>
+<div class="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                            Ad-free viewing
+                        </div>
+<div class="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+                            15 Downloads per month
+                        </div>
+</div>
+<button class="w-full h-12 rounded-xl bg-slate-900 dark:bg-white/10 text-white font-bold text-sm hover:bg-slate-800 dark:hover:bg-white/20 transition-colors">
+                        Choose Standard
+                    </button>
+</div>
+</div>
+<!-- FAQ Section -->
+<div class="w-full max-w-4xl px-4">
+<h2 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white mb-8 border-b border-slate-200 dark:border-white/10 pb-4">Frequently Asked Questions</h2>
+<div class="flex flex-col gap-4">
+<!-- FAQ Item 1 -->
+<div class="p-6 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+<div class="flex items-center justify-between cursor-pointer">
+<h4 class="font-bold text-slate-900 dark:text-white">Can I cancel my subscription anytime?</h4>
+<span class="material-symbols-outlined text-slate-400">expand_more</span>
+</div>
+<p class="mt-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Yes, CineStream is a monthly or yearly subscription service. You can cancel your membership online with just two clicks. There are no cancellation fees – start or stop your account anytime.</p>
+</div>
+<!-- FAQ Item 2 -->
+<div class="p-6 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+<div class="flex items-center justify-between cursor-pointer">
+<h4 class="font-bold text-slate-900 dark:text-white">How does the yearly discount work?</h4>
+<span class="material-symbols-outlined text-slate-400">expand_more</span>
+</div>
+<p class="mt-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">When you choose the Yearly plan, you pay for 12 months upfront at a 20% reduced rate compared to paying monthly. It’s equivalent to getting over two months free!</p>
+</div>
+<!-- FAQ Item 3 -->
+<div class="p-6 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+<div class="flex items-center justify-between cursor-pointer">
+<h4 class="font-bold text-slate-900 dark:text-white">What devices are supported?</h4>
+<span class="material-symbols-outlined text-slate-400">expand_more</span>
+</div>
+<p class="mt-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Watch anywhere, anytime. Sign in with your account to watch instantly on the web at cinestream.com from your personal computer or on any internet-connected device that offers the app, including smart TVs, smartphones, tablets, and streaming media players.</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="mt-20 border-t border-slate-200 dark:border-white/10 py-12 px-6 md:px-20 flex flex-col md:flex-row justify-between items-center gap-8 bg-slate-50 dark:bg-black/40">
+<div class="flex items-center gap-2 text-primary opacity-80">
+<span class="material-symbols-outlined">movie_filter</span>
+<span class="font-bold text-slate-900 dark:text-white">CineStream</span>
+</div>
+<div class="flex gap-10 text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-widest">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="hover:text-primary transition-colors" href="#">Help Center</a>
+<a class="hover:text-primary transition-colors" href="#">Contact Us</a>
+</div>
+<div class="flex gap-4">
+<div class="size-8 flex items-center justify-center rounded-lg bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300 hover:bg-primary hover:text-white cursor-pointer transition-all">
+<span class="material-symbols-outlined text-xl">language</span>
+</div>
+<div class="size-8 flex items-center justify-center rounded-lg bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300 hover:bg-primary hover:text-white cursor-pointer transition-all">
+<span class="material-symbols-outlined text-xl">share</span>
+</div>
+</div>
+</footer>
+</div>
+</body></html>

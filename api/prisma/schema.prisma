@@ -1,0 +1,203 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  password      String
+  fullName      String?        @map("full_name")
+  avatarUrl     String?        @map("avatar_url")
+  isActive      Boolean        @default(true) @map("is_active")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  reviews       Review[]
+  subscriptions Subscription[]
+  roles         UserRole[]
+  watchHistory  WatchHistory[]
+
+  @@map("users")
+}
+
+model Role {
+  id          Int        @id @default(autoincrement())
+  name        RoleName   @unique
+  description String?
+  users       UserRole[]
+
+  @@map("roles")
+}
+
+model UserRole {
+  userId String @map("user_id")
+  roleId Int    @map("role_id")
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+model Movie {
+  id              String         @id @default(uuid())
+  title           String
+  slug            String         @unique
+  description     String?
+  posterUrl       String?        @map("poster_url")
+  thumbnailUrl    String?        @map("thumbnail_url")
+  trailerUrl      String?        @map("trailer_url")
+  releaseYear     Int?           @map("release_year")
+  rating          Float          @default(0)
+  durationMinutes Int?           @map("duration_minutes")
+  isVip           Boolean        @default(false) @map("is_vip")
+  type            MediaType
+  createdAt       DateTime       @default(now()) @map("created_at")
+  cast            Cast[]
+  episodes        Episode[]      @relation("DirectMovieEpisodes")
+  genres          MovieGenre[]
+  reviews         Review[]
+  seasons         Season[]
+  watchHistory    WatchHistory[]
+
+  @@map("movies")
+}
+
+model Genre {
+  id     Int          @id @default(autoincrement())
+  name   String       @unique
+  slug   String       @unique
+  movies MovieGenre[]
+
+  @@map("genres")
+}
+
+model MovieGenre {
+  movieId String @map("movie_id")
+  genreId Int    @map("genre_id")
+  genre   Genre  @relation(fields: [genreId], references: [id], onDelete: Cascade)
+  movie   Movie  @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@id([movieId, genreId])
+  @@map("movie_genres")
+}
+
+model Person {
+  id        String    @id @default(uuid())
+  name      String
+  bio       String?
+  avatarUrl String?   @map("avatar_url")
+  dob       DateTime?
+  castRoles Cast[]
+
+  @@map("people")
+}
+
+model Cast {
+  movieId       String     @map("movie_id")
+  personId      String     @map("person_id")
+  characterName String?    @map("character_name")
+  role          PersonRole
+  movie         Movie      @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  person        Person     @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@id([movieId, personId, role])
+  @@map("cast")
+}
+
+model Season {
+  id           String    @id @default(uuid())
+  movieId      String    @map("movie_id")
+  title        String
+  seasonNumber Int       @map("season_number")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  episodes     Episode[]
+  movie        Movie     @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@map("seasons")
+}
+
+model Episode {
+  id              String         @id @default(uuid())
+  movieId         String         @map("movie_id")
+  seasonId        String?        @map("season_id")
+  title           String
+  slug            String         @unique
+  description     String?
+  videoUrl        String         @map("video_url")
+  episodeNumber   Int            @map("episode_number")
+  durationMinutes Int?           @map("duration_minutes")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  movie           Movie          @relation("DirectMovieEpisodes", fields: [movieId], references: [id], onDelete: Cascade)
+  season          Season?        @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  watchHistory    WatchHistory[]
+
+  @@map("episodes")
+}
+
+model WatchHistory {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  movieId         String   @map("movie_id")
+  episodeId       String?  @map("episode_id")
+  progressSeconds Float    @default(0) @map("progress_seconds")
+  isFinished      Boolean  @default(false) @map("is_finished")
+  lastWatchedAt   DateTime @default(now()) @updatedAt @map("last_watched_at")
+  episode         Episode? @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  movie           Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, movieId, episodeId])
+  @@map("watch_history")
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  movieId   String   @map("movie_id")
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at")
+  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+model Subscription {
+  id        String             @id @default(uuid())
+  userId    String             @map("user_id")
+  planName  String             @map("plan_name")
+  startDate DateTime           @map("start_date")
+  endDate   DateTime           @map("end_date")
+  status    SubscriptionStatus @default(ACTIVE)
+  createdAt DateTime           @default(now()) @map("created_at")
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+enum RoleName {
+  ADMIN
+  USER
+  VIP
+}
+
+enum MediaType {
+  MOVIE
+  SERIES
+}
+
+enum PersonRole {
+  ACTOR
+  DIRECTOR
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}

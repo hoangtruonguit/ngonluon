@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #ec1337;
+  --color-background-light: #f8f6f6;
+  --color-background-dark: #0a0a0a;
+  --color-surface-dark: #1a1a1a;
+
+  --font-sans: var(--font-spline-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-spline-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+}
+
+/* Custom utilities */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.glass {
+  backdrop-filter: blur(12px);
+  background-color: rgba(10, 10, 10, 0.7);
+}
+
+.movie-card:hover .card-overlay {
+  opacity: 1;
+}
+
+.hero-gradient {
+  background: linear-gradient(0deg, #0a0a0a 0%, rgba(10, 10, 10, 0.4) 50%, rgba(10, 10, 10, 0) 100%);
+}
+
+/* Login Page Styles */
+.glass-card {
+  background: rgba(34, 16, 19, 0.7);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(236, 19, 55, 0.1);
+}
+
+.neon-glow {
+  box-shadow: 0 0 15px rgba(236, 19, 55, 0.4), 0 0 5px rgba(236, 19, 55, 0.2);
+}
+
+.neon-glow:hover {
+  box-shadow: 0 0 25px rgba(236, 19, 55, 0.6), 0 0 10px rgba(236, 19, 55, 0.3);
+}

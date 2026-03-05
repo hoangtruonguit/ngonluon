@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Movie Details - StreamFlow</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec1337",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#0a0a0a",
+                        "surface-dark": "#1a1a1a",
+                        "accent-dark": "#221013",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Spline Sans', sans-serif; }
+        .hero-gradient {
+            background: linear-gradient(0deg, #0a0a0a 0%, rgba(10, 10, 10, 0.4) 50%, rgba(10, 10, 10, 0.2) 100%);
+        }
+        .glass-panel {
+            background: rgba(26, 26, 26, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white transition-colors duration-300">
+<!-- Navigation -->
+<header class="fixed top-0 w-full z-50 border-b border-white/10 glass-panel">
+<div class="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
+<div class="flex items-center gap-10">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-3xl">movie_filter</span>
+<h1 class="text-xl font-bold tracking-tight text-white">StreamFlow</h1>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Home</a>
+<a class="text-sm font-medium text-primary" href="#">Movies</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">TV Shows</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">My List</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+<input class="bg-white/5 border-none rounded-full pl-10 pr-4 py-1.5 text-sm w-64 focus:ring-1 focus:ring-primary text-white" placeholder="Search titles..." type="text"/>
+</div>
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-bold text-xs">JD</div>
+</div>
+</div>
+</header>
+<main class="relative">
+<!-- Hero Section -->
+<div class="relative w-full h-[80vh] min-h-[600px] overflow-hidden">
+<div class="absolute inset-0 bg-center bg-cover" data-alt="Cinematic cinematic still of astronauts in space" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAtHc6DOLVF4_5A9g4hfgzIJtZ33UK-SNHyCPUVqDARiJNupEdrX3NOPcXDbilma_OoIZIx_Rgrg9uSh7MG-AJHieZ7TI5h1Zr6VdPLFiXOsH1-4grg-tSEwrkawQsSMal0OhjVvYJPA_zkyQf17nIuhnXb4RG6utB_DOnVvdIUnVdg0M1eJbuCw7hwSkGDFhrYjHtTOyJzDpbjLUjHA8z7OtovMULe09XoAWw9S-hZPyeVKQWyHOk-bHyUEQKqnoTPzxf74wLlu04');"></div>
+<div class="absolute inset-0 hero-gradient"></div>
+<div class="absolute bottom-0 w-full max-w-[1440px] mx-auto left-1/2 -translate-x-1/2 px-6 pb-12 flex flex-col md:flex-row items-end gap-10">
+<!-- Movie Poster -->
+<div class="hidden md:block w-72 shrink-0 aspect-[2/3] rounded-xl overflow-hidden shadow-2xl border border-white/10 group">
+<div class="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-105" data-alt="Vertical movie poster for Interstellar" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB_K6TjGS2QaUXPuRLrBHxdS6Kt08Df_QVM-hbHNQ6zaXi7_dOMJt5GXb0e5nITFCiXvhb6lW29pp70l9WHPJekm8lmBE1STZepf-DNutQooV90cpAboYxHPMT3eG9D8V_AlF8Cg7MjZc4ZIk_z0IiNrIoBtdYbdRzkrkz0jiMA-1m_lGAU-im56J8S6p9xeMNsZ1nXBAGeEfTdr7jqCO5buCtXATIA16plVxAe-sC1URb2BctA0JdXUa5YUincVnlMy5tGiJhEezY');"></div>
+</div>
+<!-- Movie Details Hero -->
+<div class="flex-1 space-y-6">
+<div class="space-y-2">
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-0.5 rounded bg-primary text-[10px] font-bold uppercase">Trending</span>
+<span class="px-2 py-0.5 rounded bg-white/10 text-[10px] font-bold uppercase text-white">4K Ultra HD</span>
+</div>
+<h1 class="text-5xl md:text-7xl font-bold tracking-tighter text-white">Interstellar</h1>
+<div class="flex items-center gap-4 text-sm font-medium text-slate-300">
+<span>2014</span>
+<span class="w-1 h-1 rounded-full bg-slate-500"></span>
+<span>2h 49m</span>
+<span class="w-1 h-1 rounded-full bg-slate-500"></span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-yellow-500 text-sm fill-current">star</span>
+<span class="text-white">8.7</span>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap gap-2">
+<div class="px-4 py-1.5 rounded-full border border-white/20 text-sm bg-white/5 hover:bg-white/10 transition-colors cursor-default">Sci-Fi</div>
+<div class="px-4 py-1.5 rounded-full border border-white/20 text-sm bg-white/5 hover:bg-white/10 transition-colors cursor-default">Adventure</div>
+<div class="px-4 py-1.5 rounded-full border border-white/20 text-sm bg-white/5 hover:bg-white/10 transition-colors cursor-default">Drama</div>
+</div>
+<p class="max-w-2xl text-lg text-slate-300 leading-relaxed">
+                        When Earth becomes uninhabitable in the future, a farmer and ex-NASA pilot, Joseph Cooper, is tasked to pilot a spacecraft, along with a team of researchers, to find a new planet for humans.
+                    </p>
+<div class="flex flex-wrap gap-4 pt-4">
+<button class="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-lg font-bold flex items-center gap-2 transition-all transform hover:scale-105">
+<span class="material-symbols-outlined fill-current">play_arrow</span>
+                            Watch Now
+                        </button>
+<button class="bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-lg font-bold flex items-center gap-2 backdrop-blur-md transition-all">
+<span class="material-symbols-outlined">add</span>
+                            My List
+                        </button>
+<button class="size-12 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Content Body -->
+<div class="max-w-[1440px] mx-auto px-6 py-16 space-y-20">
+<!-- Cast Section -->
+<section>
+<div class="flex items-center justify-between mb-8">
+<h2 class="text-2xl font-bold border-l-4 border-primary pl-4 uppercase tracking-wider">Top Cast</h2>
+<button class="text-primary text-sm font-bold flex items-center gap-1 hover:underline">
+                        View All <span class="material-symbols-outlined text-base">chevron_right</span>
+</button>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8">
+<!-- Cast Member -->
+<div class="text-center group">
+<div class="size-32 mx-auto rounded-full overflow-hidden border-2 border-transparent group-hover:border-primary transition-all duration-300 mb-4 bg-surface-dark shadow-xl">
+<div class="w-full h-full bg-center bg-cover" data-alt="Portrait of Matthew McConaughey" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBl4PtpjTDksKeJw21mBQzcZqEGX5JcDwFY3KHW7NzZqHHaRRmtYrlEcVxr8ASWmVtA-qjTgpXqVpQDxM6bB-P_6szNpKILKsoPDnWJIBq52ux9sgA_mEhI08hhxjbXxd_CTaR1UJkm1PtmXhpbhrwJxAqTHRRrD5XTla18IiPtSdz_9pTBx9aCtoaZd_3xnOnsg98SAFf4eLQ8BzR4MqhJnMPTPx2utsQHMQtB4F2v0qa6RfF048Lq4BnT1XAZm8XM-QNn9NKdH5o');"></div>
+</div>
+<h4 class="font-bold text-white group-hover:text-primary transition-colors">Matthew McConaughey</h4>
+<p class="text-xs text-slate-500 uppercase font-medium">Cooper</p>
+</div>
+<div class="text-center group">
+<div class="size-32 mx-auto rounded-full overflow-hidden border-2 border-transparent group-hover:border-primary transition-all duration-300 mb-4 bg-surface-dark shadow-xl">
+<div class="w-full h-full bg-center bg-cover" data-alt="Portrait of Anne Hathaway" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCcGMQUmDhhFypkJjTuGX9Fn22wv7xbv-qcawy35a9DrtsPqffvfHgnkM1luFaBnYMlhlFAe1ju3sARweHmxLBkzAKY-UJovlqQsMA_KObZ9g4zB34bfywbWzmWh-XZxdwu8YHzEp22ALTCpIWc3EosSnugtrkke0u5A3a9wZBnyd9j0r8RxPfS5TFYEe7p9c4qnAXKFvjRfxZEFaR9XtUrKW6lgcwmJ_3_qx4wQa_5l7hsaKNccDXa5woK6j-UgJQR_rzAXAFE88g');"></div>
+</div>
+<h4 class="font-bold text-white group-hover:text-primary transition-colors">Anne Hathaway</h4>
+<p class="text-xs text-slate-500 uppercase font-medium">Brand</p>
+</div>
+<div class="text-center group">
+<div class="size-32 mx-auto rounded-full overflow-hidden border-2 border-transparent group-hover:border-primary transition-all duration-300 mb-4 bg-surface-dark shadow-xl">
+<div class="w-full h-full bg-center bg-cover" data-alt="Portrait of Jessica Chastain" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBESaarSajI9D5dfb0m2r-H-rjmDgJYe5XdIehH-WCukQmuFdRtr7fE01ws1Ly2cUlBEiYokNlMM_x7EdqXB_mPLrurTwbC8uSNkYl-5UXVuL31Qc6BkpGl-0U7RWFqJN5j59OW_fQ0EpgzTJj6063OtKKHp5QqqbVjRRfTlADW_6rhOkZASQ66vEyQZPAe4a66wdYRZ9-sEGUUFwRigQBR1KGSCoGQ-GBtEFIjnwX35wQYYLvK5v0M5zRZO6EE-fZeedmxFTfAVbQ');"></div>
+</div>
+<h4 class="font-bold text-white group-hover:text-primary transition-colors">Jessica Chastain</h4>
+<p class="text-xs text-slate-500 uppercase font-medium">Murph</p>
+</div>
+<div class="text-center group">
+<div class="size-32 mx-auto rounded-full overflow-hidden border-2 border-transparent group-hover:border-primary transition-all duration-300 mb-4 bg-surface-dark shadow-xl">
+<div class="w-full h-full bg-center bg-cover" data-alt="Portrait of Michael Caine" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAZwqbhNlKI1aHLRPKSIdi4fSZKvWbGfjjY1S_8DmHgc3M_T6wSGDLbLJnAQyjGe5nBASABu45npQ23_LmjKfSE56bcjoT4JhvVBh3bmHPdl5rNE_3xUixeow-akL30INPTcD5TTeM05xtEtElh-piDF-fxLYbtzLxB3qQ5ModnxzYpGmkvgye8RHC-fiXhWIQvcjUMrVNtOWfmRAU5oTb9aaPB7wKFZec0zHhOQQrqJI9ST3_NFelPj_od6ujuj_R_um3ZLji2SXw');"></div>
+</div>
+<h4 class="font-bold text-white group-hover:text-primary transition-colors">Michael Caine</h4>
+<p class="text-xs text-slate-500 uppercase font-medium">Professor Brand</p>
+</div>
+<div class="text-center group">
+<div class="size-32 mx-auto rounded-full overflow-hidden border-2 border-transparent group-hover:border-primary transition-all duration-300 mb-4 bg-surface-dark shadow-xl">
+<div class="w-full h-full bg-center bg-cover" data-alt="Portrait of Matt Damon" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDEBweOh2XJmx_L70QBWYeEvv79fAj8Elf7d2G6OvCqWk6720vys8Tu-XcxPGKEz7c4n1SLGgzOcUgZiZUc_WdDQLoY_YbfDPBzex1Yp_7qzRpiU5RruhDR5HKqH_2-13hFaEmJQgYyUSVBqZSwJBKLztYT45nXzvyB17JQtbyCViYqYecB9EgIpuABQ2mEmMlzNcVUms8tm1kUtQ9h2xgU8azITDjs8FdJVCb1gJSAE5yJACVTExP5_Bxx2vacDNr8G_KmWhp9_X8');"></div>
+</div>
+<h4 class="font-bold text-white group-hover:text-primary transition-colors">Matt Damon</h4>
+<p class="text-xs text-slate-500 uppercase font-medium">Mann</p>
+</div>
+<div class="text-center group">
+<div class="size-32 mx-auto rounded-full overflow-hidden border-2 border-transparent group-hover:border-primary transition-all duration-300 mb-4 bg-surface-dark shadow-xl">
+<div class="w-full h-full bg-center bg-cover" data-alt="Portrait of Casey Affleck" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDphfHcnTwUIuNMhiBmBRC-drOQeNiurqFM59Cl4W05KZdp1VDVi6fVvXiy3QR7RCQaI9ceUqrrgkLWmlRMFvo_CgZaLtiEgyFJ98nClITfjVYO7hJVG5Vt43ABpERsb2Cb3REY3Tm1CLFL95fBmsj_giGBn25VYc7i4IktUZwllug6D4IetIfu_DJLG48OeaQDudh-X8EKYf9sonIGxMgqgXeN6GtEBqtzAVxQe6-U1OPU1lAAdVcDI43O--ikfiaO-c3Qje5NN2Y');"></div>
+</div>
+<h4 class="font-bold text-white group-hover:text-primary transition-colors">Casey Affleck</h4>
+<p class="text-xs text-slate-500 uppercase font-medium">Tom</p>
+</div>
+</div>
+</section>
+<!-- Reviews and Stats -->
+<section class="grid lg:grid-cols-3 gap-12">
+<div class="lg:col-span-1 space-y-8">
+<h3 class="text-2xl font-bold uppercase tracking-wider mb-6">Audience Rating</h3>
+<div class="bg-surface-dark p-8 rounded-2xl border border-white/5 space-y-6">
+<div class="flex items-center gap-4">
+<div class="text-5xl font-bold text-white">4.8</div>
+<div>
+<div class="flex text-yellow-500">
+<span class="material-symbols-outlined fill-current">star</span>
+<span class="material-symbols-outlined fill-current">star</span>
+<span class="material-symbols-outlined fill-current">star</span>
+<span class="material-symbols-outlined fill-current">star</span>
+<span class="material-symbols-outlined">star_half</span>
+</div>
+<p class="text-xs text-slate-400 font-medium uppercase mt-1">12,430 Ratings</p>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex items-center gap-3">
+<span class="text-xs font-bold w-4">5</span>
+<div class="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 85%"></div>
+</div>
+<span class="text-xs text-slate-400">85%</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-xs font-bold w-4">4</span>
+<div class="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 10%"></div>
+</div>
+<span class="text-xs text-slate-400">10%</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-xs font-bold w-4">3</span>
+<div class="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 3%"></div>
+</div>
+<span class="text-xs text-slate-400">3%</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-xs font-bold w-4">2</span>
+<div class="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 1%"></div>
+</div>
+<span class="text-xs text-slate-400">1%</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-xs font-bold w-4">1</span>
+<div class="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 1%"></div>
+</div>
+<span class="text-xs text-slate-400">1%</span>
+</div>
+</div>
+<button class="w-full py-3 rounded-lg border border-primary text-primary font-bold hover:bg-primary hover:text-white transition-all text-sm">
+                            Rate Movie
+                        </button>
+</div>
+</div>
+<div class="lg:col-span-2 space-y-6">
+<h3 class="text-2xl font-bold uppercase tracking-wider">User Reviews</h3>
+<div class="space-y-4 h-[420px] overflow-y-auto pr-4 custom-scrollbar">
+<!-- Review Card -->
+<div class="bg-surface-dark p-6 rounded-2xl border border-white/5">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500"></div>
+<div>
+<h5 class="font-bold text-sm">Sarah Jenkins</h5>
+<p class="text-[10px] text-slate-500 uppercase">A masterpiece of cinema</p>
+</div>
+</div>
+<div class="flex text-yellow-500 scale-75 origin-right">
+<span class="material-symbols-outlined fill-current">star</span>
+<span class="material-symbols-outlined fill-current">star</span>
+<span class="material-symbols-outlined fill-current">star</span>
+<span class="material-symbols-outlined fill-current">star</span>
+<span class="material-symbols-outlined fill-current">star</span>
+</div>
+</div>
+<p class="text-slate-400 text-sm leading-relaxed">
+                                Christopher Nolan's ambitious space epic is more than just a sci-fi film; it's a profoundly human story about love, sacrifice, and survival. The visuals are breathtaking and the score by Hans Zimmer is hauntingly beautiful.
+                            </p>
+</div>
+<div class="bg-surface-dark p-6 rounded-2xl border border-white/5">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500"></div>
+<div>
+<h5 class="font-bold text-sm">David Miller</h5>
+<p class="text-[10px] text-slate-500 uppercase">Mind-bending experience</p>
+</div>
+</div>
+<div class="flex text-yellow-500 scale-75 origin-right">
+<span class="material-symbols-outlined fill-current">star</span>
+<span class="material-symbols-outlined fill-current">star</span>
+<span class="material-symbols-outlined fill-current">star</span>
+<span class="material-symbols-outlined fill-current">star</span>
+<span class="material-symbols-outlined">star</span>
+</div>
+</div>
+<p class="text-slate-400 text-sm leading-relaxed">
+                                The scientific accuracy mixed with theoretical physics makes this a must-watch for any space enthusiast. It's complex, but worth every minute. One of the best of the decade.
+                            </p>
+</div>
+</div>
+</div>
+</section>
+<!-- Recommended Grid -->
+<section>
+<div class="flex items-center justify-between mb-8">
+<h2 class="text-2xl font-bold border-l-4 border-primary pl-4 uppercase tracking-wider">Recommended for You</h2>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+<!-- Movie Card Item -->
+<div class="group cursor-pointer">
+<div class="aspect-[2/3] rounded-xl overflow-hidden relative mb-3 bg-surface-dark">
+<div class="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110" data-alt="Inception movie poster" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAprqSkTeNo-gRqVnleInT-f2uxH_0SWOaUbnxm7iouwO5JpWn4OcAyyBbCGgKeYRi3GJvHIHEAbw12YjVA4uyprp-ZOSufxeMnWc59bP6-9H6idHBtj-EyBeJhsZzNrzq_-23Xh2XRGRJxHlEaH3I7GmnpFq9yZ2jkx7p4T4_5v9R_qOHR1sdF389QkHTXbnw7bDMkb27KPM194VnYIYkK-NfEaKNgEaCnrQ9ceYKd1wiZqXI5D9PuOiCzcVd6BAN5RjqDZbtuzUY');"></div>
+<div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<span class="material-symbols-outlined text-5xl text-white">play_circle</span>
+</div>
+</div>
+<h4 class="font-bold text-sm group-hover:text-primary transition-colors">Inception</h4>
+<div class="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase mt-1">
+<span>2010</span>
+<span class="w-1 h-1 rounded-full bg-slate-500"></span>
+<span>Action, Sci-Fi</span>
+</div>
+</div>
+<div class="group cursor-pointer">
+<div class="aspect-[2/3] rounded-xl overflow-hidden relative mb-3 bg-surface-dark">
+<div class="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110" data-alt="Gravity movie poster" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCtOd-HDKeV2Uk5Vke4womSD5iCd9FeIZNCBDaFsGyQTTKezOoZxmXoGv3-giEGZM8FxEYXnc5e6-9fcxMKvoT-XsxR0f1w1t7gs9xRguK0sS8D6IFW_FsSCEvpnNcYAZPtLeUeZXRy2utlla8sFiS6q6Jx0ARg5lweqLsOmpSrCEA7PsRBrs7NR2PoMEG4yFrJrCHg1t2XCdXLW_UeG6dthMzqiKB4_2ECnp2BZmlpKb7nHz220khPepKd5hbF4VfIa5ppIrf_5vY');"></div>
+<div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<span class="material-symbols-outlined text-5xl text-white">play_circle</span>
+</div>
+</div>
+<h4 class="font-bold text-sm group-hover:text-primary transition-colors">Gravity</h4>
+<div class="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase mt-1">
+<span>2013</span>
+<span class="w-1 h-1 rounded-full bg-slate-500"></span>
+<span>Sci-Fi, Thriller</span>
+</div>
+</div>
+<div class="group cursor-pointer">
+<div class="aspect-[2/3] rounded-xl overflow-hidden relative mb-3 bg-surface-dark">
+<div class="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110" data-alt="The Martian movie poster" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCsc-2R2ELySEAGhmT8gmwAByN8HGiR-ENbC2Yr521XkWCfCqGC5FUukkUANBf08JtTCVstrigAuLf5cwDT3UV7n_zc95PTg-I6QeV3YkjKieUnRdo6I47Sp0pTujVHiqmyqt3YZbE0Tx215K5yhJDxQMiaU214ntabOk4BRtq8MQWM8I9QtgtPDGFhdefUKXkA4_lcy06013rcwoMmpVv2y1tnfPMwAfneEO0y0D1WoIqpaWUquLAm7cuyFtte23Rc751rXQJgItQ');"></div>
+<div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<span class="material-symbols-outlined text-5xl text-white">play_circle</span>
+</div>
+</div>
+<h4 class="font-bold text-sm group-hover:text-primary transition-colors">The Martian</h4>
+<div class="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase mt-1">
+<span>2015</span>
+<span class="w-1 h-1 rounded-full bg-slate-500"></span>
+<span>Adventure, Sci-Fi</span>
+</div>
+</div>
+<div class="group cursor-pointer">
+<div class="aspect-[2/3] rounded-xl overflow-hidden relative mb-3 bg-surface-dark">
+<div class="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110" data-alt="Arrival movie poster" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAR1HsIqoFLHVmG1rORDPTeGCYnNL3D7qY2o3B7_NRfK3Zdo4nSg2y-VHQvlkRDSyNtvvabynZNzGWHXvMSD_jABSAR_UcWcqMwQhg17DN4czJF_zPXw6abrIiL1DeAtpFMZZw_8yK16W28nQZmEZQPjtVyiobZSWnfuFJYpQkGD1xqI62pETAVxGc0kpmmINZa92H7Gzc5e50vqvEuEAh6xgDQXdkda3gnpGst-yB9s_yNDK5MoFMZqAJ8k6pmTfugglW_fwLRB3E');"></div>
+<div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<span class="material-symbols-outlined text-5xl text-white">play_circle</span>
+</div>
+</div>
+<h4 class="font-bold text-sm group-hover:text-primary transition-colors">Arrival</h4>
+<div class="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase mt-1">
+<span>2016</span>
+<span class="w-1 h-1 rounded-full bg-slate-500"></span>
+<span>Drama, Sci-Fi</span>
+</div>
+</div>
+<div class="group cursor-pointer">
+<div class="aspect-[2/3] rounded-xl overflow-hidden relative mb-3 bg-surface-dark">
+<div class="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110" data-alt="Contact movie poster" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBIWBo880LhhOQPyAYVLAo3TPMen7a9qbBGQSRT3nik9HITXMbnRArhTif0hAY2ToTo-AWKP3gIWhVIWvOT_eCWOp_oQFpcNRpz9WcNZ3v3m302SVISWLaxU3f4bMiBoK3G8Q63AYxIHEKNUYmZ2CmiDQlrZaYDTdlmjlTmif3-ZWcbAzcRd7cSIIYjRa83gnOHKtR9k1xf5slimrI8iJIqvMNsS7GncrFCUClBAxcZMQ_A_F_itkLJO_p-RVoJC16nLayZrIW8puQ');"></div>
+<div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<span class="material-symbols-outlined text-5xl text-white">play_circle</span>
+</div>
+</div>
+<h4 class="font-bold text-sm group-hover:text-primary transition-colors">Contact</h4>
+<div class="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase mt-1">
+<span>1997</span>
+<span class="w-1 h-1 rounded-full bg-slate-500"></span>
+<span>Sci-Fi</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer -->
+<footer class="border-t border-white/5 bg-surface-dark py-12">
+<div class="max-w-[1440px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex items-center gap-2 text-slate-500">
+<span class="material-symbols-outlined">movie_filter</span>
+<span class="text-sm font-bold tracking-tight">StreamFlow</span>
+</div>
+<div class="flex gap-10 text-xs font-bold uppercase text-slate-500 tracking-widest">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Use</a>
+<a class="hover:text-primary transition-colors" href="#">Support</a>
+<a class="hover:text-primary transition-colors" href="#">Careers</a>
+</div>
+<p class="text-[10px] text-slate-600 uppercase font-medium">© 2024 StreamFlow Entertainment Inc.</p>
+</div>
+</footer>
+</body></html>

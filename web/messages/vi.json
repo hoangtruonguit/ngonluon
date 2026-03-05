@@ -1,0 +1,35 @@
+{
+    "Register": {
+        "title": "Tạo tài khoản để bắt đầu xem",
+        "subtitle": "Tham gia cùng hàng triệu người dùng trên toàn thế giới.",
+        "emailLabel": "Địa chỉ Email",
+        "emailPlaceholder": "email@example.com",
+        "passwordLabel": "Tạo Mật khẩu",
+        "passwordPlaceholder": "••••••••",
+        "passwordHint": "Sử dụng ít nhất 8 ký tự bao gồm cả biểu tượng.",
+        "confirmPasswordLabel": "Xác nhận Mật khẩu",
+        "fullNameLabel": "Họ và Tên",
+        "fullNamePlaceholder": "Nguyễn Văn A",
+        "termsAgree": "Tôi đồng ý với",
+        "termsOfService": "Điều khoản Dịch vụ",
+        "and": "và",
+        "privacyPolicy": "Chính sách Bảo mật",
+        "submitButton": "Tạo Tài khoản",
+        "submittingButton": "Đang tạo Tài khoản...",
+        "orSignUpWith": "hoặc đăng ký bằng",
+        "alreadyMember": "Đã là thành viên?",
+        "signIn": "Đăng nhập"
+    },
+    "Validation": {
+        "emailRequired": "Vui lòng nhập email",
+        "emailInvalid": "Email không hợp lệ",
+        "passwordRequired": "Vui lòng nhập mật khẩu",
+        "passwordLength": "Mật khẩu phải có ít nhất 8 ký tự",
+        "confirmPasswordRequired": "Vui lòng xác nhận mật khẩu",
+        "passwordsMatch": "Mật khẩu không khớp",
+        "fullNameRequired": "Vui lòng nhập họ và tên",
+        "termsAccepted": "Bạn phải chấp nhận các điều khoản và điều kiện",
+        "generalError": "Đăng ký thất bại. Vui lòng thử lại.",
+        "networkError": "Lỗi mạng. Vui lòng kiểm tra kết nối của bạn."
+    }
+}

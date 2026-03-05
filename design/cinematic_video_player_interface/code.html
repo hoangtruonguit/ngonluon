@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cinematic Video Player Interface</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec1337",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221013",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .video-overlay {
+            background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 20%, rgba(0,0,0,0) 80%, rgba(0,0,0,0.8) 100%);
+        }
+        .control-blur {
+            backdrop-filter: blur(12px);
+            background-color: rgba(34, 16, 19, 0.7);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-white overflow-hidden">
+<!-- Video Player Container -->
+<div class="relative w-full h-screen bg-black flex flex-col justify-between group">
+<!-- Background Video Placeholder -->
+<div class="absolute inset-0 z-0">
+<div class="w-full h-full bg-cover bg-center" data-alt="Cinematic shot of deep space with a bright nebula and stars" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA5gIlyYRVBJt1Dhdg8N7KJZTeM5iMcc0T-4wBQ-FKUfX-KPpYJ3Y00ZwE2eAnLwi7ye8bBU8xoc2HxE3sVvOnj9Q6sPpkqvKN7URTJjgWdOJ61l8L5beSKNVM5swVnBVmrF4cUiyqLCgKoLCHv4Q86XOzWBLBuC-gR0X92gTXwqTYaw0gpR1Ssyo5EhnlJMb45v4PMknH3onRptoeodu3O4MROoXxnblSLmpSJzuROzOlGEkYpVevpRNCQWUh1gmEpLuSITV45OB4');">
+</div>
+<!-- Cinematic Dark Overlay -->
+<div class="absolute inset-0 video-overlay z-10"></div>
+</div>
+<!-- Top Navigation Bar -->
+<header class="relative z-20 flex items-center justify-between px-8 py-6 transition-opacity duration-500 opacity-100 group-hover:opacity-100">
+<div class="flex items-center gap-6">
+<button class="flex items-center justify-center size-12 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all backdrop-blur-md">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex flex-col">
+<h1 class="text-2xl font-bold tracking-tight">Interstellar</h1>
+<p class="text-sm text-white/60 font-medium">S1:E4 • The Great Unknown</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center justify-center size-10 rounded-full bg-white/5 hover:bg-white/10 text-white transition-all">
+<span class="material-symbols-outlined">share</span>
+</button>
+<button class="flex items-center justify-center size-10 rounded-full bg-white/5 hover:bg-white/10 text-white transition-all">
+<span class="material-symbols-outlined">info</span>
+</button>
+</div>
+</header>
+<!-- Middle Content Area (Contextual Buttons) -->
+<div class="relative z-20 flex flex-1 items-end justify-end px-12 pb-32">
+<div class="flex flex-col items-end gap-4">
+<!-- Skip Intro Button -->
+<button class="flex min-w-[120px] items-center justify-center gap-2 overflow-hidden rounded-full h-12 px-6 bg-white/10 hover:bg-primary text-white text-sm font-bold leading-normal tracking-wide backdrop-blur-md transition-all border border-white/20 border-solid">
+<span class="material-symbols-outlined text-[20px]">fast_forward</span>
+<span class="truncate">Skip Intro</span>
+</button>
+</div>
+</div>
+<!-- Bottom Controls Section -->
+<div class="relative z-20 w-full px-8 pb-8 transition-opacity duration-500 opacity-100 group-hover:opacity-100">
+<div class="max-w-7xl mx-auto flex flex-col gap-2">
+<!-- Progress Slider Area -->
+<div class="@container w-full">
+<div class="relative flex w-full flex-col items-start justify-between gap-1 px-2">
+<div class="flex h-6 w-full items-center group/slider cursor-pointer">
+<div class="relative flex h-1.5 flex-1 rounded-full bg-white/20 transition-all group-hover/slider:h-2">
+<!-- Progress Fill -->
+<div class="h-full w-[35%] rounded-full bg-primary relative">
+<!-- Playhead -->
+<div class="absolute -right-2 -top-1.5 size-4 rounded-full bg-primary border-2 border-white shadow-lg scale-0 group-hover/slider:scale-100 transition-transform"></div>
+</div>
+<!-- Buffered Fill -->
+<div class="h-full w-[20%] rounded-r-full bg-white/20"></div>
+</div>
+</div>
+<div class="flex w-full items-center justify-between px-1">
+<p class="text-white/80 text-xs font-medium tracking-wider">45:12 / 2:04:00</p>
+<p class="text-white/40 text-[10px] font-bold uppercase tracking-widest">Live Stream Buffer: 98%</p>
+</div>
+</div>
+</div>
+<!-- Main ToolBar -->
+<div class="control-blur rounded-2xl border border-white/10 px-6 py-4 flex items-center justify-between shadow-2xl">
+<!-- Playback Controls -->
+<div class="flex items-center gap-2">
+<button class="p-3 text-white/80 hover:text-white hover:bg-white/10 rounded-full transition-all" title="Rewind 10s">
+<span class="material-symbols-outlined text-[28px]">replay_10</span>
+</button>
+<button class="size-14 flex items-center justify-center bg-white text-black rounded-full hover:bg-primary hover:text-white transition-all shadow-xl">
+<span class="material-symbols-outlined text-[36px] fill">play_arrow</span>
+</button>
+<button class="p-3 text-white/80 hover:text-white hover:bg-white/10 rounded-full transition-all" title="Forward 10s">
+<span class="material-symbols-outlined text-[28px]">forward_10</span>
+</button>
+<div class="h-8 w-px bg-white/10 mx-2"></div>
+<!-- Volume Control -->
+<div class="flex items-center gap-3 px-2 group/volume">
+<button class="text-white/80 hover:text-white transition-all">
+<span class="material-symbols-outlined">volume_up</span>
+</button>
+<div class="w-0 overflow-hidden group-hover/volume:w-24 transition-all duration-300 ease-in-out">
+<div class="h-1 w-20 rounded-full bg-white/20">
+<div class="h-full w-[70%] rounded-full bg-white"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Side Settings & Next -->
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1">
+<button class="p-3 text-white/80 hover:text-white hover:bg-white/10 rounded-full transition-all" title="Subtitles">
+<span class="material-symbols-outlined">closed_caption</span>
+</button>
+<button class="p-3 text-white/80 hover:text-white hover:bg-white/10 rounded-full transition-all" title="Audio Settings">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="p-3 text-white/80 hover:text-white hover:bg-white/10 rounded-full transition-all" title="Full Screen">
+<span class="material-symbols-outlined">fullscreen</span>
+</button>
+</div>
+<div class="h-8 w-px bg-white/10 mx-1"></div>
+<!-- Next Episode Button -->
+<button class="flex items-center justify-center gap-2 overflow-hidden rounded-xl h-12 bg-primary hover:bg-primary/80 text-white font-bold leading-normal tracking-wide px-6 transition-all shadow-lg active:scale-95">
+<span class="truncate">Next Episode</span>
+<span class="material-symbols-outlined text-[20px] fill">skip_next</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

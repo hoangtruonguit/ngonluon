@@ -1,0 +1,35 @@
+{
+    "Register": {
+        "title": "Create your account to start watching",
+        "subtitle": "Join millions of streamers around the world.",
+        "emailLabel": "Email Address",
+        "emailPlaceholder": "email@example.com",
+        "passwordLabel": "Create Password",
+        "passwordPlaceholder": "••••••••",
+        "passwordHint": "Use at least 8 characters including symbols.",
+        "confirmPasswordLabel": "Confirm Password",
+        "fullNameLabel": "Full Name",
+        "fullNamePlaceholder": "John Doe",
+        "termsAgree": "I agree to the",
+        "termsOfService": "Terms of Service",
+        "and": "and",
+        "privacyPolicy": "Privacy Policy",
+        "submitButton": "Submit",
+        "submittingButton": "Creating Account...",
+        "orSignUpWith": "or sign up with",
+        "alreadyMember": "Already a member?",
+        "signIn": "Sign In"
+    },
+    "Validation": {
+        "emailRequired": "Email is required",
+        "emailInvalid": "Email is invalid",
+        "passwordRequired": "Password is required",
+        "passwordLength": "Password must be at least 8 characters",
+        "confirmPasswordRequired": "Please confirm your password",
+        "passwordsMatch": "Passwords do not match",
+        "fullNameRequired": "Full name is required",
+        "termsAccepted": "You must accept the terms and conditions",
+        "generalError": "Registration failed. Please try again.",
+        "networkError": "Network error. Please check your connection."
+    }
+}

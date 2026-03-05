@@ -1,0 +1,117 @@
+import Image from 'next/image';
+import Link from 'next/link';
+
+export default function LoginPage() {
+    return (
+        <div className="min-h-screen relative overflow-x-hidden flex flex-col">
+            {/* Background Cinematic Layer */}
+            <div className="fixed inset-0 z-0">
+                <div className="absolute inset-0 bg-black/60 z-10"></div>
+                <div className="relative w-full h-full">
+                    <Image
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOW5Z3hbv4EoYk4O6cTcAdWc0E9L7s53Y3Qyd9ENdCtFuI5ztSliqBOCUDDr5WDtbYYMmS-vlCprmPzm9lmdQpGO_JouqSw8pkivCumf680xcs6HjRfTas8DVh7QFaL0NHhTwNzFp4euvn5UaEGf7LJFaMiy1moYaGzV6L1xhTkXrvg7FobFN5rUU5XngYMEjTr2pk3r_5051D_4UfOamvyZ_rYftBqNzv2-E7Gm3kapzfgNkcKwVIIFhr9-kEk96gGs2KlXNOb-0"
+                        alt="Blurred cinematic movie theater seats background"
+                        fill
+                        className="object-cover scale-110 blur-md opacity-50"
+                    />
+                </div>
+            </div>
+
+            {/* Layout Container */}
+            <div className="relative z-20 flex flex-col min-h-screen">
+                {/* TopNavBar */}
+                <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-white/10 px-6 md:px-10 py-4">
+                    <Link href="/" className="flex items-center gap-4 text-white">
+                        <div className="size-8 text-primary">
+                            <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z" fill="currentColor"></path>
+                            </svg>
+                        </div>
+                        <h2 className="text-white text-xl font-bold leading-tight tracking-[-0.015em]">MovieStream</h2>
+                    </Link>
+                    <button className="flex min-w-[84px] cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-white/10 hover:bg-white/20 text-white text-sm font-bold transition-colors">
+                        <span className="truncate">Help</span>
+                    </button>
+                </header>
+
+                {/* Main Content */}
+                <main className="flex-1 flex items-center justify-center p-6">
+                    <div className="flex flex-col w-full max-w-[450px]">
+                        {/* Login Card */}
+                        <div className="glass-card rounded-xl p-8 md:p-10 shadow-2xl">
+                            <div className="mb-8">
+                                <h1 className="text-white tracking-tight text-[32px] font-bold leading-tight text-center">Sign In</h1>
+                                <p className="text-[#c9929b] text-center mt-2 text-sm font-normal">Welcome back! Please enter your details.</p>
+                            </div>
+                            {/* Form */}
+                            <form className="space-y-4">
+                                {/* TextField: Email */}
+                                <div className="flex flex-col gap-2">
+                                    <p className="text-white text-sm font-medium leading-normal">Email or Phone Number</p>
+                                    <input className="flex w-full rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border-none bg-white/5 focus:bg-white/10 h-14 placeholder:text-[#c9929b]/50 p-4 text-base font-normal transition-all" placeholder="Enter your email or phone" type="text" />
+                                </div>
+                                {/* TextField: Password */}
+                                <div className="flex flex-col gap-2">
+                                    <p className="text-white text-sm font-medium leading-normal">Password</p>
+                                    <div className="relative flex w-full items-stretch">
+                                        <input className="flex w-full rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border-none bg-white/5 focus:bg-white/10 h-14 placeholder:text-[#c9929b]/50 p-4 text-base font-normal transition-all" placeholder="Enter your password" type="password" />
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[#c9929b] cursor-pointer hover:text-white transition-colors">
+                                            <span className="material-symbols-outlined" data-icon="visibility">visibility</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {/* Utils Row */}
+                                <div className="flex items-center justify-between px-1 py-2">
+                                    <label className="flex items-center gap-2 cursor-pointer group">
+                                        <input className="rounded border-none bg-white/10 text-primary focus:ring-primary focus:ring-offset-0 transition-all cursor-pointer h-4 w-4" type="checkbox" />
+                                        <span className="text-[#c9929b] text-sm font-normal group-hover:text-white">Remember me</span>
+                                    </label>
+                                    <Link className="text-sm font-medium text-primary hover:text-primary/80 transition-colors" href="#">Forgot Password?</Link>
+                                </div>
+                                {/* Primary Button */}
+                                <button className="neon-glow flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-14 px-4 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] transition-all transform active:scale-[0.98] mt-4" type="submit">
+                                    <span className="truncate">Sign In</span>
+                                </button>
+                            </form>
+                            {/* Divider */}
+                            <div className="flex items-center my-8 gap-4">
+                                <div className="h-[1px] flex-1 bg-white/10"></div>
+                                <span className="text-[#c9929b] text-xs font-bold uppercase tracking-widest">OR</span>
+                                <div className="h-[1px] flex-1 bg-white/10"></div>
+                            </div>
+                            {/* Social Logins */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <button className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg h-12 transition-all group">
+                                    <div className="relative w-5 h-5">
+                                        <Image
+                                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAw2uGX3guDgm71UShE77XZmsRy5chC15E-DJWOqc4KM8g2SGa_ZeHQuS3IGO8M-A9ZLbVEMhZYh6mkvytCvipkQc6Qmgu2Wy2Xmm6SOZTugGV5fHkaE3ro6HOiDp4aJYbuEEGQsuAGYUG1fqmfbYxYamLsmE-ZwBjiK0-WuFTCufdqgvqkKdcekkT4ppfpSVypMVApKgFAZtKHpawRFSu6tJ_NcY_h72ssTbXJKMBcqFyHM8Pz6jaqAXEtHGUV7ebCk5sNANNvMzo"
+                                            alt="Google logo"
+                                            fill
+                                            className="object-contain"
+                                        />
+                                    </div>
+                                    <span className="text-white text-sm font-medium">Google</span>
+                                </button>
+                                <button className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg h-12 transition-all">
+                                    <span className="material-symbols-outlined text-white text-[20px]">ios</span>
+                                    <span className="text-white text-sm font-medium">Apple</span>
+                                </button>
+                            </div>
+                            {/* Footer CTA */}
+                            <div className="mt-8 text-center">
+                                <p className="text-[#c9929b] text-sm">
+                                    New to MovieStream?
+                                    <Link className="text-primary font-bold hover:underline ml-1" href="#">Sign up now</Link>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+                {/* Page Footer */}
+                <footer className="p-6 text-center text-[#c9929b]/40 text-xs">
+                    <p>© 2024 MovieStream Inc. All rights reserved.</p>
+                </footer>
+            </div>
+        </div>
+    );
+}

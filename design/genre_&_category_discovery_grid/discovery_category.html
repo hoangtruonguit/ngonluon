@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>StreamFlow - Genre Discovery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec1337",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221013",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Spline Sans', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .active-icon { font-variation-settings: 'FILL' 1; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-50 w-full border-b border-white/10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-6 lg:px-10 py-3">
+<div class="max-w-[1440px] mx-auto flex items-center justify-between gap-8">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-3xl active-icon">movie_filter</span>
+<h2 class="text-xl font-bold tracking-tight">StreamFlow</h2>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Movies</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">TV Shows</a>
+<a class="text-sm font-medium hover:text-primary transition-colors text-primary border-b-2 border-primary pb-1" href="#">Discovery</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">My List</a>
+</nav>
+</div>
+<div class="flex flex-1 justify-end items-center gap-4 max-w-md">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+<input class="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all" placeholder="Search titles, actors, genres..." type="text"/>
+</div>
+<button class="p-2 hover:bg-white/5 rounded-full transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"></span>
+</button>
+<div class="w-9 h-9 rounded-full bg-cover bg-center border-2 border-primary/20" data-alt="User profile avatar" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDDsorMg9LJwdhWOYUqDBfNB2dCWxWGXpBtDEqTc_nRi5BGZrxs8FPUURArvMh5g2ehMbceqyu2Nkm_8k0eT0NBWNP-tHfpBBchDt-ccoOpB32yDJi5fVQ6E72AQ62pKC44bB4cF0NFiAMVnWDu4m9xXtivJz7c7-fPR1o8M39l6T5RKdmPLwpaqttPJnSGAvmpehmTR0zXnvcsgWwfcabAZPyDK2BXV2W3v1eGie2VotwgeA04b2QOVeW6r6-GIIXqwaq_2JaNN0U');"></div>
+</div>
+</div>
+</header>
+<main class="max-w-[1440px] mx-auto flex flex-col lg:flex-row min-h-[calc(100vh-64px)]">
+<!-- Sidebar Navigation -->
+<aside class="w-full lg:w-72 border-r border-white/10 p-6 flex flex-col gap-8 shrink-0">
+<div>
+<h3 class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Breadcrumbs</h3>
+<div class="flex flex-wrap items-center gap-2 text-sm">
+<a class="hover:text-primary transition-colors" href="#">Home</a>
+<span class="text-slate-600">/</span>
+<a class="hover:text-primary transition-colors" href="#">Discovery</a>
+<span class="text-slate-600">/</span>
+<span class="text-primary font-semibold">Sci-Fi</span>
+</div>
+</div>
+<div class="space-y-6">
+<div>
+<h3 class="text-sm font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-lg">category</span>
+                        Sub-Genres
+                    </h3>
+<div class="space-y-2">
+<label class="flex items-center gap-3 group cursor-pointer">
+<input checked="" class="rounded border-white/20 bg-transparent text-primary focus:ring-primary w-4 h-4" type="checkbox"/>
+<span class="text-sm group-hover:text-white transition-colors">Cyberpunk</span>
+</label>
+<label class="flex items-center gap-3 group cursor-pointer">
+<input class="rounded border-white/20 bg-transparent text-primary focus:ring-primary w-4 h-4" type="checkbox"/>
+<span class="text-sm group-hover:text-white transition-colors">Space Exploration</span>
+</label>
+<label class="flex items-center gap-3 group cursor-pointer">
+<input class="rounded border-white/20 bg-transparent text-primary focus:ring-primary w-4 h-4" type="checkbox"/>
+<span class="text-sm group-hover:text-white transition-colors">Time Travel</span>
+</label>
+<label class="flex items-center gap-3 group cursor-pointer">
+<input class="rounded border-white/20 bg-transparent text-primary focus:ring-primary w-4 h-4" type="checkbox"/>
+<span class="text-sm group-hover:text-white transition-colors">Dystopian</span>
+</label>
+<label class="flex items-center gap-3 group cursor-pointer">
+<input class="rounded border-white/20 bg-transparent text-primary focus:ring-primary w-4 h-4" type="checkbox"/>
+<span class="text-sm group-hover:text-white transition-colors">Alien Invasion</span>
+</label>
+</div>
+</div>
+<div>
+<h3 class="text-sm font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-lg">mood</span>
+                        Mood Filters
+                    </h3>
+<div class="flex flex-wrap gap-2">
+<button class="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold flex items-center gap-1.5 shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-base active-icon">psychology</span>
+                            Mind-Bending
+                        </button>
+<button class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-primary/50 text-xs font-medium flex items-center gap-1.5 transition-all">
+<span class="material-symbols-outlined text-base">local_fire_department</span>
+                            Action-Packed
+                        </button>
+<button class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-primary/50 text-xs font-medium flex items-center gap-1.5 transition-all">
+<span class="material-symbols-outlined text-base">sentiment_very_satisfied</span>
+                            Feel-good
+                        </button>
+<button class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-primary/50 text-xs font-medium flex items-center gap-1.5 transition-all">
+<span class="material-symbols-outlined text-base">dark_mode</span>
+                            Dark &amp; Gritty
+                        </button>
+</div>
+</div>
+<div class="pt-4 border-t border-white/10">
+<button class="w-full py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white text-sm font-bold transition-all shadow-lg shadow-primary/20">
+                        Apply Filters
+                    </button>
+<button class="w-full mt-2 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-sm font-medium transition-all">
+                        Reset All
+                    </button>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<section class="flex-1 p-6 lg:p-10 flex flex-col gap-8 overflow-y-auto">
+<!-- Hero Banner -->
+<div class="relative w-full h-[400px] rounded-2xl overflow-hidden group">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="Futuristic sci-fi city cinematic shot" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDpz2c5CEEIjlrhw_KDPLZOOMEDwH-bWepjPDqOtt1_WV3prUbR_VO5ZuTlwDfKGuDj_uP2nq3I8ZAEHTiTUFUS1yJctOpUXfHDnbnAD_Zsaq9dWfxnhVVhQHJviNA1Dhhg7QkoZaA0Lc0FnXhhsTG-lCfJJYQzZOxD45BEWG1plvDPFU02fyW2yGVFeJJsgXHXE-WaibSQJZxi_SmYrXhoB2TRj1LkErxk8ImBVVRCn47qNQwr-w49MTKG2hTS5R0bmxUdddyJlqM');"></div>
+<div class="absolute inset-0 bg-gradient-to-r from-background-dark via-background-dark/40 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-8 lg:p-12 w-full lg:w-2/3 space-y-4">
+<div class="flex items-center gap-3">
+<span class="px-2 py-1 bg-primary text-[10px] font-black uppercase tracking-widest rounded text-white">Featured Selection</span>
+<div class="flex items-center gap-1 text-yellow-400">
+<span class="material-symbols-outlined text-sm active-icon">star</span>
+<span class="text-xs font-bold">8.9</span>
+</div>
+</div>
+<h1 class="text-4xl lg:text-6xl font-black tracking-tight text-white leading-tight">Interstellar Voyage</h1>
+<p class="text-slate-300 text-sm lg:text-base max-w-lg line-clamp-3">A team of explorers travel beyond this galaxy in a newly discovered wormhole to learn whether mankind has a future among the stars in this mind-bending epic.</p>
+<div class="flex items-center gap-4 pt-4">
+<button class="flex items-center gap-2 px-8 py-3 bg-primary hover:bg-primary/90 text-white rounded-lg font-bold transition-all transform hover:scale-105">
+<span class="material-symbols-outlined active-icon">play_arrow</span>
+                            Watch Now
+                        </button>
+<button class="flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-lg font-bold transition-all">
+<span class="material-symbols-outlined">add</span>
+                            My List
+                        </button>
+</div>
+</div>
+</div>
+<!-- Toolbar & Grid Controls -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 py-4 border-b border-white/10">
+<div class="flex items-center gap-6">
+<h2 class="text-2xl font-bold">Sci-Fi Classics</h2>
+<span class="text-slate-500 text-sm">1,248 titles found</span>
+</div>
+<div class="flex items-center gap-3 w-full md:w-auto">
+<div class="flex items-center bg-white/5 border border-white/10 rounded-lg p-1">
+<button class="p-1.5 px-3 bg-primary text-white rounded-md text-sm font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">grid_view</span>
+</button>
+<button class="p-1.5 px-3 hover:bg-white/10 rounded-md text-sm font-bold text-slate-400 transition-all">
+<span class="material-symbols-outlined text-sm">list</span>
+</button>
+</div>
+<div class="relative">
+<select class="appearance-none bg-white/5 border border-white/10 rounded-lg pl-4 pr-10 py-2 text-sm font-medium focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all cursor-pointer">
+<option>Sort by: Popularity</option>
+<option>Sort by: Release Date</option>
+<option>Sort by: IMDb Rating</option>
+<option>Sort by: A-Z</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Movie Poster Grid -->
+<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 lg:gap-8">
+<!-- Movie Card 1 -->
+<div class="group relative flex flex-col gap-3">
+<div class="relative aspect-[2/3] rounded-xl overflow-hidden shadow-xl transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-primary/20">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Cyberpunk city poster art" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuACJ3oHoAddnpbIz9P4bFSNb4tsx8hnD-7Dyh2Y49H2tEGmXiLHZ4BYTtgNGT6msiV5xYknuPNPKFEC05V6aT4EhxRqOmdd_DFv6S-EMulPVAo6r6-WmjR8JqQesNZv3-K7_HYutC1qXZE7Zt_rxENEsQ84uYtr39CQ_Y7xWlHdbdkF8fV0-iNNhie9rJvPloHZ1S0-unLzl3Iyt25eSHL8AJJof3NLmhq5YeHoy9Ep3Cof0PfLvcJEKbB6TtbqGe0AxLYETt8O5f4');"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+<button class="w-full py-2 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm active-icon">play_circle</span>
+                                Quick Play
+                            </button>
+</div>
+<div class="absolute top-2 right-2 p-1.5 bg-black/60 backdrop-blur-md rounded-lg text-primary text-xs font-bold border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:bg-primary hover:text-white">
+<span class="material-symbols-outlined text-lg">bookmark</span>
+</div>
+</div>
+<div class="flex flex-col">
+<div class="flex justify-between items-start gap-2">
+<h3 class="font-bold text-base line-clamp-1 group-hover:text-primary transition-colors">Neon Genesis</h3>
+<span class="text-xs font-bold text-primary">8.4</span>
+</div>
+<div class="flex items-center gap-2 text-xs text-slate-500 font-medium">
+<span>2024</span>
+<span class="w-1 h-1 bg-slate-700 rounded-full"></span>
+<span>1h 52m</span>
+</div>
+</div>
+</div>
+<!-- Movie Card 2 -->
+<div class="group relative flex flex-col gap-3">
+<div class="relative aspect-[2/3] rounded-xl overflow-hidden shadow-xl transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-primary/20">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Aesthetic space planet poster" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuApzU9toW62hiWWXGkARge6IckMhYx0HcpkZ6tZt1wp40LegafgaDQb7Iss8_LmWYwpuClzCGK7G30NYcSv4qq8wZFT4B42mE14zZ0yjwOhU4o6shX27alUpCn7su85Jne0EiGu7K82RRpAtskD4HOOH2GD6uLJYiXLErkiaLcurQwYuLPzpkGxTYkHhzqD4QTVYzwCcWYi4nAD9Owy8pkCN0Yo48iIQbvgbEYaEVkIXkRT6GqFMM_1zVRDr2cu2C9J9UMKZ7xQk4M');"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+<button class="w-full py-2 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm active-icon">play_circle</span>
+                                Quick Play
+                            </button>
+</div>
+<div class="absolute top-2 right-2 p-1.5 bg-black/60 backdrop-blur-md rounded-lg text-primary text-xs font-bold border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-lg">bookmark</span>
+</div>
+</div>
+<div class="flex flex-col">
+<div class="flex justify-between items-start gap-2">
+<h3 class="font-bold text-base line-clamp-1 group-hover:text-primary transition-colors">Exoplanet</h3>
+<span class="text-xs font-bold text-primary">7.9</span>
+</div>
+<div class="flex items-center gap-2 text-xs text-slate-500 font-medium">
+<span>2023</span>
+<span class="w-1 h-1 bg-slate-700 rounded-full"></span>
+<span>2h 14m</span>
+</div>
+</div>
+</div>
+<!-- Movie Card 3 -->
+<div class="group relative flex flex-col gap-3">
+<div class="relative aspect-[2/3] rounded-xl overflow-hidden shadow-xl transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-primary/20">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Retro sci-fi robot poster" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCiSZvwl7wQJhYYcAK29sF6ryTfPEuIvnX1gRZQosmJldpBlGEGTvo0Ddjm5_ykq0-nzP7rjtt2SsV9_ucJJqjw__0iqd4gEBygWKPuBackh0ADJaiyJcgNq0cJSburVNRlDne8FiiyGOGkNq8FDw9poqTBufwdEvi0MXrrZ1Qo2frfZKUQeaROmfHw-8CwNZv6UHkPuxOGo6vcDmwg68q1GjGUfQrRmLFMjXFqdI6Kb70e7rqRdQK4N_vCD4TbUir6THd52EH3ueY');"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+<button class="w-full py-2 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm active-icon">play_circle</span>
+                                Quick Play
+                            </button>
+</div>
+<div class="absolute top-2 right-2 p-1.5 bg-black/60 backdrop-blur-md rounded-lg text-primary text-xs font-bold border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-lg">bookmark</span>
+</div>
+</div>
+<div class="flex flex-col">
+<div class="flex justify-between items-start gap-2">
+<h3 class="font-bold text-base line-clamp-1 group-hover:text-primary transition-colors">Automation</h3>
+<span class="text-xs font-bold text-primary">8.1</span>
+</div>
+<div class="flex items-center gap-2 text-xs text-slate-500 font-medium">
+<span>2022</span>
+<span class="w-1 h-1 bg-slate-700 rounded-full"></span>
+<span>1h 48m</span>
+</div>
+</div>
+</div>
+<!-- Movie Card 4 -->
+<div class="group relative flex flex-col gap-3">
+<div class="relative aspect-[2/3] rounded-xl overflow-hidden shadow-xl transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-primary/20">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Vibrant galaxy nebula backdrop" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAKGKZVPTiW5XnDZmxvdvYbu67koRapjw176p1qGVrZyIkfon98FrB1QjoXhbYDCmAMEKZ0V1zDo2mPQWq2irCw8jUewAwkpGrNI1MemYMCYkuFPlsAOtYpHIM623sbhUz1Sn3JJvEYW8Zg0_kgVYHafvt46J-7EirqxQ5-O2LlH6-SfGB6Qx22yv-20HhSOrM2wahXpN6UsDUcMAOdXiU_qjwk8Tfu7QKYiVwLM1yYSVrvxYAtb4XshhoZVqX0SECRI7qkYXbk2Xc');"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+<button class="w-full py-2 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm active-icon">play_circle</span>
+                                Quick Play
+                            </button>
+</div>
+</div>
+<div class="flex flex-col">
+<div class="flex justify-between items-start gap-2">
+<h3 class="font-bold text-base line-clamp-1 group-hover:text-primary transition-colors">Nebula Rising</h3>
+<span class="text-xs font-bold text-primary">9.0</span>
+</div>
+<div class="flex items-center gap-2 text-xs text-slate-500 font-medium">
+<span>2024</span>
+<span class="w-1 h-1 bg-slate-700 rounded-full"></span>
+<span>2h 32m</span>
+</div>
+</div>
+</div>
+<!-- Movie Card 5 -->
+<div class="group relative flex flex-col gap-3">
+<div class="relative aspect-[2/3] rounded-xl overflow-hidden shadow-xl transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-primary/20">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Abstract digital network poster" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDTL5YDR9QOPgq71xbN9p6K0kbuPK59YoGGe2bsI6zXdhNzwFedvbRysQ1GDkTN4qN9TSaWxhbTb7zj1C5b8O8XxpqWrrCY8aCqXH5EUXP7cffy7BkdrME4N4cgijpZrB7H02yXtOHkmhPN_yQReo01z7Xn2FA8rHAZZ8URWM51Qz8SecGCjoq1thZgqed3qGA4uEB7J7VsyIfySweH9nd9qGnTderfaKK30dhUdp2OqEFv7olcCh5ZfBTAz8acQroonP3H5HnnsJU');"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+<button class="w-full py-2 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm active-icon">play_circle</span>
+                                Quick Play
+                            </button>
+</div>
+</div>
+<div class="flex flex-col">
+<div class="flex justify-between items-start gap-2">
+<h3 class="font-bold text-base line-clamp-1 group-hover:text-primary transition-colors">The Protocol</h3>
+<span class="text-xs font-bold text-primary">7.5</span>
+</div>
+<div class="flex items-center gap-2 text-xs text-slate-500 font-medium">
+<span>2023</span>
+<span class="w-1 h-1 bg-slate-700 rounded-full"></span>
+<span>1h 56m</span>
+</div>
+</div>
+</div>
+<!-- Reusable dummy cards for layout visualization -->
+<div class="group relative flex flex-col gap-3">
+<div class="relative aspect-[2/3] rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+<div class="absolute inset-0 bg-cover bg-center opacity-50" data-alt="Atmospheric landscape movie poster" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA__k-mwLyamUxmW_5VuPXd5uoMxUgPwwsh06bEjQofEi90YAnj7tOc3G68ymM2F1V6ZELOyHlJxYiWYY7PtFuh9wuXox8LAsWvkUeTdG5hvPPsrMJi82HPCOmoZSCGsxuy09TnQgmPzOpkDFx_mq_hagMswTjPvdkf8zEbD3EPXXUjxHFGZykSDtFWE9jghX322xc8z3LoAlx8cp9xY7HZu4tFgEuE5kkENfC8dBNTHK5_r2VIIJQjAQ7MkJ7fplmTky_bxt5KzBg');"></div>
+<span class="material-symbols-outlined text-slate-700 text-4xl">movie</span>
+</div>
+<div class="h-10 bg-white/5 rounded w-full animate-pulse"></div>
+</div>
+<div class="group relative flex flex-col gap-3">
+<div class="relative aspect-[2/3] rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+<div class="absolute inset-0 bg-cover bg-center opacity-50" data-alt="Futuristic sci-fi vehicle poster" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCVikj4di8bKn_W_0aqXgxex39BhDOBzQIHEvZPH5aMj6-EQhFUuNuFQLtR_tMvu0_66AzW2J9cPv4G_4E1JTVmub0g-3TqlzrG9gFMvown69VxxOO0DsMIupTqksYtwrTQYJZfw5j8Agth5F4t5O9mhrel-hjA1_IYXq9tgFz2A6BDldk0HOPtgbQfw6ot1rwEkEa5vWGHetBGLN5YYz9x1uZq0pVO9FUGXk-7OJi0-W4Za2vcnzoBHRkA0_Qvo76fyBQChUB6DjM');"></div>
+<span class="material-symbols-outlined text-slate-700 text-4xl">movie</span>
+</div>
+<div class="h-10 bg-white/5 rounded w-full animate-pulse"></div>
+</div>
+<div class="group relative flex flex-col gap-3">
+<div class="relative aspect-[2/3] rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+<div class="absolute inset-0 bg-cover bg-center opacity-50" data-alt="Neon light abstract movie poster" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD0ZspRBn0sYB97RHvUE_za104HNiVZBMPDN8cOg6u4_0557rTG3QgHUrEuIleSPxPDrU44YbzbSCprHkb0swzlZj73VN5XXcnu7FsHUtE60nEgMrRJZ27Sa0LNdcRHRWv4zOl9fkVaP5C_bGsR-ytDtu3cldrNMQF1s6Rg5AwGKsX_u6dnfpyZi3I4wiJrZn2TWquePq3vYs7OrvvjKfbFHboZRtJF21csOQT-cSrkRboHtPzami3dJIsg8lsOYSSiwL5fhlgmg_k');"></div>
+<span class="material-symbols-outlined text-slate-700 text-4xl">movie</span>
+</div>
+<div class="h-10 bg-white/5 rounded w-full animate-pulse"></div>
+</div>
+</div>
+<!-- Pagination/Load More -->
+<div class="flex flex-col items-center gap-6 py-10 mt-4 border-t border-white/10">
+<button class="px-10 py-3 rounded-full border border-white/10 hover:border-primary/50 text-sm font-bold flex items-center gap-3 transition-all">
+<span class="material-symbols-outlined">expand_more</span>
+                    Load More Titles
+                </button>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<div class="flex items-center gap-1">
+<button class="w-8 h-8 rounded-lg bg-primary text-white font-bold text-sm">1</button>
+<button class="w-8 h-8 rounded-lg hover:bg-white/10 text-sm">2</button>
+<button class="w-8 h-8 rounded-lg hover:bg-white/10 text-sm">3</button>
+<span class="px-2">...</span>
+<button class="w-8 h-8 rounded-lg hover:bg-white/10 text-sm">12</button>
+</div>
+<button class="p-2 rounded-lg bg-white/5 hover:bg-white/10">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer Simple -->
+<footer class="border-t border-white/10 bg-background-light dark:bg-background-dark py-8 px-10">
+<div class="max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="flex items-center gap-2 text-slate-500">
+<span class="material-symbols-outlined text-xl">movie_filter</span>
+<span class="text-sm font-medium">© 2024 StreamFlow Entertainment Inc.</span>
+</div>
+<div class="flex items-center gap-8 text-sm font-medium text-slate-500">
+<a class="hover:text-white transition-colors" href="#">Help Center</a>
+<a class="hover:text-white transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-white transition-colors" href="#">Terms of Service</a>
+<a class="hover:text-white transition-colors" href="#">Cookie Settings</a>
+</div>
+</div>
+</footer>
+</body></html>
