@@ -1,7 +1,24 @@
-import Link from 'next/link';
+'use client';
+
 import Image from 'next/image';
+import { Link, useRouter } from '@/i18n/routing';
+import { apiClient } from '@/lib/api';
 
 export default function Header() {
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        try {
+            await apiClient.logout();
+            router.push('/login');
+        } catch (error) {
+            console.error('Logout failed:', error);
+            // Even if API fails, we might want to redirect the user to login
+            // as the tokens might be invalid or handled by the client anyway
+            router.push('/login');
+        }
+    };
+
     return (
         <header className="fixed top-0 left-0 right-0 z-50 transition-colors duration-300 glass border-b border-white/10 px-6 py-4 lg:px-12">
             <div className="max-w-[1440px] mx-auto flex items-center justify-between">
@@ -27,7 +44,11 @@ export default function Header() {
                     </button>
                     <div className="flex items-center gap-3">
                         <span className="material-symbols-outlined text-white/70 cursor-pointer hover:text-white">notifications</span>
-                        <div className="size-9 rounded-full bg-cover bg-center border-2 border-primary/50 relative overflow-hidden">
+                        <div
+                            className="size-9 rounded-full bg-cover bg-center border-2 border-primary/50 relative overflow-hidden cursor-pointer hover:border-primary transition-all active:scale-95"
+                            onClick={handleLogout}
+                            title="Logout"
+                        >
                             <Image
                                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1Lf8ou0dErc0m7he9KunMHpoZUwHkhj8ivVp9cRwQ4mirIRJgnx_vIeGEnUtTLkYCKvlmYkFdb2joykQ0oV7gR_3PFj34pGk9-K3KR0IWd52SclJqQ9EzVsau7YEmrMYfR6oFnDaoAegwzxIQ7cw49DPaNUPO3vWht8VRkGTkWgbMydPRlrPZIZcJY1DQxmFRuicd6Cxv-h_tnrMtsx_yTNXQuwh625X2vYyrvMahidyo0JG6YSCm5kBK7QkI8HS24eOXJgXYPEU"
                                 alt="User profile avatar portrait"

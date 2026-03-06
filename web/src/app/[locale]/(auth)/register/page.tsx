@@ -4,8 +4,30 @@ import { useState } from 'react';
 import { useRouter, Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
-import Footer from '@/components/Footer';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import dynamic from 'next/dynamic';
+
+const Footer = dynamic(() => import('@/components/Footer'));
+
+// Hoist RegEx outside render (js-hoist-regexp)
+const EMAIL_REGEX = /\S+@\S+\.\S+/;
+const LOWER_REGEX = /[a-z]/;
+const UPPER_REGEX = /[A-Z]/;
+const NUM_REGEX = /[0-9]/;
+const SPECIAL_REGEX = /[^a-zA-Z0-9]/;
+
+// Hoist static JSX (rendering-hoist-jsx)
+const staticBackground = (
+    <div className="fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-[#211111]/80 to-[#211111]"></div>
+        <div
+            className="h-full w-full bg-cover bg-center"
+            style={{
+                backgroundImage: "url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1925')"
+            }}
+        ></div>
+    </div>
+);
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -41,7 +63,7 @@ export default function RegisterPage() {
 
         if (!formData.email) {
             newErrors.email = tValidation('emailRequired');
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+        } else if (!EMAIL_REGEX.test(formData.email)) {
             newErrors.email = tValidation('emailInvalid');
         }
 
@@ -79,40 +101,33 @@ export default function RegisterPage() {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://localhost:3001/auth/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
+            const data = await apiClient.register({
+                email: formData.email,
+                password: formData.password,
+                confirmPassword: formData.confirmPassword,
+                fullName: formData.fullName,
+                termsAccepted: formData.termsAccepted
             });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                // Handle API errors
-                if (data.message) {
-                    if (Array.isArray(data.message)) {
-                        // Validation errors from class-validator
-                        const errorObj: Record<string, string> = {};
-                        data.message.forEach((msg: string) => {
-                            errorObj.general = msg;
-                        });
-                        setErrors(errorObj);
-                    } else {
-                        setErrors({ general: data.message });
-                    }
-                } else {
-                    setErrors({ general: tValidation('generalError') });
-                }
-                return;
-            }
 
             // Success! Redirect to login
             router.push('/login?registered=true');
-        } catch (error) {
+        } catch (error: any) {
             console.error('Registration error:', error);
-            setErrors({ general: tValidation('networkError') });
+
+            // Handle structured error from apiClient
+            if (error.statusCode) {
+                if (Array.isArray(error.message)) {
+                    const errorObj: Record<string, string> = {};
+                    error.message.forEach((msg: string) => {
+                        errorObj.general = msg;
+                    });
+                    setErrors(errorObj);
+                } else {
+                    setErrors({ general: error.message });
+                }
+            } else {
+                setErrors({ general: tValidation('networkError') });
+            }
         } finally {
             setIsLoading(false);
         }
@@ -124,9 +139,9 @@ export default function RegisterPage() {
 
         let strength = 0;
         if (password.length >= 8) strength++;
-        if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
-        if (/[0-9]/.test(password)) strength++;
-        if (/[^a-zA-Z0-9]/.test(password)) strength++;
+        if (LOWER_REGEX.test(password) && UPPER_REGEX.test(password)) strength++;
+        if (NUM_REGEX.test(password)) strength++;
+        if (SPECIAL_REGEX.test(password)) strength++;
 
         return strength;
     };
@@ -136,15 +151,7 @@ export default function RegisterPage() {
     return (
         <div className="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden">
             {/* Background */}
-            <div className="fixed inset-0 z-0">
-                <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-[#211111]/80 to-[#211111]"></div>
-                <div
-                    className="h-full w-full bg-cover bg-center"
-                    style={{
-                        backgroundImage: "url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1925')"
-                    }}
-                ></div>
-            </div>
+            {staticBackground}
 
             {/* Content */}
             <div className="layout-container relative z-10 flex h-full grow flex-col">
@@ -250,13 +257,16 @@ export default function RegisterPage() {
                                 </div>
                                 {/* Password Strength */}
                                 <div className="mt-1 flex gap-1 h-1">
-                                    {[1, 2, 3, 4].map((level) => (
-                                        <div
-                                            key={level}
-                                            className={`flex-1 rounded-full ${level <= passwordStrength ? 'bg-[#EA2831]' : 'bg-white/10'
-                                                }`}
-                                        ></div>
-                                    ))}
+                                    {[1, 2, 3, 4].map((level) => {
+                                        const strengthColors = ['', 'bg-red-500', 'bg-pink-500', 'bg-yellow-500', 'bg-green-500'];
+                                        return (
+                                            <div
+                                                key={level}
+                                                className={`flex-1 rounded-full ${level <= passwordStrength ? strengthColors[passwordStrength] : 'bg-white/10'
+                                                    }`}
+                                            ></div>
+                                        );
+                                    })}
                                 </div>
                                 <p className="text-[10px] text-[#ad9db9]">{t('passwordHint')}</p>
                                 {errors.password && <p className="text-red-400 text-xs">{errors.password}</p>}

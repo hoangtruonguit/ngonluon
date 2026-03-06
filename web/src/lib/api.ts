@@ -36,6 +36,7 @@ class ApiClient {
 
         const response = await fetch(url, {
             ...options,
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
                 ...options?.headers,
@@ -67,6 +68,12 @@ class ApiClient {
         return this.request('/auth/login', {
             method: 'POST',
             body: JSON.stringify({ email, password }),
+        });
+    }
+
+    async logout() {
+        return this.request('/auth/logout', {
+            method: 'POST',
         });
     }
 }

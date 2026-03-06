@@ -20,6 +20,22 @@
         "alreadyMember": "Already a member?",
         "signIn": "Sign In"
     },
+    "Login": {
+        "title": "Sign In",
+        "subtitle": "Welcome back! Please enter your details.",
+        "emailLabel": "Email or Phone Number",
+        "emailPlaceholder": "Enter your email or phone",
+        "passwordLabel": "Password",
+        "passwordPlaceholder": "Enter your password",
+        "rememberMe": "Remember me",
+        "forgotPassword": "Forgot Password?",
+        "signIn": "Sign In",
+        "or": "OR",
+        "google": "Google",
+        "apple": "Apple",
+        "newToMovieStream": "New to MovieStream?",
+        "signUpNow": "Sign up now"
+    },
     "Validation": {
         "emailRequired": "Email is required",
         "emailInvalid": "Email is invalid",

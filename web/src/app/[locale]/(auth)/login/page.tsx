@@ -1,21 +1,60 @@
+'use client';
+
+import { useState, FormEvent } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { Link, useRouter } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import dynamic from 'next/dynamic';
+import { apiClient } from '@/lib/api';
+
+const Footer = dynamic(() => import('@/components/Footer'));
+
+// Hoist static JSX (rendering-hoist-jsx)
+const staticBackground = (
+    <div className="fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-black/60 z-10"></div>
+        <div className="relative w-full h-full">
+            <Image
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOW5Z3hbv4EoYk4O6cTcAdWc0E9L7s53Y3Qyd9ENdCtFuI5ztSliqBOCUDDr5WDtbYYMmS-vlCprmPzm9lmdQpGO_JouqSw8pkivCumf680xcs6HjRfTas8DVh7QFaL0NHhTwNzFp4euvn5UaEGf7LJFaMiy1moYaGzV6L1xhTkXrvg7FobFN5rUU5XngYMEjTr2pk3r_5051D_4UfOamvyZ_rYftBqNzv2-E7Gm3kapzfgNkcKwVIIFhr9-kEk96gGs2KlXNOb-0"
+                alt="Blurred cinematic movie theater seats background"
+                fill
+                className="object-cover scale-110 blur-md opacity-50"
+            />
+        </div>
+    </div>
+);
 
 export default function LoginPage() {
+    const t = useTranslations('Login');
+    const router = useRouter();
+
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
+
+    const handleSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            await apiClient.login(email, password);
+            router.push('/');
+        } catch (err: any) {
+            console.error('Login failed:', err);
+            setError(err.message || 'An error occurred during login');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className="min-h-screen relative overflow-x-hidden flex flex-col">
             {/* Background Cinematic Layer */}
-            <div className="fixed inset-0 z-0">
-                <div className="absolute inset-0 bg-black/60 z-10"></div>
-                <div className="relative w-full h-full">
-                    <Image
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOW5Z3hbv4EoYk4O6cTcAdWc0E9L7s53Y3Qyd9ENdCtFuI5ztSliqBOCUDDr5WDtbYYMmS-vlCprmPzm9lmdQpGO_JouqSw8pkivCumf680xcs6HjRfTas8DVh7QFaL0NHhTwNzFp4euvn5UaEGf7LJFaMiy1moYaGzV6L1xhTkXrvg7FobFN5rUU5XngYMEjTr2pk3r_5051D_4UfOamvyZ_rYftBqNzv2-E7Gm3kapzfgNkcKwVIIFhr9-kEk96gGs2KlXNOb-0"
-                        alt="Blurred cinematic movie theater seats background"
-                        fill
-                        className="object-cover scale-110 blur-md opacity-50"
-                    />
-                </div>
-            </div>
+            {staticBackground}
 
             {/* Layout Container */}
             <div className="relative z-20 flex flex-col min-h-screen">
@@ -29,9 +68,12 @@ export default function LoginPage() {
                         </div>
                         <h2 className="text-white text-xl font-bold leading-tight tracking-[-0.015em]">MovieStream</h2>
                     </Link>
-                    <button className="flex min-w-[84px] cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-white/10 hover:bg-white/20 text-white text-sm font-bold transition-colors">
-                        <span className="truncate">Help</span>
-                    </button>
+                    <div className="flex items-center gap-4">
+                        <LanguageSwitcher />
+                        <button className="flex min-w-[84px] cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-white/10 hover:bg-white/20 text-white text-sm font-bold transition-colors">
+                            <span className="truncate">Help</span>
+                        </button>
+                    </div>
                 </header>
 
                 {/* Main Content */}
@@ -40,23 +82,51 @@ export default function LoginPage() {
                         {/* Login Card */}
                         <div className="glass-card rounded-xl p-8 md:p-10 shadow-2xl">
                             <div className="mb-8">
-                                <h1 className="text-white tracking-tight text-[32px] font-bold leading-tight text-center">Sign In</h1>
-                                <p className="text-[#c9929b] text-center mt-2 text-sm font-normal">Welcome back! Please enter your details.</p>
+                                <h1 className="text-white tracking-tight text-[32px] font-bold leading-tight text-center">{t('title')}</h1>
+                                <p className="text-[#c9929b] text-center mt-2 text-sm font-normal">{t('subtitle')}</p>
                             </div>
+
+                            {error && (
+                                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm animate-in fade-in slide-in-from-top-1">
+                                    {error}
+                                </div>
+                            )}
+
                             {/* Form */}
-                            <form className="space-y-4">
+                            <form className="space-y-4" onSubmit={handleSubmit}>
                                 {/* TextField: Email */}
                                 <div className="flex flex-col gap-2">
-                                    <p className="text-white text-sm font-medium leading-normal">Email or Phone Number</p>
-                                    <input className="flex w-full rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border-none bg-white/5 focus:bg-white/10 h-14 placeholder:text-[#c9929b]/50 p-4 text-base font-normal transition-all" placeholder="Enter your email or phone" type="text" />
+                                    <p className="text-white text-sm font-medium leading-normal">{t('emailLabel')}</p>
+                                    <input
+                                        className="flex w-full rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border-none bg-white/5 focus:bg-white/10 h-14 placeholder:text-[#c9929b]/50 p-4 text-base font-normal transition-all"
+                                        placeholder={t('emailPlaceholder')}
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                        disabled={isLoading}
+                                    />
                                 </div>
                                 {/* TextField: Password */}
                                 <div className="flex flex-col gap-2">
-                                    <p className="text-white text-sm font-medium leading-normal">Password</p>
+                                    <p className="text-white text-sm font-medium leading-normal">{t('passwordLabel')}</p>
                                     <div className="relative flex w-full items-stretch">
-                                        <input className="flex w-full rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border-none bg-white/5 focus:bg-white/10 h-14 placeholder:text-[#c9929b]/50 p-4 text-base font-normal transition-all" placeholder="Enter your password" type="password" />
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[#c9929b] cursor-pointer hover:text-white transition-colors">
-                                            <span className="material-symbols-outlined" data-icon="visibility">visibility</span>
+                                        <input
+                                            className="flex w-full rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border-none bg-white/5 focus:bg-white/10 h-14 placeholder:text-[#c9929b]/50 p-4 text-base font-normal transition-all"
+                                            placeholder={t('passwordPlaceholder')}
+                                            type={showPassword ? "text" : "password"}
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            required
+                                            disabled={isLoading}
+                                        />
+                                        <div
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#c9929b] cursor-pointer hover:text-white transition-colors"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                        >
+                                            <span className="material-symbols-outlined" data-icon={showPassword ? "visibility_off" : "visibility"}>
+                                                {showPassword ? "visibility_off" : "visibility"}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -64,19 +134,30 @@ export default function LoginPage() {
                                 <div className="flex items-center justify-between px-1 py-2">
                                     <label className="flex items-center gap-2 cursor-pointer group">
                                         <input className="rounded border-none bg-white/10 text-primary focus:ring-primary focus:ring-offset-0 transition-all cursor-pointer h-4 w-4" type="checkbox" />
-                                        <span className="text-[#c9929b] text-sm font-normal group-hover:text-white">Remember me</span>
+                                        <span className="text-[#c9929b] text-sm font-normal group-hover:text-white">{t('rememberMe')}</span>
                                     </label>
-                                    <Link className="text-sm font-medium text-primary hover:text-primary/80 transition-colors" href="#">Forgot Password?</Link>
+                                    <Link className="text-sm font-medium text-primary hover:text-primary/80 transition-colors" href="#">{t('forgotPassword')}</Link>
                                 </div>
                                 {/* Primary Button */}
-                                <button className="neon-glow flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-14 px-4 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] transition-all transform active:scale-[0.98] mt-4" type="submit">
-                                    <span className="truncate">Sign In</span>
+                                <button
+                                    className={`neon-glow flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-14 px-4 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] transition-all transform active:scale-[0.98] mt-4 ${isLoading ? 'opacity-70 cursor-wait' : ''}`}
+                                    type="submit"
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? (
+                                        <div className="flex items-center gap-2">
+                                            <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                            <span>{t('signIn')}...</span>
+                                        </div>
+                                    ) : (
+                                        <span className="truncate">{t('signIn')}</span>
+                                    )}
                                 </button>
                             </form>
                             {/* Divider */}
                             <div className="flex items-center my-8 gap-4">
                                 <div className="h-[1px] flex-1 bg-white/10"></div>
-                                <span className="text-[#c9929b] text-xs font-bold uppercase tracking-widest">OR</span>
+                                <span className="text-[#c9929b] text-xs font-bold uppercase tracking-widest">{t('or')}</span>
                                 <div className="h-[1px] flex-1 bg-white/10"></div>
                             </div>
                             {/* Social Logins */}
@@ -90,27 +171,25 @@ export default function LoginPage() {
                                             className="object-contain"
                                         />
                                     </div>
-                                    <span className="text-white text-sm font-medium">Google</span>
+                                    <span className="text-white text-sm font-medium">{t('google')}</span>
                                 </button>
                                 <button className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg h-12 transition-all">
                                     <span className="material-symbols-outlined text-white text-[20px]">ios</span>
-                                    <span className="text-white text-sm font-medium">Apple</span>
+                                    <span className="text-white text-sm font-medium">{t('apple')}</span>
                                 </button>
                             </div>
                             {/* Footer CTA */}
                             <div className="mt-8 text-center">
                                 <p className="text-[#c9929b] text-sm">
-                                    New to MovieStream?
-                                    <Link className="text-primary font-bold hover:underline ml-1" href="#">Sign up now</Link>
+                                    {t('newToMovieStream')}
+                                    <Link className="text-primary font-bold hover:underline ml-1" href="/register">{t('signUpNow')}</Link>
                                 </p>
                             </div>
                         </div>
                     </div>
                 </main>
                 {/* Page Footer */}
-                <footer className="p-6 text-center text-[#c9929b]/40 text-xs">
-                    <p>© 2024 MovieStream Inc. All rights reserved.</p>
-                </footer>
+                <Footer />
             </div>
         </div>
     );
