@@ -20,6 +20,22 @@
         "alreadyMember": "Đã là thành viên?",
         "signIn": "Đăng nhập"
     },
+    "Login": {
+        "title": "Đăng nhập",
+        "subtitle": "Chào mừng trở lại! Vui lòng nhập thông tin của bạn.",
+        "emailLabel": "Email hoặc Số điện thoại",
+        "emailPlaceholder": "Nhập email hoặc số điện thoại",
+        "passwordLabel": "Mật khẩu",
+        "passwordPlaceholder": "Nhập mật khẩu",
+        "rememberMe": "Ghi nhớ đăng nhập",
+        "forgotPassword": "Quên mật khẩu?",
+        "signIn": "Đăng nhập",
+        "or": "HOẶC",
+        "google": "Google",
+        "apple": "Apple",
+        "newToMovieStream": "Mới sử dụng MovieStream?",
+        "signUpNow": "Đăng ký ngay"
+    },
     "Validation": {
         "emailRequired": "Vui lòng nhập email",
         "emailInvalid": "Email không hợp lệ",
