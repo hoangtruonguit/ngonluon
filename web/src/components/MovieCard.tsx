@@ -12,7 +12,7 @@ export default function MovieCard({ title, rating, description, imageUrl, showWa
     return (
         <div className="movie-card relative min-w-[200px] lg:min-w-[240px] aspect-[2/3] rounded-xl overflow-hidden cursor-pointer group shadow-2xl flex-shrink-0">
             <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-110">
-                <Image src={imageUrl} alt={title} fill className="object-cover" />
+                <Image src={imageUrl} alt={title} fill sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 250px" className="object-cover" />
             </div>
             <div className="card-overlay absolute inset-0 bg-black/80 opacity-0 transition-opacity duration-300 flex flex-col justify-end p-6 space-y-3">
                 {rating && (

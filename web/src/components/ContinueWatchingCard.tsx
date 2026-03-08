@@ -11,7 +11,7 @@ export default function ContinueWatchingCard({ title, timeLeft, progress, imageU
     return (
         <div className="group relative bg-surface-dark rounded-xl overflow-hidden cursor-pointer shadow-2xl transition-transform hover:-translate-y-2">
             <div className="aspect-video relative">
-                <Image src={imageUrl} alt={title} fill className="object-cover" />
+                <Image src={imageUrl} alt={title} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 400px" className="object-cover" />
             </div>
             <div className="p-4 space-y-2">
                 <div className="flex justify-between items-center">

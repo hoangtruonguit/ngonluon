@@ -5,6 +5,7 @@ import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import "../globals.css";
+import { AuthProvider } from '@/contexts/AuthContext';
 
 const splineSans = Spline_Sans({
   variable: "--font-spline-sans",
@@ -44,7 +45,9 @@ export default async function RootLayout({
         className={`${splineSans.variable} font-sans antialiased bg-background-light dark:bg-background-dark text-slate-900 dark:text-white`}
       >
         <NextIntlClientProvider messages={messages}>
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
         </NextIntlClientProvider>
       </body>
     </html>

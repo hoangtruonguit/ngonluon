@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, Link } from '@/i18n/routing';
+import Link from 'next/link';
+import Image from 'next/image';
+import { useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
@@ -20,12 +22,14 @@ const SPECIAL_REGEX = /[^a-zA-Z0-9]/;
 const staticBackground = (
     <div className="fixed inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-[#211111]/80 to-[#211111]"></div>
-        <div
-            className="h-full w-full bg-cover bg-center"
-            style={{
-                backgroundImage: "url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1925')"
-            }}
-        ></div>
+        <Image
+            src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1925"
+            alt="Cinematic background"
+            fill
+            sizes="100vw"
+            className="object-cover"
+            priority
+        />
     </div>
 );
 

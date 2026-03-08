@@ -19,6 +19,7 @@ const staticBackground = (
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOW5Z3hbv4EoYk4O6cTcAdWc0E9L7s53Y3Qyd9ENdCtFuI5ztSliqBOCUDDr5WDtbYYMmS-vlCprmPzm9lmdQpGO_JouqSw8pkivCumf680xcs6HjRfTas8DVh7QFaL0NHhTwNzFp4euvn5UaEGf7LJFaMiy1moYaGzV6L1xhTkXrvg7FobFN5rUU5XngYMEjTr2pk3r_5051D_4UfOamvyZ_rYftBqNzv2-E7Gm3kapzfgNkcKwVIIFhr9-kEk96gGs2KlXNOb-0"
                 alt="Blurred cinematic movie theater seats background"
                 fill
+                sizes="100vw"
                 className="object-cover scale-110 blur-md opacity-50"
             />
         </div>
@@ -168,6 +169,7 @@ export default function LoginPage() {
                                             src="https://lh3.googleusercontent.com/aida-public/AB6AXuAw2uGX3guDgm71UShE77XZmsRy5chC15E-DJWOqc4KM8g2SGa_ZeHQuS3IGO8M-A9ZLbVEMhZYh6mkvytCvipkQc6Qmgu2Wy2Xmm6SOZTugGV5fHkaE3ro6HOiDp4aJYbuEEGQsuAGYUG1fqmfbYxYamLsmE-ZwBjiK0-WuFTCufdqgvqkKdcekkT4ppfpSVypMVApKgFAZtKHpawRFSu6tJ_NcY_h72ssTbXJKMBcqFyHM8Pz6jaqAXEtHGUV7ebCk5sNANNvMzo"
                                             alt="Google logo"
                                             fill
+                                            sizes="20px"
                                             className="object-contain"
                                         />
                                     </div>
