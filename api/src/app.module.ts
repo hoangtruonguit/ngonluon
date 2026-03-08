@@ -10,6 +10,8 @@ import { ConfigModule } from '@nestjs/config';
 import { RedisModule } from './redis/redis.module';
 import { MessagingModule } from './common/messaging/messaging.module';
 import { MailModule } from './mail/mail.module';
+import { TmdbModule } from './tmdb/tmdb.module';
+import { MoviesModule } from './movies/movies.module';
 
 import { validate } from './common/config/env.validation';
 
@@ -26,6 +28,8 @@ import { validate } from './common/config/env.validation';
     RedisModule,
     MessagingModule,
     MailModule,
+    TmdbModule,
+    MoviesModule,
     ThrottlerModule.forRoot([{
       ttl: 60000,
       limit: 10,

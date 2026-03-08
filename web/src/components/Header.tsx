@@ -1,22 +1,14 @@
 'use client';
 
 import Image from 'next/image';
-import { Link, useRouter } from '@/i18n/routing';
-import { apiClient } from '@/lib/api';
+import { Link } from '@/i18n/routing';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Header() {
-    const router = useRouter();
+    const { isLoggedIn, isLoading, user, logout } = useAuth();
 
     const handleLogout = async () => {
-        try {
-            await apiClient.logout();
-            router.push('/login');
-        } catch (error) {
-            console.error('Logout failed:', error);
-            // Even if API fails, we might want to redirect the user to login
-            // as the tokens might be invalid or handled by the client anyway
-            router.push('/login');
-        }
+        await logout();
     };
 
     return (
@@ -43,19 +35,29 @@ export default function Header() {
                         <span className="material-symbols-outlined">search</span>
                     </button>
                     <div className="flex items-center gap-3">
-                        <span className="material-symbols-outlined text-white/70 cursor-pointer hover:text-white">notifications</span>
-                        <div
-                            className="size-9 rounded-full bg-cover bg-center border-2 border-primary/50 relative overflow-hidden cursor-pointer hover:border-primary transition-all active:scale-95"
-                            onClick={handleLogout}
-                            title="Logout"
-                        >
-                            <Image
-                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1Lf8ou0dErc0m7he9KunMHpoZUwHkhj8ivVp9cRwQ4mirIRJgnx_vIeGEnUtTLkYCKvlmYkFdb2joykQ0oV7gR_3PFj34pGk9-K3KR0IWd52SclJqQ9EzVsau7YEmrMYfR6oFnDaoAegwzxIQ7cw49DPaNUPO3vWht8VRkGTkWgbMydPRlrPZIZcJY1DQxmFRuicd6Cxv-h_tnrMtsx_yTNXQuwh625X2vYyrvMahidyo0JG6YSCm5kBK7QkI8HS24eOXJgXYPEU"
-                                alt="User profile avatar portrait"
-                                fill
-                                className="object-cover"
-                            />
-                        </div>
+                        {isLoggedIn && (
+                            <>
+                                <span className="material-symbols-outlined text-white/70 cursor-pointer hover:text-white">notifications</span>
+                                <div
+                                    className="size-9 rounded-full bg-cover bg-center border-2 border-primary/50 relative overflow-hidden cursor-pointer hover:border-primary transition-all active:scale-95"
+                                    onClick={handleLogout}
+                                    title="Logout"
+                                >
+                                    <Image
+                                        src={user?.avatarUrl || "https://lh3.googleusercontent.com/aida-public/AB6AXuD1Lf8ou0dErc0m7he9KunMHpoZUwHkhj8ivVp9cRwQ4mirIRJgnx_vIeGEnUtTLkYCKvlmYkFdb2joykQ0oV7gR_3PFj34pGk9-K3KR0IWd52SclJqQ9EzVsau7YEmrMYfR6oFnDaoAegwzxIQ7cw49DPaNUPO3vWht8VRkGTkWgbMydPRlrPZIZcJY1DQxmFRuicd6Cxv-h_tnrMtsx_yTNXQuwh625X2vYyrvMahidyo0JG6YSCm5kBK7QkI8HS24eOXJgXYPEU"}
+                                        alt="User profile avatar portrait"
+                                        fill
+                                        sizes="36px"
+                                        className="object-cover"
+                                    />
+                                </div>
+                            </>
+                        )}
+                        {!isLoggedIn && !isLoading && (
+                            <Link href="/login" className="bg-primary hover:bg-primary/80 text-secondary px-6 py-2 rounded-full text-sm font-bold transition-all hover:scale-105 active:scale-95">
+                                Sign In
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>

@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class MailService {
@@ -7,8 +9,6 @@ export class MailService {
     private readonly logger = new Logger(MailService.name);
 
     constructor() {
-        // For development, we can use a dummy logger or a real SMTP if provided
-        // Using Ethereal or similar for testing? Or just log for now if no SMTP provided.
         this.transporter = nodemailer.createTransport({
             host: process.env.MAIL_HOST || 'smtp.ethereal.email',
             port: Number(process.env.MAIL_PORT) || 587,
@@ -22,13 +22,32 @@ export class MailService {
     async sendWelcomeEmail(email: string, fullName: string) {
         this.logger.log(`Queueing welcome email for ${email}`);
 
-        // In a real app, you'd use a template engine
+        const templatePath = path.join(__dirname, 'templates', 'welcome-email.html');
+        const heroImagePath = path.join(__dirname, 'assets', 'welcome-hero.png');
+
+        let htmlContent = '';
+        try {
+            htmlContent = fs.readFileSync(templatePath, 'utf8');
+            htmlContent = htmlContent.replace('{{fullName}}', fullName);
+            // Replace the local URL with CID for attachment
+            htmlContent = htmlContent.replace(/https:\/\/raw\.githubusercontent\.com\/.*\.png/g, 'cid:welcome-hero');
+        } catch (error) {
+            this.logger.error(`Failed to read email template`, error);
+            // Fallback to basic HTML if template fails
+            htmlContent = `<h1>Welcome to StreamFlow, ${fullName}!</h1><p>We are glad to have you with us.</p>`;
+        }
+
         const mailOptions = {
             from: '"StreamFlow" <no-reply@streamflow.com>',
             to: email,
             subject: 'Welcome to StreamFlow!',
             text: `Hi ${fullName},\n\nWelcome to StreamFlow! We are glad to have you with us.\n\nBest regards,\nThe StreamFlow Team`,
-            html: `<h1>Welcome to StreamFlow!</h1><p>Hi ${fullName},</p><p>We are glad to have you with us.</p><p>Best regards,<br>The StreamFlow Team</p>`,
+            html: htmlContent,
+            attachments: fs.existsSync(heroImagePath) ? [{
+                filename: 'welcome-hero.png',
+                path: heroImagePath,
+                cid: 'welcome-hero' // same cid value as in the html img src
+            }] : [],
         };
 
         try {
@@ -37,6 +56,13 @@ export class MailService {
                 this.logger.log(`Email sent: ${info.messageId}`);
             } else {
                 this.logger.log(`[DEVELOPMENT] Email would be sent to ${email} with content: ${mailOptions.text}`);
+                // In dev, we might want to save the HTML to a file to preview it
+                const previewPath = path.join(process.cwd(), 'logs', `welcome-email-preview-${Date.now()}.html`);
+                if (!fs.existsSync(path.dirname(previewPath))) {
+                    fs.mkdirSync(path.dirname(previewPath), { recursive: true });
+                }
+                fs.writeFileSync(previewPath, htmlContent);
+                this.logger.log(`[DEVELOPMENT] HTML preview saved to ${previewPath}`);
             }
         } catch (error) {
             this.logger.error(`Failed to send email to ${email}`, error);

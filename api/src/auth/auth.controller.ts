@@ -1,12 +1,15 @@
-import { Controller, Post, Body, Res } from '@nestjs/common';
+import { Controller, Post, Body, Res, Get, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Response } from 'express';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { User } from '../common/decorators/user.decorator';
+import { UserResponseDto } from './dto/auth-response.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -79,6 +82,17 @@ export class AuthController {
         });
 
         return result;
+    }
+
+    @Get('me')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get current user profile' })
+    @ApiResponse({ status: 200, description: 'Profile retrieved successfully.', type: UserResponseDto })
+    @ApiResponse({ status: 401, description: 'Unauthorized.' })
+    @ResponseMessage('Profile retrieved successfully')
+    async getMe(@User() user: { userId: string; email: string }) {
+        return this.authService.getMe(user.userId);
     }
 
     @Post('logout')

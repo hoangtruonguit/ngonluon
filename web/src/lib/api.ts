@@ -28,7 +28,7 @@ class ApiClient {
         this.baseUrl = baseUrl;
     }
 
-    private async request<T>(
+    protected async request<T>(
         endpoint: string,
         options?: RequestInit
     ): Promise<ApiResponse<T>> {
@@ -56,6 +56,14 @@ class ApiClient {
         return data;
     }
 
+    // Generic methods
+    async get<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
+        return this.request<T>(endpoint, {
+            ...options,
+            method: 'GET',
+        });
+    }
+
     // Auth endpoints
     async register(data: RegisterData): Promise<ApiResponse<RegisterResponse>> {
         return this.request<RegisterResponse>('/auth/register', {
@@ -76,6 +84,17 @@ class ApiClient {
             method: 'POST',
         });
     }
+
+    async getMe(): Promise<ApiResponse<UserResponseDto>> {
+        return this.get<UserResponseDto>('/auth/me');
+    }
+}
+
+export interface UserResponseDto {
+    id: string;
+    email: string;
+    fullName: string;
+    avatarUrl?: string;
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
