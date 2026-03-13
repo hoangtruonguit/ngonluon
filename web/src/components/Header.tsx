@@ -4,20 +4,31 @@ import Image from 'next/image';
 import { Link } from '@/i18n/routing';
 import { useAuth } from '@/contexts/AuthContext';
 
+import { useState } from 'react';
+import { useRouter } from '@/i18n/routing';
+
 export default function Header() {
     const { isLoggedIn, isLoading, user, logout } = useAuth();
+    const router = useRouter();
+    const [searchQuery, setSearchQuery] = useState('');
 
     const handleLogout = async () => {
         await logout();
     };
 
+    const handleSearchSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' && searchQuery.trim()) {
+            router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+        }
+    };
+
     return (
-        <header className="fixed top-0 left-0 right-0 z-50 transition-colors duration-300 glass border-b border-white/10 px-6 py-4 lg:px-12">
-            <div className="max-w-[1440px] mx-auto flex items-center justify-between">
+        <header className="fixed top-0 left-0 right-0 z-50 transition-colors duration-300 glass border-b border-white/10 py-4">
+            <div className="max-w-[1440px] mx-auto px-6 lg:px-24 flex items-center justify-between">
                 <div className="flex items-center gap-12">
                     <Link href="/" className="flex items-center gap-2 text-primary">
                         <span className="material-symbols-outlined text-4xl font-bold">movie_filter</span>
-                        <h2 className="text-white text-2xl font-extrabold tracking-tight">StreamFlow</h2>
+                        <h2 className="text-white text-2xl font-extrabold tracking-tight">Trailer</h2>
                     </Link>
                     <nav className="hidden lg:flex items-center gap-8">
                         <Link className="text-white hover:text-primary transition-colors text-sm font-semibold" href="#">Movies</Link>
@@ -29,7 +40,14 @@ export default function Header() {
                 <div className="flex items-center gap-6">
                     <div className="relative hidden md:block">
                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/50 text-xl">search</span>
-                        <input className="bg-white/10 border-none rounded-full pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary w-64 text-white placeholder:text-white/40" placeholder="Search titles..." type="text" />
+                        <input 
+                            className="bg-white/10 border-none rounded-full pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary w-64 text-white placeholder:text-white/40" 
+                            placeholder="Search titles..." 
+                            type="text" 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={handleSearchSubmit}
+                        />
                     </div>
                     <button className="md:hidden text-white">
                         <span className="material-symbols-outlined">search</span>

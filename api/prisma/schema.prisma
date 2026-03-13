@@ -18,6 +18,7 @@ model User {
   updatedAt     DateTime       @updatedAt @map("updated_at")
   refreshToken  String?        @map("refresh_token")
   reviews       Review[]
+  comments      Comment[]
   subscriptions Subscription[]
   roles         UserRole[]
   watchHistory  WatchHistory[]
@@ -62,6 +63,7 @@ model Movie {
   episodes        Episode[]      @relation("DirectMovieEpisodes")
   genres          MovieGenre[]
   reviews         Review[]
+  comments        Comment[]
   seasons         Season[]
   watchHistory    WatchHistory[]
 
@@ -167,6 +169,20 @@ model Review {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("reviews")
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  movieId   String   @map("movie_id")
+  content   String
+  isSpoiler Boolean  @default(false) @map("is_spoiler")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
 }
 
 model Subscription {
