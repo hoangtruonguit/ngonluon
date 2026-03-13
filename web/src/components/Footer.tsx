@@ -41,9 +41,9 @@ export default function Footer() {
                 <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-white/5 gap-4">
                     <div className="flex items-center gap-2 text-primary opacity-50">
                         <span className="material-symbols-outlined text-2xl">movie_filter</span>
-                        <h2 className="text-white text-lg font-bold">StreamFlow</h2>
+                        <h2 className="text-white text-lg font-bold">Trailer</h2>
                     </div>
-                    <p className="text-white/30 text-xs">© 2024 StreamFlow Entertainment Inc. All rights reserved.</p>
+                    <p className="text-white/30 text-xs">© 2024 Trailer Entertainment Inc. All rights reserved.</p>
                 </div>
             </div>
         </footer>

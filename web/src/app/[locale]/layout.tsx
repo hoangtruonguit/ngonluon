@@ -14,7 +14,7 @@ const splineSans = Spline_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "StreamFlow - Premium Movie Streaming",
+  title: "The best Trailer",
   description: "Premium Movie Streaming Service",
 };
 

@@ -64,6 +64,14 @@ class ApiClient {
         });
     }
 
+    async post<T>(endpoint: string, body: any, options?: RequestInit): Promise<ApiResponse<T>> {
+        return this.request<T>(endpoint, {
+            ...options,
+            method: 'POST',
+            body: JSON.stringify(body),
+        });
+    }
+
     // Auth endpoints
     async register(data: RegisterData): Promise<ApiResponse<RegisterResponse>> {
         return this.request<RegisterResponse>('/auth/register', {
