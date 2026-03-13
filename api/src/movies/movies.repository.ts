@@ -1,38 +1,56 @@
+// movies.repository.ts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, User } from '@prisma/client';
+import { FindMoviesParams } from './interfaces/find-movies.interface';
 
 @Injectable()
-export class UsersRepository {
-    constructor(private readonly prisma: PrismaService) { }
+export class MoviesRepository {
+  constructor(private readonly prisma: PrismaService) {}
 
-    async create(data: Prisma.UserCreateInput): Promise<User> {
-        return this.prisma.user.create({
-            data,
-        });
-    }
+  async findMany(params: FindMoviesParams = {}) {
+    const { where, orderBy, include, skip, take = 20 } = params;
 
-    async findByEmail(email: string): Promise<User | null> {
-        return this.prisma.user.findUnique({
-            where: { email },
-        });
-    }
+    return this.prisma.movie.findMany({
+      where,
+      orderBy,
+      include,
+      skip,
+      take,
+    });
+  }
 
-    async findById(id: string): Promise<User | null> {
-        return this.prisma.user.findUnique({ where: { id } });
-    }
+  async findBySlug(slug: string) {
+  return this.prisma.movie.findUnique({
+    where: { slug },
+    include: {
+      genres: { include: { genre: true } },
+      cast: {
+        include: { person: true },
+        orderBy: { role: 'asc' },
+      },
+      reviews: {
+        include: {
+          user: {
+            select: { id: true, fullName: true, avatarUrl: true },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      },
+      episodes: true,
+    },
+  });
+}
 
-    async updatePublicKey(id: string, publicKey: string): Promise<void> {
-        await this.prisma.user.update({
-            where: { id },
-            data: { publicKey } as any,
-        });
-    }
+  async findBySlugWithGenres(slug: string) {
+    return this.prisma.movie.findUnique({
+      where: { slug },
+      include: { genres: true },
+    });
+  }
 
-    async updateRefreshToken(id: string, refreshToken: string | null): Promise<void> {
-        await this.prisma.user.update({
-            where: { id },
-            data: { refreshToken } as any,
-        });
-    }
+  async findManyGenres() {
+    return this.prisma.genre.findMany({
+      orderBy: { name: 'asc' },
+    });
+  }
 }
