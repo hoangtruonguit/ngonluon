@@ -20,14 +20,19 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed:tmdb": "ts-node -r tsconfig-paths/register src/tmdb/seed.ts",
-    "seed:trailers": "ts-node -r tsconfig-paths/register src/tmdb/seed-trailers.ts"
+    "seed:trailers": "ts-node -r tsconfig-paths/register src/tmdb/seed-trailers.ts",
+    "cli": "ts-node -r tsconfig-paths/register src/cli.ts",
+    "cli:dev": "npx ts-node -r tsconfig-paths/register src/cli.ts"
   },
   "dependencies": {
+    "@elastic/elasticsearch": "^9.3.4",
     "@nestjs-modules/ioredis": "^2.0.2",
     "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
+    "@nestjs/elasticsearch": "^11.1.0",
+    "@nestjs/event-emitter": "^3.0.1",
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/microservices": "^11.1.16",
     "@nestjs/passport": "^11.0.5",
@@ -44,6 +49,7 @@
     "class-validator": "^0.14.3",
     "cookie-parser": "^1.4.7",
     "ioredis": "^5.10.0",
+    "nest-commander": "^3.20.1",
     "nest-winston": "^1.10.2",
     "nodemailer": "^8.0.1",
     "passport": "^0.7.0",

@@ -3,7 +3,7 @@ version: '3.8'
 services:
   redis:
     image: redis:alpine
-    restart: always
+    restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
@@ -11,7 +11,7 @@ services:
 
   postgres:
     image: postgres:15-alpine
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
@@ -23,7 +23,7 @@ services:
 
   elasticsearch:
     image: elasticsearch:7.17.10
-    restart: always
+    restart: unless-stopped
     environment:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -32,9 +32,19 @@ services:
     volumes:
       - es_data:/usr/share/elasticsearch/data
 
+  kibana:
+    image: kibana:7.17.10
+    restart: unless-stopped
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+
   rabbitmq:
     image: rabbitmq:3-management-alpine
-    restart: always
+    restart: unless-stopped
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -43,7 +53,7 @@ services:
 
   mailcatcher:
     image: schickling/mailcatcher
-    restart: always
+    restart: unless-stopped
     ports:
       - "1025:1025"
       - "1080:1080"

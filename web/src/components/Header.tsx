@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Link } from '@/i18n/routing';
 import { useAuth } from '@/contexts/AuthContext';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from '@/i18n/routing';
 
 export default function Header() {
@@ -15,6 +15,17 @@ export default function Header() {
     const handleLogout = async () => {
         await logout();
     };
+
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (searchQuery.trim()) {
+                router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchQuery, router]);
 
     const handleSearchSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' && searchQuery.trim()) {
