@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UsersService } from '../../users/users.service';
 import { RedisService } from '../../redis/redis.service';
+import { Request } from 'express';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -13,32 +14,31 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         ExtractJwt.fromAuthHeaderAsBearerToken(),
-        (request: any) => {
-          return request?.cookies?.access_token || null;
+        (request: Request) => {
+          const cookies = (
+            request as unknown as { cookies?: Record<string, string> }
+          ).cookies;
+          return cookies?.access_token || null;
         },
       ]),
       ignoreExpiration: false,
+      passReqToCallback: true,
       // We use secretOrKeyProvider to get per-user public key
-      secretOrKeyProvider: async (
-        request: any,
+      secretOrKeyProvider: (
+        request: Request,
         rawJwtToken: string,
-        done: Function,
+        done: (err: any, secretOrKey?: string) => void,
       ) => {
-        try {
+        const getSecret = async () => {
           // Decode the token payload (without verifying) to get the userId
           const parts = rawJwtToken.split('.');
-          if (parts.length !== 3)
-            return done(new UnauthorizedException('Invalid token'), null);
+          if (parts.length !== 3) throw new Error('Invalid token');
 
           const payload = JSON.parse(
             Buffer.from(parts[1], 'base64url').toString('utf8'),
-          );
-          const userId: string = payload?.sub;
-          if (!userId)
-            return done(
-              new UnauthorizedException('Invalid token payload'),
-              null,
-            );
+          ) as { sub?: string };
+          const userId = payload?.sub;
+          if (!userId) throw new Error('Invalid token payload');
 
           // Try Redis first (cache-aside)
           const redisKey = `user:${userId}:public_key`;
@@ -46,28 +46,29 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
           if (!publicKey) {
             // Fallback to DB
-            const user: any = await usersService.findById(userId);
-            if (!user || !user.publicKey) {
-              return done(
-                new UnauthorizedException('No public key found'),
-                null,
-              );
-            }
-            publicKey = user.publicKey as string;
+            const user = (await usersService.findById(userId)) as {
+              publicKey: string | null;
+            } | null;
+            if (!user || !user.publicKey)
+              throw new Error('No public key found');
+            publicKey = user.publicKey;
             // Re-populate Redis cache (TTL = 1 day)
             await redisService.set(redisKey, publicKey, 86400);
           }
+          return publicKey;
+        };
 
-          done(null, publicKey);
-        } catch (e) {
-          done(new UnauthorizedException('Token verification failed'), null);
-        }
+        getSecret()
+          .then((key) => done(null, key || undefined))
+          .catch((err: Error) =>
+            done(new UnauthorizedException(err.message), undefined),
+          );
       },
       algorithms: ['RS256'],
     });
   }
 
-  async validate(payload: { sub: string; email: string }) {
+  validate(payload: { sub: string; email: string }) {
     return { userId: payload.sub, email: payload.email };
   }
 }

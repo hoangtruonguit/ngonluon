@@ -4,17 +4,31 @@ description: stash changes, sync with main, create a feature branch with a summa
 
 // turbo-all
 
-1. Stash all current code changes.
+1. Run linting for both `web` and `api` projects. If any linting errors are found, attempt to fix them before proceeding.
+```bash
+# In web directory
+npm run lint
+# In api directory
+pnpm run lint
+```
+
+2. Run tests for the `api` project. All tests must pass before proceeding.
+```bash
+# In api directory
+pnpm run test
+```
+
+3. Stash all current code changes.
 ```bash
 git stash --include-untracked
 ```
 
-2. Checkout the `main` branch and pull the latest changes.
+4. Checkout the `main` branch and pull the latest changes.
 ```bash
 git checkout main && git pull origin main
 ```
 
-3. **Create a new branch.** Use `git stash show -p` to review the stashed changes, then generate a short, descriptive kebab-case branch name summarizing the changes (e.g., `feat/add-auth-context`, `fix/header-responsive`, `refactor/api-client`). Create and checkout the new branch.
+5. **Create a new branch.** Use `git stash show -p` to review the stashed changes, then generate a short, descriptive kebab-case branch name summarizing the changes (e.g., `feat/add-auth-context`, `fix/header-responsive`, `refactor/api-client`). Create and checkout the new branch.
 ```bash
 git stash show -p
 ```
@@ -23,22 +37,22 @@ Then:
 git checkout -b <generated-branch-name>
 ```
 
-4. Apply the stashed changes back onto the new branch.
+6. Apply the stashed changes back onto the new branch.
 ```bash
 git stash pop
 ```
 
-5. Stage and commit all changes with a clear, conventional commit message summarizing what was done.
+7. Stage and commit all changes with a clear, conventional commit message summarizing what was done.
 ```bash
 git add -A && git commit -m "<conventional commit message>"
 ```
 
-6. Push the new branch to the remote.
+8. Push the new branch to the remote.
 ```bash
 git push -u origin <branch-name>
 ```
 
-7. **Create a Pull Request** to merge into `main` using the GitHub MCP tool `create_pull_request`. The PR should have:
+9. **Create a Pull Request** to merge into `main` using the GitHub MCP tool `create_pull_request`. The PR should have:
    - A clear **title** summarizing the feature/fix
    - A detailed **body** in markdown listing all tasks/changes made, using a checklist format like:
      ```

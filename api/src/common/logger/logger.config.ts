@@ -9,8 +9,11 @@ export const winstonConfig = {
         winston.format.timestamp(),
         winston.format.ms(),
         winston.format.colorize(),
-        winston.format.printf(({ timestamp, level, message, context, ms }) => {
-          return `${timestamp} [${context || 'Application'}] ${level}: ${message} ${ms}`;
+        winston.format.printf((info) => {
+          const { timestamp, level, message, context, ms } = info;
+          const ctx = typeof context === 'string' ? context : 'Application';
+          const msStr = typeof ms === 'string' ? ms : '';
+          return `${String(timestamp)} [${ctx}] ${String(level)}: ${String(message)} ${msStr}`;
         }),
       ),
     }),

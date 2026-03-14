@@ -111,7 +111,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Logout and clear cookies' })
   @ApiResponse({ status: 200, description: 'Logout successful.' })
   @ResponseMessage('Logged out successfully')
-  async logout(@Res({ passthrough: true }) response: Response) {
+  logout(@Res({ passthrough: true }) response: Response) {
     response.clearCookie('access_token');
     response.clearCookie('refresh_token');
     return { message: 'Signed out' };

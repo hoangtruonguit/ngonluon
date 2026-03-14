@@ -5,6 +5,54 @@ import { ConfigService } from '@nestjs/config';
 import { AxiosResponse } from 'axios';
 import { MoviesRepository } from '../movies/movies.repository';
 
+export interface TmdbMovie {
+  id: number;
+  title: string;
+  overview: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  release_date: string;
+  vote_average: number;
+  runtime?: number;
+  genres?: TmdbGenre[];
+  genre_ids?: number[];
+}
+
+export interface TmdbGenre {
+  id: number;
+  name: string;
+}
+
+export interface TmdbCreditMember {
+  id: number;
+  name: string;
+  profile_path: string | null;
+  character?: string;
+  job?: string;
+}
+
+export interface TmdbCredits {
+  cast: TmdbCreditMember[];
+  crew: TmdbCreditMember[];
+}
+
+export interface TmdbVideo {
+  key: string;
+  site: string;
+  type: string;
+}
+
+export interface TmdbVideoResponse {
+  results: TmdbVideo[];
+}
+
+export interface TmdbSearchResponse<T> {
+  results: T[];
+  total_results: number;
+  total_pages: number;
+  page: number;
+}
+
 @Injectable()
 export class TmdbService {
   private readonly logger = new Logger(TmdbService.name);
@@ -39,40 +87,40 @@ export class TmdbService {
 
   // ─── TMDB API Client ───────────────────────────────
 
-  private async fetchFromTmdb(
+  private async fetchFromTmdb<T = any>(
     endpoint: string,
-    params: Record<string, any> = {},
-  ) {
+    params: Record<string, string | number | boolean | undefined> = {},
+  ): Promise<T> {
     if (!this.apiKey) {
       throw new Error('Missing TMDB API key.');
     }
 
     try {
-      const response = await firstValueFrom<AxiosResponse<any>>(
+      const response = await firstValueFrom<AxiosResponse<T>>(
         this.httpService.get(`${this.baseUrl}${endpoint}`, {
           params: { api_key: this.apiKey, ...params },
         }),
       );
       return response.data;
-    } catch (error: any) {
-      this.logger.error(
-        `Failed to fetch from TMDB: ${endpoint}`,
-        error.message,
-      );
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Failed to fetch from TMDB: ${endpoint}`, message);
       throw error;
     }
   }
 
   // ─── Search (cho fallback search) ──────────────────
-
   async searchMovies(query: string, page: number = 1) {
-    return this.fetchFromTmdb('/search/movie', { query, page });
+    return this.fetchFromTmdb<TmdbSearchResponse<TmdbMovie>>('/search/movie', {
+      query,
+      page,
+    });
   }
 
   // ─── Import Single Movie (cho user click TMDB result) ──
 
   async importSingleMovie(tmdbId: number): Promise<string> {
-    const details = await this.fetchFromTmdb(`/movie/${tmdbId}`);
+    const details = await this.fetchFromTmdb<TmdbMovie>(`/movie/${tmdbId}`);
 
     // Check đã tồn tại chưa
     const existing = await this.moviesRepository.findByTitle(details.title);
@@ -92,7 +140,7 @@ export class TmdbService {
         ? parseInt(details.release_date.split('-')[0], 10)
         : null,
       rating: details.vote_average,
-      durationMinutes: details.runtime,
+      durationMinutes: details.runtime ?? null,
       trailerUrl,
       type: 'MOVIE',
     });
@@ -121,7 +169,9 @@ export class TmdbService {
 
   async seedGenres() {
     this.logger.log('Starting TMDB genres seed');
-    const data = await this.fetchFromTmdb('/genre/movie/list');
+    const data = await this.fetchFromTmdb<{ genres: TmdbGenre[] }>(
+      '/genre/movie/list',
+    );
     if (!data?.genres) return;
 
     let count = 0;
@@ -145,16 +195,19 @@ export class TmdbService {
 
     for (let page = 1; page <= pages; page++) {
       this.logger.log(`Fetching page ${page}...`);
-      const data = await this.fetchFromTmdb('/movie/top_rated', { page });
+      const data = await this.fetchFromTmdb<TmdbSearchResponse<TmdbMovie>>(
+        '/movie/top_rated',
+        { page },
+      );
       if (!data?.results) continue;
 
       for (const item of data.results) {
         try {
           await this.importMovieFromList(item);
-        } catch (error: any) {
-          this.logger.error(
-            `Error processing movie ${item.title}: ${error.message}`,
-          );
+        } catch (error: unknown) {
+          const message =
+            error instanceof Error ? error.message : String(error);
+          this.logger.error(`Error processing movie ${item.title}: ${message}`);
         }
       }
     }
@@ -200,9 +253,10 @@ export class TmdbService {
             ? `Updated TMDB trailer for: ${movie.title}`
             : `Assigned default trailer for: ${movie.title}`,
         );
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
         this.logger.error(
-          `Error processing trailer for ${movie.title}: ${error.message}`,
+          `Error processing trailer for ${movie.title}: ${message}`,
         );
       }
 
@@ -215,7 +269,7 @@ export class TmdbService {
 
   // ─── Private: Import từ list item ──────────────────
 
-  private async importMovieFromList(item: any) {
+  private async importMovieFromList(item: TmdbMovie) {
     // Check trùng
     const existing = await this.moviesRepository.findByTitle(item.title);
     if (existing) {
@@ -238,7 +292,7 @@ export class TmdbService {
     });
 
     // Link genres
-    if (item.genre_ids?.length > 0) {
+    if (item.genre_ids && item.genre_ids.length > 0) {
       for (const genreId of item.genre_ids) {
         const genreExists = await this.moviesRepository.findGenreById(genreId);
         if (genreExists) {
@@ -257,19 +311,20 @@ export class TmdbService {
 
   private async seedMovieDetails(tmdbId: number, movieId: string) {
     try {
-      const details = await this.fetchFromTmdb(`/movie/${tmdbId}`);
+      const details = await this.fetchFromTmdb<TmdbMovie>(`/movie/${tmdbId}`);
       const trailerUrl = await this.getVideoUrl(tmdbId);
 
       // Update → repository emit 'movie.updated' → ES sync
       await this.moviesRepository.update(movieId, {
-        durationMinutes: details.runtime || null,
+        durationMinutes: details.runtime ?? null,
         trailerUrl,
       });
 
       await this.seedMovieCredits(tmdbId, movieId);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       this.logger.warn(
-        `Failed to seed details for tmdbId ${tmdbId}: ${error.message}`,
+        `Failed to seed details for tmdbId ${tmdbId}: ${message}`,
       );
     }
   }
@@ -278,7 +333,9 @@ export class TmdbService {
 
   private async seedMovieCredits(tmdbId: number, movieId: string) {
     try {
-      const credits = await this.fetchFromTmdb(`/movie/${tmdbId}/credits`);
+      const credits = await this.fetchFromTmdb<TmdbCredits>(
+        `/movie/${tmdbId}/credits`,
+      );
 
       // Top 10 actors
       if (credits.cast) {
@@ -298,7 +355,9 @@ export class TmdbService {
 
       // Director
       if (credits.crew) {
-        const director = credits.crew.find((c: any) => c.job === 'Director');
+        const director = credits.crew.find(
+          (c: TmdbCreditMember) => c.job === 'Director',
+        );
         if (director) {
           const person = await this.moviesRepository.upsertPerson(
             director.name,
@@ -311,9 +370,10 @@ export class TmdbService {
           });
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       this.logger.warn(
-        `Failed to seed credits for tmdbId ${tmdbId}: ${error.message}`,
+        `Failed to seed credits for tmdbId ${tmdbId}: ${message}`,
       );
     }
   }
@@ -324,7 +384,9 @@ export class TmdbService {
     title: string,
     releaseYear: number | null,
   ): Promise<string | null> {
-    const searchResults = await this.fetchFromTmdb('/search/movie', {
+    const searchResults = await this.fetchFromTmdb<
+      TmdbSearchResponse<TmdbMovie>
+    >('/search/movie', {
       query: title,
       ...(releaseYear && { primary_release_year: releaseYear }),
     });
@@ -350,19 +412,23 @@ export class TmdbService {
 
   private async getVideoUrl(tmdbId: number): Promise<string | null> {
     try {
-      const videos = await this.fetchFromTmdb(`/movie/${tmdbId}/videos`);
+      const videos = await this.fetchFromTmdb<TmdbVideoResponse>(
+        `/movie/${tmdbId}/videos`,
+      );
       if (!videos.results?.length) return null;
 
       const priority = ['Trailer', 'Teaser', 'Clip'];
 
       for (const type of priority) {
         const video = videos.results.find(
-          (v: any) => v.type === type && v.site === 'YouTube',
+          (v: TmdbVideo) => v.type === type && v.site === 'YouTube',
         );
         if (video) return `https://www.youtube.com/embed/${video.key}`;
       }
 
-      const anyYoutube = videos.results.find((v: any) => v.site === 'YouTube');
+      const anyYoutube = videos.results.find(
+        (v: TmdbVideo) => v.site === 'YouTube',
+      );
       return anyYoutube
         ? `https://www.youtube.com/embed/${anyYoutube.key}`
         : null;

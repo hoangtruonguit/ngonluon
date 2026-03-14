@@ -66,7 +66,9 @@ export class MailService {
         process.env.NODE_ENV === 'production' ||
         process.env.ENABLE_MAIL === 'true'
       ) {
-        const info = await this.transporter.sendMail(mailOptions);
+        const info = (await this.transporter.sendMail(mailOptions)) as {
+          messageId: string;
+        };
         this.logger.log(`Email sent: ${info.messageId}`);
       } else {
         this.logger.log(
