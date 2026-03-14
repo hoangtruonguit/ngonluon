@@ -12,7 +12,7 @@ import {
 export class MovieSyncEsListener {
     private readonly logger = new Logger(MovieSyncEsListener.name);
 
-    constructor(private readonly syncService: SyncService) {}
+    constructor(private readonly syncService: SyncService) { }
 
     @OnEvent(MovieCreatedEvent.name)
     async handleMovieCreated(event: MovieCreatedEvent) {
