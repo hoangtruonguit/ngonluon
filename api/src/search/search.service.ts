@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ElasticsearchService } from '../elasticsearch/elasticsearch.service';
-import { TmdbService } from '../tmdb/tmdb.service';
+import { TmdbService, TmdbMovie } from '../tmdb/tmdb.service';
 import { SyncService } from '../elasticsearch/sync.service';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -14,7 +14,7 @@ export interface SearchResult {
   releaseYear: number | null;
   rating: number;
   genres: string[];
-  highlight?: any;
+  highlight?: Record<string, string[]>;
   matchedCast?: { name: string; role: string }[];
 }
 
@@ -47,7 +47,7 @@ export class SearchService {
     // 1. Search ES trước
     const esResult = await this.esService.search(query, options);
 
-    const results: SearchResult[] = esResult.hits.map((hit: any) => ({
+    const results: SearchResult[] = esResult.hits.map((hit) => ({
       source: 'local' as const,
       id: hit.id,
       title: hit.title,
@@ -101,14 +101,14 @@ export class SearchService {
       );
 
       return tmdbData.results
-        .filter((item: any) => {
+        .filter((item: TmdbMovie) => {
           const year = item.release_date
             ? parseInt(item.release_date.split('-')[0], 10)
             : '';
           return !existingKeys.has(`${item.title?.toLowerCase()}::${year}`);
         })
         .slice(0, limit)
-        .map((item: any) => ({
+        .map((item: TmdbMovie) => ({
           source: 'tmdb' as const,
           id: `tmdb-${item.id}`,
           tmdbId: item.id,

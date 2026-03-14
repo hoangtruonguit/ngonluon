@@ -38,9 +38,9 @@ export function validate(config: Record<string, any>) {
     EnvironmentVariables,
     {
       ...config,
-      PORT: parseInt(config.PORT, 10),
-      MAIL_PORT: parseInt(config.MAIL_PORT, 10),
-      ENABLE_MAIL: config.ENABLE_MAIL === 'true',
+      PORT: parseInt(String(config.PORT), 10),
+      MAIL_PORT: parseInt(String(config.MAIL_PORT), 10),
+      ENABLE_MAIL: String(config.ENABLE_MAIL) === 'true',
     },
     { enableImplicitConversion: true },
   );

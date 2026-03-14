@@ -27,7 +27,9 @@ export class AuthService {
     @Inject(USER_SERVICE) private readonly client: ClientProxy,
   ) {}
 
-  async register(registerDto: RegisterDto) {
+  async register(
+    registerDto: RegisterDto,
+  ): Promise<{ id: string; email: string; fullName: string }> {
     const { email, password, confirmPassword, fullName, termsAccepted } =
       registerDto;
 
@@ -61,11 +63,11 @@ export class AuthService {
     return {
       id: user.id,
       email: user.email,
-      fullName: user.fullName,
+      fullName: user.fullName || '',
     };
   }
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto): Promise<AuthResponseDto> {
     const { email, password } = loginDto;
 
     // 1. Find user
@@ -125,7 +127,7 @@ export class AuthService {
           id: user.id,
           email: user.email,
           fullName: user.fullName,
-          avatarUrl: (user as any).avatarUrl || null,
+          avatarUrl: user.avatarUrl || null,
         },
         expiresIn: 3600, // 1 hour in seconds
       },
@@ -133,17 +135,19 @@ export class AuthService {
     );
   }
 
-  async refresh(refreshToken: string) {
+  async refresh(refreshToken: string): Promise<AuthResponseDto> {
     try {
       // 1. Verify Refresh Token
-      const payload = this.jwtService.verify(refreshToken, {
+
+      const payload = this.jwtService.verify<{ sub: string }>(refreshToken, {
         secret:
           this.configService.get<string>('JWT_REFRESH_SECRET') ||
           'refresh_secret',
       });
 
       const userId = payload.sub;
-      const user: any = await this.usersService.findById(userId);
+
+      const user = await this.usersService.findById(userId);
 
       if (!user || !user.refreshToken) {
         throw new UnauthorizedException('Invalid refresh token');
@@ -208,13 +212,13 @@ export class AuthService {
         },
         { excludeExtraneousValues: true },
       );
-    } catch (e) {
+    } catch {
       throw new UnauthorizedException('Refresh token invalid or expired');
     }
   }
 
   async getMe(userId: string) {
-    const user: any = await this.usersService.findById(userId);
+    const user = await this.usersService.findById(userId);
     if (!user) {
       throw new UnauthorizedException('User not found');
     }

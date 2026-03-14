@@ -29,10 +29,12 @@ export class TransformInterceptor<T> implements NestInterceptor<
   ): Observable<Response<T>> {
     return next.handle().pipe(
       map((data) => ({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         statusCode: context.switchToHttp().getResponse().statusCode,
         message:
           this.reflector.get<string>(RESPONSE_MESSAGE, context.getHandler()) ||
           'Success',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         data,
         timestamp: new Date().toISOString(),
       })),

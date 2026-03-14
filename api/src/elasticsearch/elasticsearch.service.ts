@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ElasticsearchService as NestElasticsearchService } from '@nestjs/elasticsearch';
+import { estypes } from '@elastic/elasticsearch';
 
 export interface MovieDocument {
   id: string;
@@ -14,6 +15,21 @@ export interface MovieDocument {
 }
 
 const MOVIE_INDEX = 'movies';
+
+interface SearchHit<T> {
+  _source: T;
+  _score: number;
+  highlight?: Record<string, string[]>;
+  inner_hits?: {
+    cast?: {
+      hits: {
+        hits: {
+          _source: { name: string; role: string };
+        }[];
+      };
+    };
+  };
+}
 
 @Injectable()
 export class ElasticsearchService implements OnModuleInit {
@@ -43,7 +59,7 @@ export class ElasticsearchService implements OnModuleInit {
             },
           },
         },
-      } as any,
+      } as estypes.IndicesIndexSettings,
       mappings: {
         properties: {
           // ── Search fields ──
@@ -71,7 +87,7 @@ export class ElasticsearchService implements OnModuleInit {
           id: { type: 'keyword' },
           slug: { type: 'keyword', index: false },
           posterUrl: { type: 'keyword', index: false },
-        } as any,
+        } as Record<string, estypes.MappingProperty>,
       },
     });
 
@@ -99,7 +115,10 @@ export class ElasticsearchService implements OnModuleInit {
     const result = await this.es.bulk({ operations, refresh: true });
 
     if (result.errors) {
-      const errors = result.items.filter((item: any) => item.index?.error);
+      const errors = result.items.filter((item) => {
+        const entry = Object.values(item)[0];
+        return (entry as { error?: unknown })?.error;
+      });
       this.logger.error(`Bulk index errors: ${errors.length}`);
     }
 
@@ -109,8 +128,15 @@ export class ElasticsearchService implements OnModuleInit {
   async removeMovie(id: string) {
     try {
       await this.es.delete({ index: MOVIE_INDEX, id });
-    } catch (error: any) {
-      if (error.meta?.statusCode !== 404) throw error;
+    } catch (error: unknown) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'meta' in error &&
+        (error as { meta?: { statusCode?: number } }).meta?.statusCode !== 404
+      ) {
+        throw error;
+      }
     }
   }
 
@@ -140,12 +166,12 @@ export class ElasticsearchService implements OnModuleInit {
       page = 1,
     } = options;
 
-    const filter: any[] = [];
+    const filter: estypes.QueryDslQueryContainer[] = [];
     if (genre) filter.push({ term: { genres: genre } });
     if (type) filter.push({ term: { type } });
 
     if (yearFrom || yearTo) {
-      const range: any = {};
+      const range: { gte?: number; lte?: number } = {};
       if (yearFrom) range.gte = yearFrom;
       if (yearTo) range.lte = yearTo;
       filter.push({ range: { releaseYear: range } });
@@ -156,7 +182,7 @@ export class ElasticsearchService implements OnModuleInit {
     }
 
     // Sorting logic
-    let sort: any = [];
+    let sort: estypes.Sort = [];
     if (sortBy === 'newest') {
       sort = [
         { releaseYear: { order: 'desc' } },
@@ -170,7 +196,7 @@ export class ElasticsearchService implements OnModuleInit {
 
     const from = (page - 1) * limit;
 
-    const result = await this.es.search({
+    const result = await this.es.search<MovieDocument>({
       index: MOVIE_INDEX,
       size: limit,
       from,
@@ -217,7 +243,7 @@ export class ElasticsearchService implements OnModuleInit {
           ],
           filter,
         },
-      } as any,
+      } as estypes.QueryDslQueryContainer,
       highlight: {
         fields: {
           title: {},
@@ -235,27 +261,34 @@ export class ElasticsearchService implements OnModuleInit {
       ],
     });
 
-    return {
-      total: (result.hits.total as any)?.value ?? 0,
-      hits: result.hits.hits.map((hit: any) => {
-        // Lấy cast matched từ inner_hits
-        const matchedCast =
-          hit.inner_hits?.cast?.hits?.hits?.map((h: any) => h._source) ?? [];
+    const total =
+      typeof result.hits.total === 'number'
+        ? result.hits.total
+        : (result.hits.total?.value ?? 0);
 
-        return {
-          ...hit._source,
-          score: hit._score,
-          highlight: hit.highlight,
-          matchedCast,
-        };
-      }),
+    return {
+      total,
+      hits: (result.hits.hits as unknown as SearchHit<MovieDocument>[]).map(
+        (hit) => {
+          // Lấy cast matched từ inner_hits
+          const matchedCast =
+            hit.inner_hits?.cast?.hits?.hits?.map((h) => h._source) ?? [];
+
+          return {
+            ...hit._source,
+            score: hit._score,
+            highlight: hit.highlight,
+            matchedCast,
+          };
+        },
+      ),
     };
   }
 
   // ─── Autocomplete ──────────────────────────────────
 
   async suggest(query: string, limit: number = 5) {
-    const result = await this.es.search({
+    const result = await this.es.search<MovieDocument>({
       index: MOVIE_INDEX,
       size: limit,
       query: {
@@ -278,10 +311,10 @@ export class ElasticsearchService implements OnModuleInit {
             },
           ],
         },
-      } as any,
+      } as estypes.QueryDslQueryContainer,
       _source: ['id', 'title', 'slug', 'posterUrl', 'releaseYear', 'genres'],
     });
 
-    return result.hits.hits.map((hit: any) => hit._source);
+    return result.hits.hits.map((hit) => hit._source);
   }
 }

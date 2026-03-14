@@ -59,4 +59,7 @@ async function bootstrap() {
   await app.startAllMicroservices();
   await app.listen(configService.get<number>('PORT') || 3001);
 }
-bootstrap();
+bootstrap().catch((err) => {
+  console.error('Unhandled bootstrap error:', err);
+  process.exit(1);
+});

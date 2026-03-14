@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateCommentDto } from './dto/comment.dto';
 import { SearchMoviesDto } from './dto/search-movies.dto';
 import { Prisma } from '@prisma/client';
+import { MovieWithGenres, MovieDetailed } from './types/movie.types';
 
 @Injectable()
 export class MoviesService {
@@ -174,6 +175,7 @@ export class MoviesService {
           },
           orderBy: { createdAt: 'desc' },
         },
+        episodes: true,
       },
     });
 
@@ -260,7 +262,7 @@ export class MoviesService {
     });
   }
 
-  private mapMovieResponse(movie: any) {
+  private mapMovieResponse(movie: MovieWithGenres) {
     return {
       id: movie.id,
       title: movie.title,
@@ -274,11 +276,11 @@ export class MoviesService {
       durationMinutes: movie.durationMinutes,
       isVip: movie.isVip,
       type: movie.type,
-      genres: movie.genres.map((mg: any) => mg.genre.name),
+      genres: movie.genres.map((mg) => mg.genre.name),
     };
   }
 
-  private mapDetailedMovieResponse(movie: any) {
+  private mapDetailedMovieResponse(movie: MovieDetailed) {
     const reviews = movie.reviews || [];
     const totalReviews = reviews.length;
     const ratingCounts = [0, 0, 0, 0, 0]; // index 0 = 1 star, index 4 = 5 stars
@@ -306,14 +308,14 @@ export class MoviesService {
     return {
       ...this.mapMovieResponse(movie),
       videoUrl,
-      cast: movie.cast.map((c: any) => ({
+      cast: movie.cast.map((c) => ({
         personId: c.personId,
         name: c.person.name,
         avatarUrl: c.person.avatarUrl,
         characterName: c.characterName,
         role: c.role,
       })),
-      reviews: reviews.map((r: any) => ({
+      reviews: reviews.map((r) => ({
         id: r.id,
         rating: r.rating,
         comment: r.comment,

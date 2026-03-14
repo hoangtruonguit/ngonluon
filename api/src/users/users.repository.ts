@@ -25,7 +25,7 @@ export class UsersRepository {
   async updatePublicKey(id: string, publicKey: string): Promise<void> {
     await this.prisma.user.update({
       where: { id },
-      data: { publicKey } as any,
+      data: { publicKey },
     });
   }
 
@@ -35,7 +35,7 @@ export class UsersRepository {
   ): Promise<void> {
     await this.prisma.user.update({
       where: { id },
-      data: { refreshToken } as any,
+      data: { refreshToken },
     });
   }
 }

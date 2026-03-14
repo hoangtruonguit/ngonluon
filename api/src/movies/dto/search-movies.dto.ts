@@ -1,9 +1,4 @@
-import {
-  IsOptional,
-  IsString,
-  IsNumberString,
-  IsNumber,
-} from 'class-validator';
+import { IsOptional, IsString, IsNumberString } from 'class-validator';
 
 export class SearchMoviesDto {
   @IsOptional()

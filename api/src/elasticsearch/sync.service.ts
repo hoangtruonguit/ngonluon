@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ElasticsearchService, MovieDocument } from './elasticsearch.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class SyncService {
@@ -112,7 +113,7 @@ export class SyncService {
 
   // ─── Private: Map DB → ES document ─────────────────
 
-  private toDocument(movie: any): MovieDocument {
+  private toDocument(movie: SyncMoviePayload): MovieDocument {
     return {
       id: movie.id,
       title: movie.title,
@@ -121,12 +122,39 @@ export class SyncService {
       releaseYear: movie.releaseYear,
       rating: movie.rating ?? 0,
       type: movie.type,
-      genres: movie.genres?.map((mg: any) => mg.genre.name) ?? [],
+      genres: movie.genres?.map((mg) => mg.genre.name) ?? [],
       cast:
-        movie.cast?.map((c: any) => ({
+        movie.cast?.map((c) => ({
           name: c.person.name,
-          role: c.role,
+          role: c.role as 'ACTOR' | 'DIRECTOR',
         })) ?? [],
     };
   }
 }
+
+type SyncMoviePayload = Prisma.MovieGetPayload<{
+  select: {
+    id: true;
+    title: true;
+    slug: true;
+    posterUrl: true;
+    releaseYear: true;
+    rating: true;
+    type: true;
+    genres: {
+      select: {
+        genre: {
+          select: { name: true };
+        };
+      };
+    };
+    cast: {
+      select: {
+        role: true;
+        person: {
+          select: { name: true };
+        };
+      };
+    };
+  };
+}>;

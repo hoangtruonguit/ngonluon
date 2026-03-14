@@ -14,6 +14,12 @@ import { User } from '../common/decorators/user.decorator';
 import { CreateCommentDto } from './dto/comment.dto';
 import { SearchMoviesDto } from './dto/search-movies.dto';
 
+interface UserPayload {
+  id?: string;
+  userId?: string;
+  email: string;
+}
+
 @Controller('movies')
 export class MoviesController {
   constructor(private readonly moviesService: MoviesService) {}
@@ -68,11 +74,14 @@ export class MoviesController {
   @UseGuards(JwtAuthGuard)
   async addComment(
     @Param('movieId') movieId: string,
-    @User() user: any,
+    @User() user: UserPayload,
     @Body() dto: CreateCommentDto,
   ) {
     // the decorator may return payload with user.id or user.userId depending on token strategy
     const userId = user.userId || user.id;
+    if (!userId) {
+      throw new Error('User ID not found in token');
+    }
     return this.moviesService.addComment(userId, movieId, dto);
   }
 

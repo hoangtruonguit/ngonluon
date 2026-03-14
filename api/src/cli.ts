@@ -8,4 +8,7 @@ async function bootstrap() {
   });
 }
 
-bootstrap();
+bootstrap().catch((err) => {
+  console.error('Unhandled CLI bootstrap error:', err);
+  process.exit(1);
+});
