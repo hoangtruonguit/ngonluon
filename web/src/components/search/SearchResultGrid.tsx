@@ -46,7 +46,7 @@ export default function SearchResultGrid({
                         <span className="material-symbols-outlined text-4xl text-primary">search_off</span>
                     </div>
                     <h3 className="text-xl font-bold text-white mb-2">No results found</h3>
-                    <p className="text-white/40 max-w-md">We couldn't find anything matching "{query}". Try adjusting your filters or checking your spelling.</p>
+                    <p className="text-white/40 max-w-md">We couldn&apos;t find anything matching &quot;{query}&quot;. Try adjusting your filters or checking your spelling.</p>
                     <button onClick={onClearFilters} className="mt-8 text-primary font-bold hover:underline">Clear all filters</button>
                 </div>
             );

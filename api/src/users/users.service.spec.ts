@@ -50,6 +50,8 @@ describe('UsersService', () => {
   it('should find a user by email', async () => {
     const result = await service.findOne('test@example.com');
     expect(result).toEqual(mockUser);
-    expect(mockUsersRepository.findByEmail).toHaveBeenCalledWith('test@example.com');
+    expect(mockUsersRepository.findByEmail).toHaveBeenCalledWith(
+      'test@example.com',
+    );
   });
 });

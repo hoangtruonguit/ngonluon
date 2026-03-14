@@ -20,4 +20,4 @@ import { AuthMessagingConsumer } from './auth-messaging.consumer';
   controllers: [AuthController, AuthMessagingConsumer],
   providers: [AuthService, JwtStrategy],
 })
-export class AuthModule { }
+export class AuthModule {}

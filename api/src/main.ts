@@ -17,10 +17,12 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    transform: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
+  );
   app.useGlobalInterceptors(new TransformInterceptor(new Reflector()));
   app.useGlobalFilters(new HttpExceptionFilter());
 
@@ -44,10 +46,12 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
-      urls: [configService.get<string>('RABBITMQ_URL') || 'amqp://localhost:5672'],
+      urls: [
+        configService.get<string>('RABBITMQ_URL') || 'amqp://localhost:5672',
+      ],
       queue: 'user_queue',
       queueOptions: {
-        durable: false
+        durable: false,
       },
     },
   });

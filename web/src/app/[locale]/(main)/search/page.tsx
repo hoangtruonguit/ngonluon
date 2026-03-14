@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { movieService } from '@/services/movie.service';
 import { searchService, SearchResult } from '@/services/search.service';
@@ -16,7 +16,7 @@ function SearchResultsContent() {
     
     // Read from URL params
     const q = searchParams.get('q') || '';
-    const genres = searchParams.get('genres')?.split(',') || [];
+    const genres = useMemo(() => searchParams.get('genres')?.split(',') || [], [searchParams]);
     const yearFrom = searchParams.get('yearFrom') || '1990';
     const yearTo = searchParams.get('yearTo') || '2024';
     const minRating = searchParams.get('minRating') || '0';
@@ -79,31 +79,27 @@ function SearchResultsContent() {
         fetchSearch();
 
         // sync local state with params if they change externally
-        setFilterQuery(q);
-        setFilterGenres(genres);
-        setFilterYearFrom(yearFrom);
-        setFilterYearTo(yearTo);
         setFilterMinRating(minRating);
-    }, [q, searchParams.get('genres'), yearFrom, yearTo, minRating, sortBy, page]);
+    }, [q, genres, yearFrom, yearTo, minRating, sortBy, page]);
 
-    const handleApplyFilters = (overrideParams: any = {}) => {
+    const handleApplyFilters = (overrideParams: Record<string, unknown> = {}) => {
         const params = new URLSearchParams();
         if (filterQuery) params.set('q', filterQuery);
         
-        const finalGenres = overrideParams.genres !== undefined ? overrideParams.genres : filterGenres;
+        const finalGenres = (overrideParams.genres !== undefined ? overrideParams.genres : filterGenres) as string[];
         if (finalGenres.length > 0) params.set('genres', finalGenres.join(','));
         
-        const fYearFrom = overrideParams.yearFrom !== undefined ? overrideParams.yearFrom : filterYearFrom;
+        const fYearFrom = (overrideParams.yearFrom !== undefined ? overrideParams.yearFrom : filterYearFrom) as string;
         if (fYearFrom && fYearFrom !== '1990') params.set('yearFrom', fYearFrom);
         
-        const fYearTo = overrideParams.yearTo !== undefined ? overrideParams.yearTo : filterYearTo;
+        const fYearTo = (overrideParams.yearTo !== undefined ? overrideParams.yearTo : filterYearTo) as string;
         if (fYearTo && fYearTo !== '2024') params.set('yearTo', fYearTo);
         
-        const fMinRating = overrideParams.minRating !== undefined ? overrideParams.minRating : filterMinRating;
+        const fMinRating = overrideParams.minRating !== undefined ? String(overrideParams.minRating) : filterMinRating;
         if (fMinRating && fMinRating !== '0') params.set('minRating', fMinRating);
         
-        if (overrideParams.sortBy || sortBy !== 'relevance') params.set('sortBy', overrideParams.sortBy || sortBy);
-        if (overrideParams.page || (page > 1 && !overrideParams.resetPage)) params.set('page', (overrideParams.page || page).toString());
+        if (overrideParams.sortBy || sortBy !== 'relevance') params.set('sortBy', (overrideParams.sortBy as string) || sortBy);
+        if (overrideParams.page || (page > 1 && !overrideParams.resetPage)) params.set('page', ((overrideParams.page as number) || page).toString());
 
         router.push(`/search?${params.toString()}`);
     };

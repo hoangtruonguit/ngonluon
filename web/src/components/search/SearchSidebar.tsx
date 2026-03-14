@@ -15,7 +15,7 @@ interface SearchSidebarProps {
     isStudiosOpen: boolean;
     setIsStudiosOpen: (val: boolean) => void;
     onClearFilters: () => void;
-    onApplyFilters: (override?: any) => void;
+    onApplyFilters: (override?: Record<string, unknown>) => void;
 }
 
 export default function SearchSidebar({

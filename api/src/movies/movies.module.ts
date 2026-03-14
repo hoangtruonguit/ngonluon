@@ -5,9 +5,9 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { MoviesRepository } from './movies.repository';
 
 @Module({
-    imports: [PrismaModule],
-    providers: [MoviesService, MoviesRepository],
-    controllers: [MoviesController],
-    exports: [MoviesService, MoviesRepository],
+  imports: [PrismaModule],
+  providers: [MoviesService, MoviesRepository],
+  controllers: [MoviesController],
+  exports: [MoviesService, MoviesRepository],
 })
-export class MoviesModule { }
+export class MoviesModule {}

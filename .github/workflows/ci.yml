@@ -115,7 +115,7 @@ jobs:
         run: pnpm run build
 
       - name: Test
-        run: pnpm run test --if-present
+        run: pnpm run test
 
   # ─── WEB (Next.js) ────────────────────────────────
   web:

@@ -4,35 +4,38 @@ import { Prisma, User } from '@prisma/client';
 
 @Injectable()
 export class UsersRepository {
-    constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
-    async create(data: Prisma.UserCreateInput): Promise<User> {
-        return this.prisma.user.create({
-            data,
-        });
-    }
+  async create(data: Prisma.UserCreateInput): Promise<User> {
+    return this.prisma.user.create({
+      data,
+    });
+  }
 
-    async findByEmail(email: string): Promise<User | null> {
-        return this.prisma.user.findUnique({
-            where: { email },
-        });
-    }
+  async findByEmail(email: string): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: { email },
+    });
+  }
 
-    async findById(id: string): Promise<User | null> {
-        return this.prisma.user.findUnique({ where: { id } });
-    }
+  async findById(id: string): Promise<User | null> {
+    return this.prisma.user.findUnique({ where: { id } });
+  }
 
-    async updatePublicKey(id: string, publicKey: string): Promise<void> {
-        await this.prisma.user.update({
-            where: { id },
-            data: { publicKey } as any,
-        });
-    }
+  async updatePublicKey(id: string, publicKey: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id },
+      data: { publicKey } as any,
+    });
+  }
 
-    async updateRefreshToken(id: string, refreshToken: string | null): Promise<void> {
-        await this.prisma.user.update({
-            where: { id },
-            data: { refreshToken } as any,
-        });
-    }
+  async updateRefreshToken(
+    id: string,
+    refreshToken: string | null,
+  ): Promise<void> {
+    await this.prisma.user.update({
+      where: { id },
+      data: { refreshToken } as any,
+    });
+  }
 }

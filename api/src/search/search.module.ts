@@ -6,9 +6,9 @@ import { TmdbModule } from '../tmdb/tmdb.module';
 import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
-    imports: [ElasticsearchModule, TmdbModule, PrismaModule],
-    controllers: [SearchController],
-    providers: [SearchService],
-    exports: [SearchService],
+  imports: [ElasticsearchModule, TmdbModule, PrismaModule],
+  controllers: [SearchController],
+  providers: [SearchService],
+  exports: [SearchService],
 })
-export class SearchModule { }
+export class SearchModule {}

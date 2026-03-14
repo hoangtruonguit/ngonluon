@@ -1,6 +1,6 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
     statusCode: number;
     message: string;
     data: T;
@@ -64,7 +64,7 @@ class ApiClient {
         });
     }
 
-    async post<T>(endpoint: string, body: any, options?: RequestInit): Promise<ApiResponse<T>> {
+    async post<T>(endpoint: string, body: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
         return this.request<T>(endpoint, {
             ...options,
             method: 'POST',

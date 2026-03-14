@@ -33,16 +33,14 @@ export class MovieMapper {
       ratingSum += r;
     }
 
-    const averageRating = totalReviews > 0
-      ? Math.round((ratingSum / totalReviews) * 10) / 10
-      : 0;
+    const averageRating =
+      totalReviews > 0 ? Math.round((ratingSum / totalReviews) * 10) / 10 : 0;
 
     const distribution = [...ratingCounts]
       .map((count) => ({
         count,
-        percentage: totalReviews > 0
-          ? Math.round((count / totalReviews) * 100)
-          : 0,
+        percentage:
+          totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0,
       }))
       .reverse();
 

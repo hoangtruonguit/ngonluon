@@ -3,7 +3,11 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { FindMoviesParams } from './interfaces/find-movies.interface';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { MovieCreatedEvent, MovieUpdatedEvent, MovieDeletedEvent } from '../events/movie.events';
+import {
+  MovieCreatedEvent,
+  MovieUpdatedEvent,
+  MovieDeletedEvent,
+} from '../events/movie.events';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -11,7 +15,7 @@ export class MoviesRepository {
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
-  ) { }
+  ) {}
 
   async findMany(params: FindMoviesParams = {}) {
     const { where, orderBy, include, skip, take = 20 } = params;
@@ -80,7 +84,10 @@ export class MoviesRepository {
 
   async create(data: Prisma.MovieCreateInput) {
     const movie = await this.prisma.movie.create({ data });
-    this.eventEmitter.emit(MovieCreatedEvent.name, new MovieCreatedEvent(movie.id));
+    this.eventEmitter.emit(
+      MovieCreatedEvent.name,
+      new MovieCreatedEvent(movie.id),
+    );
     return movie;
   }
 
@@ -89,7 +96,10 @@ export class MoviesRepository {
       where: { id },
       data,
     });
-    this.eventEmitter.emit(MovieUpdatedEvent.name, new MovieUpdatedEvent(movie.id));
+    this.eventEmitter.emit(
+      MovieUpdatedEvent.name,
+      new MovieUpdatedEvent(movie.id),
+    );
     return movie;
   }
 
@@ -97,7 +107,10 @@ export class MoviesRepository {
     const movie = await this.prisma.movie.delete({
       where: { id },
     });
-    this.eventEmitter.emit(MovieDeletedEvent.name, new MovieDeletedEvent(movie.id));
+    this.eventEmitter.emit(
+      MovieDeletedEvent.name,
+      new MovieDeletedEvent(movie.id),
+    );
     return movie;
   }
 

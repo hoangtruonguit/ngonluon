@@ -10,7 +10,7 @@ export interface SearchResult {
     releaseYear: number | null;
     rating: number;
     genres: string[];
-    highlight?: any;
+    highlight?: Record<string, string[]>;
     matchedCast?: { name: string; role: string }[];
 }
 
