@@ -5,21 +5,21 @@ export const USER_SERVICE = 'USER_SERVICE';
 
 @Global()
 @Module({
-    imports: [
-        ClientsModule.register([
-            {
-                name: USER_SERVICE,
-                transport: Transport.RMQ,
-                options: {
-                    urls: [process.env.RABBITMQ_URL || 'amqp://localhost:5672'],
-                    queue: 'user_queue',
-                    queueOptions: {
-                        durable: false
-                    },
-                },
-            },
-        ]),
-    ],
-    exports: [ClientsModule],
+  imports: [
+    ClientsModule.register([
+      {
+        name: USER_SERVICE,
+        transport: Transport.RMQ,
+        options: {
+          urls: [process.env.RABBITMQ_URL || 'amqp://localhost:5672'],
+          queue: 'user_queue',
+          queueOptions: {
+            durable: false,
+          },
+        },
+      },
+    ]),
+  ],
+  exports: [ClientsModule],
 })
-export class MessagingModule { }
+export class MessagingModule {}

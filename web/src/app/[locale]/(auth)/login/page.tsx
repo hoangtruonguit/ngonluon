@@ -44,9 +44,10 @@ export default function LoginPage() {
         try {
             await apiClient.login(email, password);
             router.push('/');
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Login failed:', err);
-            setError(err.message || 'An error occurred during login');
+            const errorObj = err as { message?: string };
+            setError(errorObj.message || 'An error occurred during login');
         } finally {
             setIsLoading(false);
         }

@@ -163,7 +163,7 @@ class MovieService {
             if (params.page) queryParams.append('page', params.page.toString());
             if (params.limit) queryParams.append('limit', params.limit.toString());
 
-            const response = await apiClient.get<{ data: Movie[]; meta: any }>(`/movies/search?${queryParams.toString()}`);
+            const response = await apiClient.get<{ data: Movie[]; meta: { total: number; page: number; limit: number; totalPages: number } }>(`/movies/search?${queryParams.toString()}`);
             return response.data;
         } catch (error) {
             console.error('Failed to search movies', error);

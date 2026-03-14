@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from '@/i18n/routing';
 import { movieService, MovieComment } from '@/services/movie.service';
@@ -22,18 +22,29 @@ export default function CommentSection({ movieId, className = "mt-12" }: Comment
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchComments = async () => {
+    const [prevMovieId, setPrevMovieId] = useState(movieId);
+
+    // Adjust state during render when movieId changes
+    if (movieId !== prevMovieId) {
+        setPrevMovieId(movieId);
         setIsLoading(true);
+        setComments([]);
+    }
+
+    const fetchComments = useCallback(async () => {
         const fetched = await movieService.getCommentsByMovie(movieId, 0, 50);
         setComments(fetched);
         setIsLoading(false);
-    };
+    }, [movieId]);
 
     useEffect(() => {
         if (movieId) {
-            fetchComments();
+            const timer = setTimeout(() => {
+                fetchComments();
+            }, 0);
+            return () => clearTimeout(timer);
         }
-    }, [movieId]);
+    }, [movieId, fetchComments]);
 
     const handlePostComment = async () => {
         if (!isLoggedIn) {

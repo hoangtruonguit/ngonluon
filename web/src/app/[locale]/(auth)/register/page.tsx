@@ -115,19 +115,20 @@ export default function RegisterPage() {
 
             // Success! Redirect to login
             router.push('/login?registered=true');
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Registration error:', error);
 
+            const err = error as { statusCode?: number; message?: string | string[] };
             // Handle structured error from apiClient
-            if (error.statusCode) {
-                if (Array.isArray(error.message)) {
+            if (err.statusCode) {
+                if (Array.isArray(err.message)) {
                     const errorObj: Record<string, string> = {};
-                    error.message.forEach((msg: string) => {
+                    err.message.forEach((msg: string) => {
                         errorObj.general = msg;
                     });
                     setErrors(errorObj);
                 } else {
-                    setErrors({ general: error.message });
+                    setErrors({ general: err.message || tValidation('networkError') });
                 }
             } else {
                 setErrors({ general: tValidation('networkError') });

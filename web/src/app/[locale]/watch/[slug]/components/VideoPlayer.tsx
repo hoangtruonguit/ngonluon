@@ -5,9 +5,40 @@ import { MovieDetail } from '@/services/movie.service';
 
 declare global {
     interface Window {
-        YT: any;
+        YT: {
+            Player: new (elementId: string, options: YTPlayerOptions) => YTPlayer;
+            PlayerState: {
+                PLAYING: number;
+                PAUSED: number;
+                ENDED: number;
+                BUFFERING: number;
+                CUED: number;
+            };
+        };
         onYouTubeIframeAPIReady: () => void;
     }
+}
+
+interface YTPlayer {
+    destroy: () => void;
+    getCurrentTime: () => number;
+    getDuration: () => number;
+    pauseVideo: () => void;
+    playVideo: () => void;
+    seekTo: (seconds: number, allowSeekAhead: boolean) => void;
+    setVolume: (volume: number) => void;
+    mute: () => void;
+    unMute: () => void;
+}
+
+interface YTPlayerOptions {
+    videoId: string;
+    playerVars?: Record<string, unknown>;
+    events?: {
+        onReady?: (event: { target: YTPlayer }) => void;
+        onStateChange?: (event: { target: YTPlayer; data: number }) => void;
+        onError?: (event: { target: YTPlayer; data: number }) => void;
+    };
 }
 
 interface VideoPlayerProps {
@@ -23,7 +54,7 @@ export default function VideoPlayer({ movie }: VideoPlayerProps) {
     const [isFullScreen, setIsFullScreen] = useState(false);
 
     const videoRef = useRef<HTMLVideoElement>(null);
-    const ytPlayerRef = useRef<any>(null);
+    const ytPlayerRef = useRef<YTPlayer | null>(null);
     const ytIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
     const isYouTube = movie.trailerUrl?.includes('youtube.com/embed') ?? false;
@@ -55,9 +86,9 @@ export default function VideoPlayer({ movie }: VideoPlayerProps) {
                         origin: window.location.origin,
                     },
                     events: {
-                        onReady: (e: any) => setDuration(e.target.getDuration()),
-                        onStateChange: (e: any) => setIsPlaying(e.data === window.YT.PlayerState.PLAYING),
-                        onError: (e: any) => console.error('YouTube Player Error:', e.data),
+                        onReady: (e: { target: YTPlayer }) => setDuration(e.target.getDuration()),
+                        onStateChange: (e: { target: YTPlayer; data: number }) => setIsPlaying(e.data === window.YT.PlayerState.PLAYING),
+                        onError: (e: { target: YTPlayer; data: number }) => console.error('YouTube Player Error:', e.data),
                     },
                 });
             };
@@ -98,7 +129,11 @@ export default function VideoPlayer({ movie }: VideoPlayerProps) {
         if (isYouTube) {
             const player = ytPlayerRef.current;
             if (!player) return;
-            isPlaying ? player.pauseVideo() : player.playVideo();
+            if (isPlaying) {
+                player.pauseVideo();
+            } else {
+                player.playVideo();
+            }
         } else {
             const video = videoRef.current;
             if (!video) return;
@@ -139,7 +174,13 @@ export default function VideoPlayer({ movie }: VideoPlayerProps) {
     const toggleMute = useCallback(() => {
         const newMuted = !isMuted;
         setIsMuted(newMuted);
-        if (isYouTube) { newMuted ? ytPlayerRef.current?.mute() : ytPlayerRef.current?.unMute(); }
+        if (isYouTube) { 
+            if (newMuted) {
+                ytPlayerRef.current?.mute();
+            } else {
+                ytPlayerRef.current?.unMute();
+            }
+        }
         else if (videoRef.current) {
             videoRef.current.muted = newMuted;
             if (!newMuted && volume === 0) { setVolume(0.5); videoRef.current.volume = 0.5; }

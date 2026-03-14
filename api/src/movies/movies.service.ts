@@ -6,7 +6,7 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class MoviesService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async getTrendingMovies(limit: number = 20) {
     // Here we just order by rating to simulate "trending"
@@ -54,13 +54,10 @@ export class MoviesService {
   }
 
   async getNewReleases(limit: number = 20) {
-    // Order by releaseYear desc to get newest 
+    // Order by releaseYear desc to get newest
     // fallback to createdAt desc
     const movies = await this.prisma.movie.findMany({
-      orderBy: [
-        { releaseYear: 'desc' },
-        { createdAt: 'desc' },
-      ],
+      orderBy: [{ releaseYear: 'desc' }, { createdAt: 'desc' }],
       take: limit,
       include: {
         genres: {
@@ -84,7 +81,7 @@ export class MoviesService {
 
   async searchMovies(params: SearchMoviesDto) {
     const { q, genre, year, rating, sortBy, page, limit } = params;
-    
+
     const parsedPage = page ? parseInt(page, 10) : 1;
     const parsedLimit = limit ? parseInt(limit, 10) : 20;
     const skip = Math.max(0, (parsedPage - 1) * parsedLimit);
@@ -122,7 +119,7 @@ export class MoviesService {
     }
 
     let orderBy: Prisma.MovieOrderByWithRelationInput = { createdAt: 'desc' };
-    
+
     if (sortBy === 'newest') {
       orderBy = { releaseYear: 'desc' }; // or createdAt
     } else if (sortBy === 'rating') {
@@ -146,7 +143,7 @@ export class MoviesService {
             },
           },
         },
-      })
+      }),
     ]);
 
     return {
@@ -156,7 +153,7 @@ export class MoviesService {
         page: parsedPage,
         limit: parsedLimit,
         totalPages: Math.ceil(total / parsedLimit),
-      }
+      },
     };
   }
 
@@ -215,7 +212,9 @@ export class MoviesService {
   }
 
   async addComment(userId: string, movieId: string, dto: CreateCommentDto) {
-    const movie = await this.prisma.movie.findUnique({ where: { id: movieId } });
+    const movie = await this.prisma.movie.findUnique({
+      where: { id: movieId },
+    });
     if (!movie) {
       throw new Error('Movie not found');
     }
@@ -239,7 +238,11 @@ export class MoviesService {
     });
   }
 
-  async getCommentsByMovie(movieId: string, skip: number = 0, take: number = 20) {
+  async getCommentsByMovie(
+    movieId: string,
+    skip: number = 0,
+    take: number = 20,
+  ) {
     return this.prisma.comment.findMany({
       where: { movieId },
       orderBy: { createdAt: 'desc' },
@@ -287,13 +290,13 @@ export class MoviesService {
       ratingSum += r;
     }
 
-    const averageRating = totalReviews > 0
-      ? Math.round((ratingSum / totalReviews) * 10) / 10
-      : 0;
+    const averageRating =
+      totalReviews > 0 ? Math.round((ratingSum / totalReviews) * 10) / 10 : 0;
 
     const ratingDistribution = ratingCounts.map((count) => ({
       count,
-      percentage: totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0,
+      percentage:
+        totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0,
     }));
 
     // For movies, we might want to pick the first episode's videoUrl if it's a movie type
