@@ -1,4 +1,5 @@
 // components/MovieInfo.tsx
+import { useTranslations } from 'next-intl';
 import { MovieDetail } from '@/services/movie.service';
 
 interface MovieInfoProps {
@@ -6,6 +7,9 @@ interface MovieInfoProps {
 }
 
 export default function MovieInfo({ movie }: MovieInfoProps) {
+    const t = useTranslations('Watch');
+    const tCommon = useTranslations('Common');
+
     return (
         <div className="mt-8 flex flex-col md:flex-row gap-6">
             <div className="shrink-0 hidden md:block">
@@ -20,19 +24,19 @@ export default function MovieInfo({ movie }: MovieInfoProps) {
                     <div>
                         <h1 className="text-3xl font-bold text-white mb-2">{movie.title}</h1>
                         <p className="text-xl text-primary font-medium">
-                            {movie.genres?.[0] ? `Top ${movie.genres[0]} Movie` : 'Trailer Original'}
+                            {movie.genres?.[0] ? t('topMovie', { genre: movie.genres[0] }) : t('originalTrailer')}
                         </p>
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="text-center bg-surface-dark px-4 py-2 rounded-lg border border-white/5">
-                            <p className="text-xs text-gray-400 uppercase">Rating</p>
+                            <p className="text-xs text-gray-400 uppercase">{t('rating')}</p>
                             <div className="flex items-center justify-center gap-1 text-primary">
                                 <span className="material-symbols-outlined text-sm fill">star</span>
                                 <span className="font-bold">{movie.rating}</span>
                             </div>
                         </div>
                         <button className="bg-primary text-secondary font-bold px-6 py-3 rounded-lg hover:brightness-110 transition-all shadow-lg shadow-primary/20">
-                            Rate Now
+                            {t('rateNow')}
                         </button>
                     </div>
                 </div>
@@ -44,11 +48,11 @@ export default function MovieInfo({ movie }: MovieInfoProps) {
                         <span key={genre} className="px-2 py-0.5 bg-surface-dark text-xs rounded border border-white/10 text-gray-300">{genre}</span>
                     ))}
                     <span className="px-2 py-0.5 bg-surface-dark text-xs rounded border border-white/10 text-gray-300">
-                        {movie.durationMinutes} min
+                        {movie.durationMinutes} {tCommon('minutesAbbr')}
                     </span>
                 </div>
                 <p className="text-gray-400 text-sm leading-relaxed max-w-3xl">
-                    {movie.description || 'No description available.'}
+                    {movie.description || t('noDescription')}
                 </p>
             </div>
         </div>

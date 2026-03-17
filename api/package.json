@@ -22,7 +22,8 @@
     "seed:tmdb": "ts-node -r tsconfig-paths/register src/tmdb/seed.ts",
     "seed:trailers": "ts-node -r tsconfig-paths/register src/tmdb/seed-trailers.ts",
     "cli": "ts-node -r tsconfig-paths/register src/cli.ts",
-    "cli:dev": "npx ts-node -r tsconfig-paths/register src/cli.ts"
+    "cli:dev": "npx ts-node -r tsconfig-paths/register src/cli.ts",
+    "test:mq-mail": "ts-node test-mq-mail.ts"
   },
   "dependencies": {
     "@elastic/elasticsearch": "^9.3.4",
@@ -67,6 +68,7 @@
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
+    "@types/amqplib": "^0.10.8",
     "@types/bcrypt": "^6.0.0",
     "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.0",

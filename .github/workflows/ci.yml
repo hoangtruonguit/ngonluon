@@ -109,7 +109,7 @@ jobs:
         run: npx prisma migrate deploy
 
       - name: Lint
-        run: pnpm run lint || echo "Lint failed but continuing CI"
+        run: pnpm run lint
 
       - name: Build
         run: pnpm run build

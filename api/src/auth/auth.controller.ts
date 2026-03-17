@@ -52,6 +52,7 @@ export class AuthController {
       secure: this.configService.get<string>('NODE_ENV') === 'production',
       sameSite: 'lax',
       maxAge: result.expiresIn * 1000,
+      path: '/',
     });
 
     response.cookie('refresh_token', result.refreshToken, {
@@ -59,6 +60,15 @@ export class AuthController {
       secure: this.configService.get<string>('NODE_ENV') === 'production',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/',
+    });
+
+    response.cookie('is_logged_in', 'true', {
+      httpOnly: false,
+      secure: this.configService.get<string>('NODE_ENV') === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/',
     });
 
     return result;
@@ -80,6 +90,7 @@ export class AuthController {
       secure: this.configService.get<string>('NODE_ENV') === 'production',
       sameSite: 'lax',
       maxAge: result.expiresIn * 1000,
+      path: '/',
     });
 
     response.cookie('refresh_token', result.refreshToken, {
@@ -87,6 +98,15 @@ export class AuthController {
       secure: this.configService.get<string>('NODE_ENV') === 'production',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/',
+    });
+
+    response.cookie('is_logged_in', 'true', {
+      httpOnly: false,
+      secure: this.configService.get<string>('NODE_ENV') === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/',
     });
 
     return result;
@@ -112,8 +132,9 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Logout successful.' })
   @ResponseMessage('Logged out successfully')
   logout(@Res({ passthrough: true }) response: Response) {
-    response.clearCookie('access_token');
-    response.clearCookie('refresh_token');
+    response.clearCookie('access_token', { path: '/' });
+    response.clearCookie('refresh_token', { path: '/' });
+    response.clearCookie('is_logged_in', { path: '/' });
     return { message: 'Signed out' };
   }
 }

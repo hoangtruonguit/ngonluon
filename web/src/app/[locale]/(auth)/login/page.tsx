@@ -4,6 +4,7 @@ import { useState, FormEvent } from 'react';
 import Image from 'next/image';
 import { Link, useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
+import { useAuth } from '@/contexts/AuthContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import dynamic from 'next/dynamic';
 import { apiClient } from '@/lib/api';
@@ -28,7 +29,9 @@ const staticBackground = (
 
 export default function LoginPage() {
     const t = useTranslations('Login');
+    const tFooter = useTranslations('Footer');
     const router = useRouter();
+    const { login } = useAuth();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -42,7 +45,8 @@ export default function LoginPage() {
         setError(null);
 
         try {
-            await apiClient.login(email, password);
+            const response = await apiClient.login(email, password);
+            login(response.data.user);
             router.push('/');
         } catch (err: unknown) {
             console.error('Login failed:', err);
@@ -73,7 +77,7 @@ export default function LoginPage() {
                     <div className="flex items-center gap-4">
                         <LanguageSwitcher />
                         <button className="flex min-w-[84px] cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-white/10 hover:bg-white/20 text-white text-sm font-bold transition-colors">
-                            <span className="truncate">Help</span>
+                            <span className="truncate">{tFooter('help')}</span>
                         </button>
                     </div>
                 </header>
@@ -149,7 +153,7 @@ export default function LoginPage() {
                                     {isLoading ? (
                                         <div className="flex items-center gap-2">
                                             <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                            <span>{t('signIn')}...</span>
+                                            <span>{t('signingIn')}</span>
                                         </div>
                                     ) : (
                                         <span className="truncate">{t('signIn')}</span>

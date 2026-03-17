@@ -4,6 +4,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { movieService } from '@/services/movie.service';
+import { useAuth } from '@/contexts/AuthContext';
+import MovieActionButtons from '@/components/MovieActionButtons';
+import { useTranslations } from 'next-intl';
 
 interface HeroMovie {
     id: string;
@@ -21,6 +24,10 @@ interface HeroCarouselProps {
 export default function HeroCarousel({ movies }: HeroCarouselProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
+    const { watchlistIds } = useAuth();
+    
+    const tHome = useTranslations('Home');
+    const tCommon = useTranslations('Common');
 
     const nextSlide = useCallback(() => {
         setCurrentIndex((prevIndex) => (prevIndex + 1) % movies.length);
@@ -82,7 +89,7 @@ export default function HeroCarousel({ movies }: HeroCarouselProps) {
                         <div className={`space-y-2 transition-all duration-700 delay-300 transform ${index === currentIndex ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
                             }`}>
                             <span className="text-primary font-bold tracking-widest uppercase text-sm">
-                                Featured Movie
+                                {tHome('featuredMovie')}
                             </span>
                             <h1 className="text-white text-5xl lg:text-7xl font-black max-w-2xl leading-tight">
                                 {movie.title}
@@ -94,27 +101,10 @@ export default function HeroCarousel({ movies }: HeroCarouselProps) {
                             {movie.description}
                         </p>
 
-                        <div className={`flex flex-wrap gap-4 pt-4 transition-all duration-700 delay-700 transform ${index === currentIndex ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+                        <div className={`pt-4 transition-all duration-700 delay-700 transform ${index === currentIndex ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
                             }`}>
-                            {movie.slug ? (
-                                <Link href={`/watch/${movie.slug}`}>
-                                    <button className="bg-primary text-secondary px-10 py-4 rounded-xl font-bold flex items-center gap-3 hover:scale-105 transition-transform duration-300">
-                                        <span className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[12px] border-l-secondary border-b-[8px] border-b-transparent ml-1" />
-                                        Watch Now
-                                    </button>
-                                </Link>
-                            ) : (
-                                <button className="bg-primary text-secondary px-10 py-4 rounded-xl font-bold flex items-center gap-3 hover:scale-105 transition-transform duration-300">
-                                    <span className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[12px] border-l-secondary border-b-[8px] border-b-transparent ml-1" />
-                                    Watch Now
-                                </button>
-                            )}
-                            {movie.slug && (
-                                <Link href={`/movies/${movie.slug}`}>
-                                    <button className="bg-white/10 text-white backdrop-blur-md px-10 py-4 rounded-xl font-bold hover:bg-white/20 transition-all duration-300">
-                                        Details
-                                    </button>
-                                </Link>
+                            {movie.id && (
+                                <MovieActionButtons movieId={movie.id} movieSlug={movie.slug || ''} showDetails={true} />
                             )}
                         </div>
                     </div>

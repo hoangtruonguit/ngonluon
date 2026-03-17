@@ -13,7 +13,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
-import { USER_SERVICE } from '../common/messaging/messaging.module';
+import { MailProducer } from '../mail/mail.producer';
 import { AuthResponseDto, UserResponseDto } from './dto/auth-response.dto';
 import { plainToInstance } from 'class-transformer';
 
@@ -24,7 +24,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly redisService: RedisService,
     private readonly configService: ConfigService,
-    @Inject(USER_SERVICE) private readonly client: ClientProxy,
+    private readonly mailProducer: MailProducer,
   ) {}
 
   async register(
@@ -54,11 +54,8 @@ export class AuthService {
       fullName,
     });
 
-    // Emit event to RabbitMQ
-    this.client.emit('user_registered', {
-      email: user.email,
-      fullName: user.fullName,
-    });
+    // Emit welcome email event via MailProducer
+    await this.mailProducer.sendWelcomeEmail(email, fullName);
 
     return {
       id: user.id,

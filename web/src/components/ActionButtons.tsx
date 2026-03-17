@@ -1,9 +1,12 @@
+import { useTranslations } from 'next-intl';
+
 export default function ActionButtons() {
+    const t = useTranslations('Watch');
     const actions = [
-        { icon: 'favorite', label: 'Add to Favorites' },
-        { icon: 'add_box', label: 'Playlist' },
-        { icon: 'share', label: 'Share' },
-        { icon: 'flag', label: 'Report' },
+        { icon: 'favorite', label: t('addToFavorites') },
+        { icon: 'add_box', label: t('playlist') },
+        { icon: 'share', label: t('share') },
+        { icon: 'flag', label: t('report') },
     ];
 
     return (

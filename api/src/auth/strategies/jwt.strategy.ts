@@ -22,7 +22,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         },
       ]),
       ignoreExpiration: false,
-      passReqToCallback: true,
       // We use secretOrKeyProvider to get per-user public key
       secretOrKeyProvider: (
         request: Request,

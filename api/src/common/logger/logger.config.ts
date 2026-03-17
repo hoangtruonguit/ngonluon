@@ -2,6 +2,20 @@ import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import 'winston-daily-rotate-file';
 
+const fileFormat = winston.format.combine(
+  winston.format.timestamp(),
+  winston.format.printf((info) => {
+    const { timestamp, level, message, context, stack } = info;
+    const ctx = typeof context === 'string' ? context : 'Application';
+    let log = `${String(timestamp)} [${ctx}] ${String(level).toUpperCase()}: ${String(message)}`;
+    if (stack) {
+      const stackStr = Array.isArray(stack) ? stack.join('\n') : String(stack);
+      log += `\nStack trace:\n${stackStr}`;
+    }
+    return log;
+  }),
+);
+
 export const winstonConfig = {
   transports: [
     new winston.transports.Console({
@@ -23,10 +37,7 @@ export const winstonConfig = {
       zippedArchive: true,
       maxSize: '20m',
       maxFiles: '14d',
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json(),
-      ),
+      format: fileFormat,
     }),
     new winston.transports.DailyRotateFile({
       filename: 'logs/error-%DATE%.log',
@@ -35,10 +46,7 @@ export const winstonConfig = {
       maxSize: '20m',
       maxFiles: '14d',
       level: 'error',
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json(),
-      ),
+      format: fileFormat,
     }),
   ],
 };

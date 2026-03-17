@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { movieService, MovieDetail } from '@/services/movie.service';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -19,6 +20,8 @@ interface WatchPageProps {
 export default function WatchPage({ params }: WatchPageProps) {
     const { slug } = use(params);
     const router = useRouter();
+    const t = useTranslations('Watch');
+    const tHeader = useTranslations('Header');
     const [movie, setMovie] = useState<MovieDetail | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -42,9 +45,9 @@ export default function WatchPage({ params }: WatchPageProps) {
     if (!movie) {
         return (
             <div className="h-screen w-full bg-background-dark flex flex-col items-center justify-center text-white space-y-4">
-                <h1 className="text-4xl font-bold">Movie Not Found</h1>
+                <h1 className="text-4xl font-bold">{t('movieNotFound')}</h1>
                 <button onClick={() => router.back()} className="bg-primary text-secondary px-6 py-2 rounded-full font-bold">
-                    Go Back
+                    {t('goBack')}
                 </button>
             </div>
         );
@@ -56,7 +59,14 @@ export default function WatchPage({ params }: WatchPageProps) {
             <div className="pt-24" />
 
             <main className="max-w-[1440px] mx-auto px-6 lg:px-24 py-6">
-                <Breadcrumb movieTitle={movie.title} />
+                <Breadcrumb
+                    items={[
+                        { label: tHeader('home'), href: '/' },
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        { label: tHeader('movies'), href: '/' as any },
+                        { label: movie.title, active: true }
+                    ]}
+                />
 
                 <div className="flex flex-col gap-10">
                     <div className="w-full">

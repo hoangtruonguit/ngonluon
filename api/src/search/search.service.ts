@@ -30,10 +30,11 @@ export class SearchService {
   ) {}
 
   async search(
-    query: string,
+    query?: string,
     options: {
       limit?: number;
       genre?: string;
+      type?: string;
       yearFrom?: number;
       yearTo?: number;
       minRating?: number;
@@ -59,8 +60,8 @@ export class SearchService {
       highlight: hit.highlight,
     }));
 
-    // 2. Nếu ES ít kết quả (< 5) hoặc không có -> fallback TMDB
-    if (results.length < MIN_LOCAL_RESULTS) {
+    // 2. Nếu ES ít kết quả (< 5) hoặc không có -> fallback TMDB (chỉ khi có query)
+    if (query && results.length < MIN_LOCAL_RESULTS) {
       const remaining = limit - results.length;
       const tmdbResults = await this.searchTmdb(
         query,

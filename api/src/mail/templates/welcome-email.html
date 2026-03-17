@@ -24,18 +24,20 @@
         }
 
         .hero {
-            position: relative;
             width: 100%;
-            height: 300px;
-            background-image: url('https://raw.githubusercontent.com/hoangtruonguit/ngonluon/main/api/src/mail/assets/welcome-hero.png');
-            /* Placeholder for real URL */
-            background-size: cover;
-            background-position: center;
+            background-color: #000;
+        }
+
+        .hero img {
+            width: 100%;
+            height: auto;
+            display: block;
         }
 
         .content {
-            padding: 40px;
+            padding: 40px 30px;
             text-align: center;
+            background-color: #1a1a1a;
         }
 
         .logo {
@@ -44,16 +46,14 @@
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: -1px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            margin-bottom: 25px;
         }
 
         h1 {
-            font-size: 32px;
+            font-size: 28px;
             margin-bottom: 20px;
             font-weight: 900;
+            color: #ffffff;
         }
 
         p {
@@ -63,23 +63,27 @@
             margin-bottom: 30px;
         }
 
+        .btn-container {
+            margin: 30px 0;
+        }
+
         .btn {
             display: inline-block;
             padding: 15px 35px;
             background-color: #ec1337;
-            color: #ffffff;
+            color: #ffffff !important;
             text-decoration: none;
             border-radius: 4px;
             font-weight: bold;
             font-size: 18px;
-            transition: transform 0.2s;
         }
 
         .footer {
-            padding: 20px;
+            padding: 30px 20px;
             text-align: center;
             font-size: 12px;
             color: #666666;
+            background-color: #111111;
             border-top: 1px solid #333333;
         }
 
@@ -88,7 +92,7 @@
         }
 
         .social-links a {
-            color: #666666;
+            color: #ec1337;
             text-decoration: none;
             margin: 0 10px;
         }
@@ -96,12 +100,11 @@
 </head>
 
 <body>
-    <div style="padding: 20px;">
+    <div style="background-color: #0a0a0a; padding: 20px;">
         <div class="container">
             <div class="hero">
-                <!-- Fallback for clients that don't support bg images well -->
                 <img src="https://raw.githubusercontent.com/hoangtruonguit/ngonluon/main/api/src/mail/assets/welcome-hero.png"
-                    alt="Welcome to StreamFlow" style="width: 100%; height: auto; display: block;">
+                    alt="Welcome to StreamFlow">
             </div>
             <div class="content">
                 <div class="logo">
@@ -112,8 +115,10 @@
                     Thank you for joining StreamFlow. Prepare yourself for a cinematic journey like no other.
                     Stream the latest blockbusters, timeless classics, and exclusive originals in stunning 4K.
                 </p>
-                <a href="#" class="btn">Start Watching Now</a>
-                <p style="margin-top: 40px; font-size: 14px;">
+                <div class="btn-container">
+                    <a href="https://ngonluon.com" class="btn">Start Watching Now</a>
+                </div>
+                <p style="margin-top: 40px; font-size: 14px; color: #888888;">
                     Questions? Our support team is here to help 24/7.
                 </p>
             </div>

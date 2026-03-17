@@ -17,6 +17,7 @@ export class SearchController {
       limit: dto.limit,
       page: dto.page,
       genre: dto.genre,
+      type: dto.type,
       yearFrom: dto.yearFrom,
       yearTo: dto.yearTo,
       minRating: dto.minRating,

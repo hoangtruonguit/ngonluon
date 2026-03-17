@@ -1,4 +1,5 @@
 'use client';
+import { useTranslations } from 'next-intl';
 
 interface SearchToolbarProps {
     total: number;
@@ -15,18 +16,21 @@ export default function SearchToolbar({
     sortBy,
     onSortChange
 }: SearchToolbarProps) {
+    const t = useTranslations('Search');
     const start = total === 0 ? 0 : (page - 1) * 10 + 1;
     const end = Math.min(page * 10, total);
 
     return (
         <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4 pb-6 border-b border-white/5">
             <div className="text-white/40 text-sm font-medium">
-                {total > 0 ? (
-                    <>Showing <span className="text-white">{start}-{end}</span> of <span className="text-white">{total}</span> results</>
+                {total > 0 || resultsCount > 0 ? (
+                    t.rich('showingResults', {
+                        range: (chunks) => <span className="text-white">{start}-{end}</span>,
+                        total: (chunks) => <span className="text-white">{total || resultsCount}</span>
+                    })
                 ) : (
-                    <>No results found</>
-                )
-                }
+                    t('readyToSearch')
+                )}
             </div>
             
             <div className="flex items-center gap-4 w-full sm:w-auto">
@@ -36,9 +40,9 @@ export default function SearchToolbar({
                         onChange={(e) => onSortChange(e.target.value)}
                         className="w-full bg-[#0a0506] border border-white/5 rounded-xl px-4 py-2.5 text-white/60 focus:outline-none focus:border-primary/40 appearance-none font-bold tracking-wide"
                     >
-                        <option value="relevance">Sort by: Relevance</option>
-                        <option value="newest">Sort by: Newest First</option>
-                        <option value="rating">Sort by: Best Rated</option>
+                        <option value="relevance">{t('sortByLabel')} {t('relevance')}</option>
+                        <option value="newest">{t('sortByLabel')} {t('newest')}</option>
+                        <option value="rating">{t('sortByLabel')} {t('rating')}</option>
                     </select>
                     <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none text-base">expand_more</span>
                 </div>

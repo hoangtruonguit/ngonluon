@@ -1,9 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { movieService } from '@/services/movie.service';
 import CommentSection from '@/components/CommentSection';
-import RecommendedMovies from '@/components/RecommendedMovies';
+import MovieCard from '@/components/MovieCard';
+import MovieActionButtons from '@/components/MovieActionButtons';
 import type { Metadata } from 'next';
 
 interface MovieDetailsPageProps {
@@ -11,24 +13,27 @@ interface MovieDetailsPageProps {
 }
 
 export async function generateMetadata({ params }: MovieDetailsPageProps): Promise<Metadata> {
-    const { slug } = await params;
+    const { slug, locale } = await params;
+    const t = await getTranslations({ locale, namespace: 'Watch' });
     const movie = await movieService.getMovieBySlug(slug);
 
     if (!movie) {
-        return { title: 'Movie Not Found' };
+        return { title: t('movieNotFound') };
     }
 
     return {
-        title: `${movie.title} - StreamFlow`,
-        description: movie.description || `Watch ${movie.title} on StreamFlow`,
+        title: `${movie.title} - MovieStream`,
+        description: movie.description || t('noDescription'),
     };
 }
 
-function formatDuration(minutes: number | null): string {
+function formatDuration(minutes: number | null, tCommon: (key: string) => string): string {
     if (!minutes) return '';
     const h = Math.floor(minutes / 60);
     const m = minutes % 60;
-    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+    const hStr = h > 0 ? `${h}h ` : '';
+    const mStr = `${m}${tCommon('minutesAbbr')}`;
+    return hStr + mStr;
 }
 
 function StarRating({ rating, size = 'text-base' }: { rating: number; size?: string }) {
@@ -57,34 +62,11 @@ function StarRating({ rating, size = 'text-base' }: { rating: number; size?: str
     return <div className="flex">{stars}</div>;
 }
 
-function ReviewStars({ rating }: { rating: number }) {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-        stars.push(
-            <span
-                key={i}
-                className={`material-symbols-outlined text-yellow-500 text-sm`}
-                style={i <= rating ? { fontVariationSettings: "'FILL' 1" } : {}}
-            >
-                star
-            </span>
-        );
-    }
-    return <div className="flex scale-75 origin-right">{stars}</div>;
-}
-
-// Color palette for user avatars without images
-const AVATAR_COLORS = [
-    'from-indigo-500 to-purple-500',
-    'from-emerald-500 to-teal-500',
-    'from-orange-500 to-amber-500',
-    'from-pink-500 to-rose-500',
-    'from-cyan-500 to-blue-500',
-    'from-violet-500 to-fuchsia-500',
-];
 
 export default async function MovieDetailsPage({ params }: MovieDetailsPageProps) {
-    const { slug } = await params;
+    const { slug, locale } = await params;
+    const t = await getTranslations({ locale, namespace: 'Watch' });
+    const tCommon = await getTranslations({ locale, namespace: 'Common' });
 
     const [movie, similarMovies] = await Promise.all([
         movieService.getMovieBySlug(slug),
@@ -138,7 +120,7 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
                             {/* Badges */}
                             <div className="flex flex-wrap gap-2">
                                 {movie.rating >= 8 && (
-                                    <span className="px-2 py-0.5 rounded bg-primary text-[10px] font-bold uppercase">Trending</span>
+                                    <span className="px-2 py-0.5 rounded bg-primary text-[10px] font-bold uppercase">{t('trending')}</span>
                                 )}
                                 {movie.isVip && (
                                     <span className="px-2 py-0.5 rounded bg-white/10 text-[10px] font-bold uppercase text-white">VIP</span>
@@ -153,7 +135,7 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
                                 {movie.durationMinutes && (
                                     <>
                                         <span className="w-1 h-1 rounded-full bg-slate-500" />
-                                        <span>{formatDuration(movie.durationMinutes)}</span>
+                                        <span>{formatDuration(movie.durationMinutes, tCommon)}</span>
                                     </>
                                 )}
                                 <span className="w-1 h-1 rounded-full bg-slate-500" />
@@ -181,28 +163,8 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
                         )}
 
                         {/* Action Buttons */}
-                        <div className="flex flex-wrap gap-4 pt-4">
-                            {movie.slug ? (
-                                <Link href={`/watch/${movie.slug}`}>
-                                    <button className="bg-primary text-secondary px-10 py-4 rounded-xl font-bold flex items-center gap-3 hover:scale-105 transition-transform duration-300">
-                                        <span className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[12px] border-l-secondary border-b-[8px] border-b-transparent ml-1" />
-                                        Watch Now
-                                    </button>
-                                </Link>
-                            ) : (
-                                <button className="bg-primary text-secondary px-10 py-4 rounded-xl font-bold flex items-center gap-3 hover:scale-105 transition-transform duration-300">
-                                    <span className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[12px] border-l-secondary border-b-[8px] border-b-transparent ml-1" />
-                                    Watch Now
-                                </button>
-                            )}
-                            <button className="bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-lg font-bold flex items-center gap-2 backdrop-blur-md transition-all">
-                                <span className="material-symbols-outlined">add</span>
-                                My List
-                            </button>
-                            <button className="size-12 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all">
-                                <span className="material-symbols-outlined">share</span>
-                            </button>
-                        </div>
+                        <MovieActionButtons movieId={movie.id} movieSlug={movie.slug} />
+
                     </div>
                 </div>
             </div>
@@ -213,7 +175,7 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
                 {actors.length > 0 && (
                     <section>
                         <div className="flex items-center justify-between mb-8">
-                            <h2 className="text-2xl font-bold border-l-4 border-primary pl-4 uppercase tracking-wider">Top Cast</h2>
+                            <h2 className="text-2xl font-bold border-l-4 border-primary pl-4 uppercase tracking-wider">{t('topCast')}</h2>
                         </div>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8">
                             {actors.map((member) => (
@@ -249,7 +211,7 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
                 <section className="grid lg:grid-cols-3 gap-12">
                     {/* Audience Rating */}
                     <div className="lg:col-span-1 space-y-8">
-                        <h3 className="text-2xl font-bold uppercase tracking-wider mb-6">Audience Rating</h3>
+                        <h3 className="text-2xl font-bold uppercase tracking-wider mb-6">{t('audienceRating')}</h3>
                         <div className="bg-surface-dark p-8 rounded-2xl border border-white/5 space-y-6">
                             <div className="flex items-center gap-4">
                                 <div className="text-5xl font-bold text-white">
@@ -260,7 +222,7 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
                                 <div>
                                     <StarRating rating={movie.audienceRating.average} />
                                     <p className="text-xs text-slate-400 font-medium uppercase mt-1">
-                                        {movie.audienceRating.totalReviews.toLocaleString()} Ratings
+                                        {t('ratingsCount', { count: movie.audienceRating.totalReviews })}
                                     </p>
                                 </div>
                             </div>
@@ -282,7 +244,7 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
                             </div>
 
                             <button className="w-full py-3 rounded-lg border border-primary text-primary font-bold hover:bg-primary hover:text-white transition-all text-sm">
-                                Rate Movie
+                                {t('rateMovie')}
                             </button>
                         </div>
                     </div>
@@ -295,8 +257,25 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
 
                 {/* Recommended Movies */}
                 {similarMovies.length > 0 && (
-                    <RecommendedMovies slug={slug} />
-
+                    <section>
+                        <div className="flex items-center justify-between mb-8">
+                            <h2 className="text-2xl font-bold border-l-4 border-primary pl-4 uppercase tracking-wider">{t('recommendedTitle')}</h2>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                            {similarMovies.map((movie) => (
+                                <MovieCard
+                                    key={movie.id}
+                                    id={movie.id}
+                                    title={movie.title}
+                                    rating={movie.rating.toString()}
+                                    description={movie.description}
+                                    imageUrl={movie.thumbnailUrl || movie.posterUrl}
+                                    showWatchButton={true}
+                                    slug={movie.slug}
+                                />
+                            ))}
+                        </div>
+                    </section>
                 )}
             </div>
         </main>
