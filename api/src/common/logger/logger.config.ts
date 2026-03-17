@@ -9,7 +9,8 @@ const fileFormat = winston.format.combine(
     const ctx = typeof context === 'string' ? context : 'Application';
     let log = `${String(timestamp)} [${ctx}] ${String(level).toUpperCase()}: ${String(message)}`;
     if (stack) {
-      const stackStr = Array.isArray(stack) ? stack.join('\n') : String(stack);
+      const stackStr =
+        typeof stack === 'string' ? stack : JSON.stringify(stack);
       log += `\nStack trace:\n${stackStr}`;
     }
     return log;

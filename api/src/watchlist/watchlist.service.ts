@@ -37,7 +37,13 @@ export class WatchlistService {
       ) {
         throw error;
       }
-      if (error.code === 'P2002') {
+
+      // Prisma unique constraint violation code
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        (error as Record<string, any>).code === 'P2002'
+      ) {
         throw new ConflictException('Movie is already in your watchlist');
       }
       throw error;

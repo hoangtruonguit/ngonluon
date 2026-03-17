@@ -31,10 +31,11 @@ export class WatchHistoryController {
   @ApiOperation({ summary: 'Save movie/episode watch progress' })
   @ApiResponse({ status: 200, description: 'Progress saved successfully.' })
   @ResponseMessage('Watch progress saved')
-  async saveProgress(@User() user: { userId: string }, @Body() body: any) {
+  async saveProgress(@User() user: { userId: string }, @Body() body: unknown) {
     // Handle sendBeacon sending body as text/plain string
-    const dto: SaveProgressDto =
-      typeof body === 'string' ? JSON.parse(body) : body;
+    const dto = (
+      typeof body === 'string' ? JSON.parse(body) : body
+    ) as SaveProgressDto;
     return this.watchHistoryService.saveProgress(user.userId, dto);
   }
 

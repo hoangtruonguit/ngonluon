@@ -6,7 +6,6 @@ import {
   Param,
   UseGuards,
   Body,
-  ConflictException,
 } from '@nestjs/common';
 import { WatchlistService } from './watchlist.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';

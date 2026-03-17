@@ -106,7 +106,9 @@ export class MailService {
       // Simple interpolation: {{key}} -> data[key]
       Object.entries(data).forEach(([key, value]) => {
         const regex = new RegExp(`{{${key}}}`, 'g');
-        html = html.replace(regex, value);
+        const replacement =
+          typeof value === 'string' ? value : JSON.stringify(value);
+        html = html.replace(regex, replacement);
       });
 
       return html;
@@ -117,11 +119,12 @@ export class MailService {
   }
 
   private renderFallback(template: string, data: Record<string, any>): string {
-    const templates: Record<string, (data: any) => string> = {
-      welcome: (d) => `<h1>Chào mừng ${d.fullName}!</h1>`,
-      reset_password: (d) => `<h1>Reset mật khẩu</h1><p>${d.resetUrl}</p>`,
+    const templates: Record<string, (d: Record<string, any>) => string> = {
+      welcome: (d) => `<h1>Chào mừng ${String(d.fullName)}!</h1>`,
+      reset_password: (d) =>
+        `<h1>Reset mật khẩu</h1><p>${String(d.resetUrl)}</p>`,
       subscription: (d) =>
-        `<h1>Chúc mừng ${d.fullName}!</h1><p>Gói: ${d.planName}</p>`,
+        `<h1>Chúc mừng ${String(d.fullName)}!</h1><p>Gói: ${String(d.planName)}</p>`,
     };
 
     const render = templates[template];

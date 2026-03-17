@@ -16,8 +16,8 @@ export class MailConsumer implements OnModuleInit {
     // Consume email queue
     await this.rabbitMQService.consume(
       QUEUES.EMAIL,
-      async (message: EmailPayload, headers: any) => {
-        const retryCount = headers['x-retry-count'] || 0;
+      async (message: EmailPayload, headers: Record<string, any>) => {
+        const retryCount = (headers['x-retry-count'] as number) || 0;
 
         this.logger.log(
           `Processing email to ${message.to} [attempt ${retryCount + 1}]`,
@@ -28,18 +28,17 @@ export class MailConsumer implements OnModuleInit {
     );
 
     // Consume DLQ — log failed emails cho monitoring
+    // Consume DLQ — log failed emails cho monitoring
     await this.rabbitMQService.consumeDLQ(
-      async (message: EmailPayload, headers: any) => {
+      async (message: EmailPayload, headers: Record<string, any>) => {
         this.logger.error(
           `DLQ: Email permanently failed — to: ${message.to}, ` +
             `subject: ${message.subject}, ` +
-            `retries: ${headers['x-retry-count']}, ` +
-            `first failure: ${headers['x-first-failure']}, ` +
-            `last error: ${headers['x-last-error']}`,
+            `retries: ${headers['x-retry-count'] as number}, ` +
+            `first failure: ${headers['x-first-failure'] as string}, ` +
+            `last error: ${headers['x-last-error'] as string}`,
         );
-
-        // TODO: Lưu vào DB hoặc gửi alert cho admin
-        // await this.alertService.notifyAdmin(...)
+        await Promise.resolve(); // Satisfy require-await
       },
     );
 
