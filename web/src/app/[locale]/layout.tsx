@@ -7,16 +7,23 @@ import { routing } from '@/i18n/routing';
 import "../globals.css";
 import { AuthProvider } from '@/contexts/AuthContext';
 
+import { getTranslations } from 'next-intl/server';
+
 const splineSans = Spline_Sans({
   variable: "--font-spline-sans",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
 });
 
-export const metadata: Metadata = {
-  title: "The best Trailer",
-  description: "Premium Movie Streaming Service",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'Layout' });
+
+  return {
+    title: t('title'),
+    description: t('description'),
+  };
+}
 
 export default async function RootLayout({
   children,

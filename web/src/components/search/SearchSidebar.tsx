@@ -1,4 +1,5 @@
 'use client';
+import { useTranslations } from 'next-intl';
 
 interface SearchSidebarProps {
     activeTab: string;
@@ -35,6 +36,7 @@ export default function SearchSidebar({
     onClearFilters,
     onApplyFilters
 }: SearchSidebarProps) {
+    const t = useTranslations('Search');
     return (
         <aside className="w-80 border-r border-white/5 bg-[#0a0506]/80 backdrop-blur-xl flex flex-col overflow-y-auto custom-scrollbar shadow-2xl z-10">
             <div className="p-8 space-y-10">
@@ -44,27 +46,27 @@ export default function SearchSidebar({
                         onClick={() => setActiveTab('all')}
                         className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'all' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-white/40 hover:text-white/60'}`}
                     >
-                        All Results
+                        {t('allResults')}
                     </button>
                     <button 
                         onClick={() => setActiveTab('trending')}
                         className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'trending' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-white/40 hover:text-white/60'}`}
                     >
-                        Trending
+                        {t('trending')}
                     </button>
                 </div>
 
                 <div>
                     <h3 className="text-white text-base font-bold mb-6 flex items-center justify-between">
-                        Filters
+                        {t('filters')}
                         { (filterGenres.length > 0 || filterYearFrom !== '1990' || filterYearTo !== '2024' || filterMinRating !== '0') && (
-                            <button onClick={onClearFilters} className="text-primary text-xs font-medium hover:underline">Reset</button>
+                            <button onClick={onClearFilters} className="text-primary text-xs font-medium hover:underline">{t('reset')}</button>
                         )}
                     </h3>
                     
                     {/* Genre Section */}
                     <div className="mb-8">
-                        <p className="text-white/40 text-xs font-bold uppercase tracking-[0.2em] mb-4">Genre</p>
+                        <p className="text-white/40 text-xs font-bold uppercase tracking-[0.2em] mb-4">{t('genre')}</p>
                         <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar pr-2">
                             {genresList.map(g => (
                                 <label key={g.slug} className="flex items-center gap-3 cursor-pointer group">
@@ -88,7 +90,7 @@ export default function SearchSidebar({
                     {/* Year Range Section */}
                     <div className="mb-8">
                         <div className="flex justify-between items-center mb-4">
-                            <p className="text-white/40 text-xs font-bold uppercase tracking-[0.2em]">Release Year</p>
+                            <p className="text-white/40 text-xs font-bold uppercase tracking-[0.2em]">{t('releaseYear')}</p>
                             <span className="text-[10px] bg-white/5 px-2 py-0.5 rounded text-white/60 font-mono tracking-tighter">
                                 {filterYearFrom} — {filterYearTo}
                             </span>
@@ -99,7 +101,7 @@ export default function SearchSidebar({
                             </div>
                             <div className="flex gap-4">
                                 <div className="flex-1">
-                                    <label className="text-[10px] text-white/30 uppercase mb-1 block">From</label>
+                                    <label className="text-[10px] text-white/30 uppercase mb-1 block">{t('from')}</label>
                                     <input 
                                         type="number"
                                         value={filterYearFrom}
@@ -108,7 +110,7 @@ export default function SearchSidebar({
                                     />
                                 </div>
                                 <div className="flex-1">
-                                    <label className="text-[10px] text-white/30 uppercase mb-1 block">To</label>
+                                    <label className="text-[10px] text-white/30 uppercase mb-1 block">{t('to')}</label>
                                     <input 
                                         type="number"
                                         value={filterYearTo}
@@ -122,7 +124,7 @@ export default function SearchSidebar({
 
                     {/* User Rating Presets */}
                     <div className="mb-8">
-                        <p className="text-white/40 text-xs font-bold uppercase tracking-[0.2em] mb-4">User Rating</p>
+                        <p className="text-white/40 text-xs font-bold uppercase tracking-[0.2em] mb-4">{t('userRating')}</p>
                         <div className="grid grid-cols-2 gap-2">
                             {['0', '7', '8', '9'].map(r => (
                                 <button 
@@ -130,7 +132,7 @@ export default function SearchSidebar({
                                     onClick={() => setFilterMinRating(r)}
                                     className={`py-2 rounded-lg text-xs font-bold border transition-all ${filterMinRating === r ? 'bg-primary/10 border-primary text-primary shadow-lg shadow-primary/5' : 'bg-white/5 border-transparent text-white/40 hover:text-white/60'}`}
                                 >
-                                    {r === '0' ? 'All' : `${r}.0 +`}
+                                    {r === '0' ? t('all') : `${r}.0 +`}
                                 </button>
                             ))}
                         </div>
@@ -142,7 +144,7 @@ export default function SearchSidebar({
                             onClick={() => setIsStudiosOpen(!isStudiosOpen)}
                             className="w-full flex items-center justify-between text-white/40 text-xs font-bold uppercase tracking-[0.2em] mb-4 hover:text-white transition-colors"
                         >
-                            Studios
+                            {t('studios')}
                             <span className={`material-symbols-outlined text-sm transition-transform ${isStudiosOpen ? 'rotate-180' : ''}`}>expand_more</span>
                         </button>
                         {isStudiosOpen && (
@@ -164,7 +166,7 @@ export default function SearchSidebar({
                         className="w-full bg-primary py-4 rounded-xl font-bold text-sm text-white shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
                     >
                         <span className="material-symbols-outlined text-lg">tune</span>
-                        Show Results
+                        {t('showResults')}
                     </button>
                 </div>
             </div>

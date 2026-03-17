@@ -1,9 +1,9 @@
-import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import ContinueWatchingSection from '@/components/ContinueWatchingSection';
 import MovieCard from '@/components/MovieCard';
 import HeroCarousel from '@/components/HeroCarousel';
 import { movieService } from '@/services/movie.service';
+import { getTranslations } from 'next-intl/server';
 
 export default async function Home() {
     const [trendingMovies, nowPlayingMovies, newReleases, genres] = await Promise.all([
@@ -12,6 +12,8 @@ export default async function Home() {
         movieService.getNewReleases(10),
         movieService.getGenres(),
     ]);
+
+    const t = await getTranslations('Home');
 
     // Use trending movies for the carousel
     const featuredMovies = trendingMovies;
@@ -25,29 +27,30 @@ export default async function Home() {
                 {/* Categories */}
                 <section className="px-6 lg:px-24 max-w-[1440px] mx-auto py-4">
                     <div className="bg-secondary/30 backdrop-blur-xl p-2 rounded-2xl inline-flex gap-2 overflow-x-auto hide-scrollbar max-w-full border border-white/5 shadow-2xl">
-                        <button className="px-8 py-3 rounded-xl text-sm font-bold whitespace-nowrap transition-all duration-300 bg-primary text-secondary shadow-lg shadow-primary/20 hover:scale-105 active:scale-95">
-                            All
-                        </button>
+                        <Link href="/search" className="px-8 py-3 rounded-xl text-sm font-bold whitespace-nowrap transition-all duration-300 bg-primary text-secondary shadow-lg shadow-primary/20 hover:scale-105 active:scale-95">
+                            {t('allCategory')}
+                        </Link>
                         {genres.map((genre) => (
-                            <button
+                            <Link
                                 key={genre.id}
+                                href={`/genre/${genre.slug || genre.id}`}
                                 className="px-8 py-3 rounded-xl text-sm font-bold whitespace-nowrap transition-all duration-300 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white hover:border-white/20 active:scale-95"
                             >
                                 {genre.name}
-                            </button>
+                            </Link>
                         ))}
                     </div>
                 </section>
 
-                <ContinueWatchingSection />
 
                 {/* Now Playing Carousel */}
                 <section className="pl-6 lg:pl-24 max-w-[1440px] mx-auto overflow-hidden">
-                    <h2 className="text-white text-2xl font-bold tracking-tight mb-6">Now Playing</h2>
+                    <h2 className="text-white text-2xl font-bold tracking-tight mb-6">{t('nowPlaying')}</h2>
                     <div className="flex gap-6 overflow-x-auto hide-scrollbar pb-6">
                         {nowPlayingMovies.map((movie) => (
                             <MovieCard
                                 key={movie.id}
+                                id={movie.id}
                                 title={movie.title}
                                 rating={movie.rating.toString()}
                                 description={movie.description}
@@ -61,16 +64,17 @@ export default async function Home() {
 
                 {/* New Releases Carousel */}
                 <section className="pl-6 lg:pl-24 max-w-[1440px] mx-auto overflow-hidden">
-                    <h2 className="text-white text-2xl font-bold tracking-tight mb-6">New Releases</h2>
+                    <h2 className="text-white text-2xl font-bold tracking-tight mb-6">{t('newReleases')}</h2>
                     <div className="flex gap-6 overflow-x-auto hide-scrollbar pb-6">
                         {newReleases.map((movie) => (
                             <MovieCard
                                 key={movie.id}
+                                id={movie.id}
                                 title={movie.title}
                                 rating={movie.rating.toString()}
                                 description={movie.description}
                                 imageUrl={movie.thumbnailUrl || movie.posterUrl}
-                                showWatchButton={false}
+                                showWatchButton={true}
                                 slug={movie.slug}
                             />
                         ))}

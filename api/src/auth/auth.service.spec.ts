@@ -4,7 +4,7 @@ import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { RedisService } from '../redis/redis.service';
 import { ConfigService } from '@nestjs/config';
-import { USER_SERVICE } from '../common/messaging/messaging.module';
+import { MailProducer } from '../mail/mail.producer';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -32,9 +32,10 @@ describe('AuthService', () => {
           },
         },
         {
-          provide: USER_SERVICE,
+          provide: MailProducer,
           useValue: {
-            emit: jest.fn(),
+            sendWelcomeEmail: jest.fn(),
+            sendResetPasswordEmail: jest.fn(),
           },
         },
       ],

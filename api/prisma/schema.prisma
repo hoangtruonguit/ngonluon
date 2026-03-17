@@ -22,6 +22,7 @@ model User {
   subscriptions Subscription[]
   roles         UserRole[]
   watchHistory  WatchHistory[]
+  watchlist     Watchlist[]
 
   @@map("users")
 }
@@ -66,6 +67,7 @@ model Movie {
   comments        Comment[]
   seasons         Season[]
   watchHistory    WatchHistory[]
+  watchlist       Watchlist[]
 
   @@map("movies")
 }
@@ -156,6 +158,18 @@ model WatchHistory {
 
   @@unique([userId, movieId, episodeId])
   @@map("watch_history")
+}
+
+model Watchlist {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  movieId   String   @map("movie_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, movieId])
+  @@map("watchlist")
 }
 
 model Review {

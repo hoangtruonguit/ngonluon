@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { Movie, movieService } from '@/services/movie.service';
 import Image from 'next/image';
@@ -23,6 +24,7 @@ interface SimilarMovie {
 
 export default function RecommendedMovies({ slug }: RecommendedMoviesProps) {
     const router = useRouter();
+    const t = useTranslations('Watch');
     const [movies, setMovies] = useState<Movie[]>([]);
 
     useEffect(() => {
@@ -43,7 +45,7 @@ export default function RecommendedMovies({ slug }: RecommendedMoviesProps) {
 
         <section>
             <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-bold border-l-4 border-primary pl-4 uppercase tracking-wider">Recommended for You</h2>
+                <h2 className="text-2xl font-bold border-l-4 border-primary pl-4 uppercase tracking-wider">{t('recommendedTitle')}</h2>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                 {movies.map((similar) => (

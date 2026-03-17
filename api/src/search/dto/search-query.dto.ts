@@ -9,9 +9,13 @@ import {
 import { Type } from 'class-transformer';
 
 export class SearchQueryDto {
+  @IsOptional()
   @IsString()
-  @MinLength(1)
-  q: string;
+  q?: string;
+
+  @IsOptional()
+  @IsString()
+  type?: string;
 
   @IsOptional()
   @IsString()

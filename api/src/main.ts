@@ -4,7 +4,6 @@ import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import cookieParser from 'cookie-parser';
@@ -41,22 +40,6 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, documentFactory);
 
   const configService = app.get(ConfigService);
-
-  // 4. Connect Microservices (RabbitMQ)
-  app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.RMQ,
-    options: {
-      urls: [
-        configService.get<string>('RABBITMQ_URL') || 'amqp://localhost:5672',
-      ],
-      queue: 'user_queue',
-      queueOptions: {
-        durable: false,
-      },
-    },
-  });
-
-  await app.startAllMicroservices();
   await app.listen(configService.get<number>('PORT') || 3001);
 }
 bootstrap().catch((err) => {

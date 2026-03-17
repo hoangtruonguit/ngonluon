@@ -1,7 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { MovieDetail } from '@/services/movie.service';
+import { useWatchProgress } from '@/hooks/useWatchProgress';
+import { apiClient } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 declare global {
     interface Window {
@@ -46,12 +50,17 @@ interface VideoPlayerProps {
 }
 
 export default function VideoPlayer({ movie }: VideoPlayerProps) {
+    const { user } = useAuth();
+    const t = useTranslations('Watch');
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [volume, setVolume] = useState(1);
     const [isMuted, setIsMuted] = useState(false);
     const [isFullScreen, setIsFullScreen] = useState(false);
+    const [isPlayerReady, setIsPlayerReady] = useState(false);
+    const [showResumeDialog, setShowResumeDialog] = useState(false);
+    const [resumeTime, setResumeTime] = useState(0);
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const ytPlayerRef = useRef<YTPlayer | null>(null);
@@ -62,6 +71,13 @@ export default function VideoPlayer({ movie }: VideoPlayerProps) {
         ? movie.trailerUrl!.split('/embed/')[1]?.split('?')[0]
         : null;
     const hasVideo = movie.trailerUrl || movie.videoUrl;
+
+    const { saveProgress } = useWatchProgress({
+        movieId: movie.id,
+        duration,
+        currentTime,
+        isPlaying,
+    });
 
     // ─── YouTube IFrame API ────────────────────────────
     useEffect(() => {
@@ -86,7 +102,10 @@ export default function VideoPlayer({ movie }: VideoPlayerProps) {
                         origin: window.location.origin,
                     },
                     events: {
-                        onReady: (e: { target: YTPlayer }) => setDuration(e.target.getDuration()),
+                        onReady: (e: { target: YTPlayer }) => {
+                            setDuration(e.target.getDuration());
+                            setIsPlayerReady(true);
+                        },
                         onStateChange: (e: { target: YTPlayer; data: number }) => setIsPlaying(e.data === window.YT.PlayerState.PLAYING),
                         onError: (e: { target: YTPlayer; data: number }) => console.error('YouTube Player Error:', e.data),
                     },
@@ -124,6 +143,31 @@ export default function VideoPlayer({ movie }: VideoPlayerProps) {
         return () => { if (ytIntervalRef.current) clearInterval(ytIntervalRef.current); };
     }, [isYouTube]);
 
+    // ─── Resume Logic ──────────────────────────────────
+    useEffect(() => {
+        if (!user || !isPlayerReady) return;
+
+        const checkResume = async () => {
+            try {
+                const response = await apiClient.getWatchProgress(movie.id);
+                if (response.data && response.data.progressSeconds > 10 && !response.data.isFinished) {
+                    setResumeTime(response.data.progressSeconds);
+                    setShowResumeDialog(true);
+                }
+            } catch (error) {
+                console.error('Failed to fetch watch progress:', error);
+            }
+        };
+
+        checkResume();
+    }, [user, isPlayerReady, movie.id]);
+
+    const handleResume = useCallback(() => {
+        if (isYouTube) ytPlayerRef.current?.seekTo(resumeTime, true);
+        else if (videoRef.current) videoRef.current.currentTime = resumeTime;
+        setShowResumeDialog(false);
+    }, [isYouTube, resumeTime]);
+
     // ─── Controls ──────────────────────────────────────
     const togglePlay = useCallback(() => {
         if (isYouTube) {
@@ -131,6 +175,7 @@ export default function VideoPlayer({ movie }: VideoPlayerProps) {
             if (!player) return;
             if (isPlaying) {
                 player.pauseVideo();
+                saveProgress(currentTime);
             } else {
                 player.playVideo();
             }
@@ -138,30 +183,37 @@ export default function VideoPlayer({ movie }: VideoPlayerProps) {
             const video = videoRef.current;
             if (!video) return;
             if (video.paused) { video.play(); setIsPlaying(true); }
-            else { video.pause(); setIsPlaying(false); }
+            else { 
+                video.pause(); 
+                setIsPlaying(false); 
+                saveProgress(currentTime);
+            }
         }
-    }, [isYouTube, isPlaying]);
+    }, [isYouTube, isPlaying, currentTime, saveProgress]);
 
     const handleSeek = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const time = parseFloat(e.target.value);
         if (isYouTube) ytPlayerRef.current?.seekTo(time, true);
         else if (videoRef.current) videoRef.current.currentTime = time;
         setCurrentTime(time);
-    }, [isYouTube]);
+        saveProgress(time);
+    }, [isYouTube, saveProgress]);
 
     const rewind = useCallback(() => {
         const t = Math.max(0, currentTime - 10);
         if (isYouTube) ytPlayerRef.current?.seekTo(t, true);
         else if (videoRef.current) videoRef.current.currentTime = t;
         setCurrentTime(t);
-    }, [isYouTube, currentTime]);
+        saveProgress(t);
+    }, [isYouTube, currentTime, saveProgress]);
 
     const forward = useCallback(() => {
         const t = Math.min(duration, currentTime + 10);
         if (isYouTube) ytPlayerRef.current?.seekTo(t, true);
         else if (videoRef.current) videoRef.current.currentTime = t;
         setCurrentTime(t);
-    }, [isYouTube, currentTime, duration]);
+        saveProgress(t);
+    }, [isYouTube, currentTime, duration, saveProgress]);
 
     const handleVolumeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const vol = parseFloat(e.target.value);
@@ -195,7 +247,12 @@ export default function VideoPlayer({ movie }: VideoPlayerProps) {
     }, []);
 
     const handleTimeUpdate = () => { if (videoRef.current) setCurrentTime(videoRef.current.currentTime); };
-    const handleLoadedMetadata = () => { if (videoRef.current) setDuration(videoRef.current.duration); };
+    const handleLoadedMetadata = () => { 
+        if (videoRef.current) {
+            setDuration(videoRef.current.duration);
+            setIsPlayerReady(true);
+        }
+    };
 
     const formatTime = (time: number) => {
         const h = Math.floor(time / 3600);
@@ -214,7 +271,7 @@ export default function VideoPlayer({ movie }: VideoPlayerProps) {
                     {!hasVideo ? (
                         <div className="w-full h-full flex flex-col items-center justify-center bg-surface-dark">
                             <span className="material-symbols-outlined text-[64px] text-gray-600 mb-4">movie</span>
-                            <p className="text-gray-400 text-lg">No video available</p>
+                            <p className="text-gray-400 text-lg">{t('noVideo')}</p>
                         </div>
                     ) : isYouTube ? (
                         <div className="w-full h-full pointer-events-none relative z-0">
@@ -232,6 +289,35 @@ export default function VideoPlayer({ movie }: VideoPlayerProps) {
                         />
                     )}
                 </div>
+
+                {/* Resume Dialog */}
+                {showResumeDialog && (
+                    <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300">
+                        <div className="bg-surface-dark border border-white/10 p-6 rounded-2xl shadow-2xl max-w-sm w-full mx-4 transform animate-in fade-in zoom-in duration-300">
+                            <h3 className="text-xl font-bold text-white mb-2">{t('resumeTitle')}</h3>
+                            <p className="text-gray-400 mb-6">
+                                {t.rich('resumeMessage', {
+                                    time: formatTime(resumeTime),
+                                    mono: (chunks) => <span className="text-primary font-mono">{chunks}</span>
+                                })}
+                            </p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={handleResume}
+                                    className="flex-1 py-3 px-4 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all active:scale-95 shadow-[0_0_20px_rgba(236,19,55,0.3)]"
+                                >
+                                    {t('resume')}
+                                </button>
+                                <button
+                                    onClick={() => setShowResumeDialog(false)}
+                                    className="flex-1 py-3 px-4 bg-white/10 text-white font-bold rounded-xl hover:bg-white/20 transition-all active:scale-95"
+                                >
+                                    {t('startOver')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {isYouTube && hasVideo && (
                     <div className="absolute inset-0 z-10 cursor-pointer" onClick={togglePlay} />

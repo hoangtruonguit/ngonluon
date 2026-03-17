@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from '@/i18n/routing';
 import { movieService, MovieComment } from '@/services/movie.service';
@@ -14,6 +15,7 @@ interface CommentSectionProps {
 export default function CommentSection({ movieId, className = "mt-12" }: CommentSectionProps) {
     const { isLoggedIn } = useAuth();
     const router = useRouter();
+    const t = useTranslations('Watch');
 
     const [comment, setComment] = useState('');
     const [isSpoiler, setIsSpoiler] = useState(false);
@@ -78,7 +80,7 @@ export default function CommentSection({ movieId, className = "mt-12" }: Comment
                 <div className="flex items-center gap-3">
                     <span className="material-symbols-outlined text-primary">chat_bubble</span>
                     <h3 className="text-xl font-bold text-white">
-                        Discussion <span className="text-gray-500 font-normal ml-2">({comments.length})</span>
+                        {t('discussionTitle')} <span className="text-gray-500 font-normal ml-2">({comments.length})</span>
                     </h3>
                 </div>
                 <div className="flex gap-2">
@@ -86,13 +88,13 @@ export default function CommentSection({ movieId, className = "mt-12" }: Comment
                         onClick={() => setSortBy('newest')}
                         className={`px-4 py-1.5 text-xs font-bold rounded-full transition-colors ${sortBy === 'newest' ? 'bg-primary text-secondary' : 'bg-surface-dark text-gray-400 hover:bg-white/10'}`}
                     >
-                        Newest
+                        {t('sortByNewest')}
                     </button>
                     <button
                         onClick={() => setSortBy('top')}
                         className={`px-4 py-1.5 text-xs font-bold rounded-full transition-colors ${sortBy === 'top' ? 'bg-primary text-secondary' : 'bg-surface-dark text-gray-400 hover:bg-white/10'}`}
                     >
-                        Top Rated
+                        {t('sortByTop')}
                     </button>
                 </div>
             </div>
@@ -108,7 +110,7 @@ export default function CommentSection({ movieId, className = "mt-12" }: Comment
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}
                             className="w-full bg-surface-dark border border-white/10 rounded-xl p-4 text-sm focus:ring-1 focus:ring-primary focus:outline-none min-h-[100px] text-white placeholder:text-gray-500"
-                            placeholder={isLoggedIn ? "Write a comment..." : "Log in to post a comment..."}
+                            placeholder={isLoggedIn ? t('commentPlaceholder') : t('loginToCommentPlaceholder')}
                         />
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div className="flex items-center gap-4">
@@ -116,7 +118,7 @@ export default function CommentSection({ movieId, className = "mt-12" }: Comment
                                     <div className={`size-4 border rounded flex items-center justify-center transition-colors ${isSpoiler ? 'border-primary' : 'border-gray-600 group-hover:border-primary'}`}>
                                         <div className={`size-2 bg-primary rounded-sm transition-opacity ${isSpoiler ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'}`} />
                                     </div>
-                                    <span className="text-xs text-gray-400">Spoiler?</span>
+                                    <span className="text-xs text-gray-400">{t('spoilerTag')}</span>
                                 </label>
                             </div>
                             <button 
@@ -124,7 +126,7 @@ export default function CommentSection({ movieId, className = "mt-12" }: Comment
                                 disabled={isSubmitting || (isLoggedIn && !comment.trim())}
                                 className="px-8 py-2 bg-primary text-secondary font-bold rounded-lg hover:scale-105 transition-transform w-full sm:w-auto disabled:opacity-50 disabled:hover:scale-100"
                             >
-                                {isLoggedIn ? (isSubmitting ? 'POSTING...' : 'POST') : 'LOG IN TO POST'}
+                                {isLoggedIn ? (isSubmitting ? t('commentPosting') : t('commentPost')) : t('loginToPost')}
                             </button>
                         </div>
                     </div>
@@ -151,17 +153,17 @@ export default function CommentSection({ movieId, className = "mt-12" }: Comment
                                         <span className="text-gray-500 text-xs">{new Date(c.createdAt).toLocaleDateString()}</span>
                                     </div>
                                     {c.isSpoiler && (
-                                        <span className="px-2 py-0.5 bg-red-500/10 text-red-500 border border-red-500/20 text-[10px] font-bold uppercase rounded-full">Spoiler</span>
+                                        <span className="px-2 py-0.5 bg-red-500/10 text-red-500 border border-red-500/20 text-[10px] font-bold uppercase rounded-full">{t('spoilerLabel')}</span>
                                     )}
                                 </div>
-                                <p className={`text-sm ${c.isSpoiler ? 'text-gray-500 blur-sm hover:blur-none transition-all cursor-pointer' : 'text-gray-300'}`} title={c.isSpoiler ? 'Hover to reveal spoiler' : ''}>
+                                <p className={`text-sm ${c.isSpoiler ? 'text-gray-500 blur-sm hover:blur-none transition-all cursor-pointer' : 'text-gray-300'}`} title={c.isSpoiler ? t('revealSpoiler') : ''}>
                                     {c.content}
                                 </p>
                             </div>
                         </div>
                     ))
                 ) : (
-                    <p className="text-gray-500 text-center text-sm">No comments yet. Be the first!</p>
+                    <p className="text-gray-500 text-center text-sm">{t('commentEmpty')}</p>
                 )}
             </div>
         </div>

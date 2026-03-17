@@ -5,19 +5,16 @@ import { UsersModule } from '../users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { MessagingModule } from '../common/messaging/messaging.module';
 import { MailModule } from '../mail/mail.module';
-import { AuthMessagingConsumer } from './auth-messaging.consumer';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({}), // Algorithm and keys are set per-call in AuthService.login()
-    MessagingModule,
     MailModule,
   ],
-  controllers: [AuthController, AuthMessagingConsumer],
+  controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
 })
 export class AuthModule {}

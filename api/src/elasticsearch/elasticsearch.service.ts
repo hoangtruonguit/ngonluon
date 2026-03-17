@@ -143,7 +143,7 @@ export class ElasticsearchService implements OnModuleInit {
   // ─── Search ────────────────────────────────────────
 
   async search(
-    query: string,
+    query?: string,
     options: {
       limit?: number;
       genre?: string;
@@ -167,7 +167,14 @@ export class ElasticsearchService implements OnModuleInit {
     } = options;
 
     const filter: estypes.QueryDslQueryContainer[] = [];
-    if (genre) filter.push({ term: { genres: genre } });
+    if (genre) {
+      const genreList = genre.split(',').map((g) => g.trim());
+      if (genreList.length === 1) {
+        filter.push({ term: { genres: genreList[0] } });
+      } else {
+        filter.push({ terms: { genres: genreList } });
+      }
+    }
     if (type) filter.push({ term: { type } });
 
     if (yearFrom || yearTo) {
@@ -196,54 +203,63 @@ export class ElasticsearchService implements OnModuleInit {
 
     const from = (page - 1) * limit;
 
+    const queryContainer: estypes.QueryDslQueryContainer = {
+      bool: {
+        must: [],
+        filter,
+      },
+    };
+
+    if (query) {
+      (queryContainer.bool!.must as estypes.QueryDslQueryContainer[]).push({
+        bool: {
+          should: [
+            // Search tên phim (boost cao nhất)
+            {
+              match: {
+                title: {
+                  query,
+                  boost: 3,
+                  fuzziness: 'AUTO',
+                },
+              },
+            },
+            // Search tên diễn viên / đạo diễn
+            {
+              nested: {
+                path: 'cast',
+                query: {
+                  match: {
+                    'cast.name': {
+                      query,
+                      boost: 2,
+                      fuzziness: 'AUTO',
+                    },
+                  },
+                },
+                inner_hits: {
+                  size: 3,
+                  _source: ['cast.name', 'cast.role'],
+                },
+              },
+            },
+          ],
+          minimum_should_match: 1,
+        },
+      });
+    } else {
+      // Nếu không có query, mặc định match all (vẫn apply filters)
+      (queryContainer.bool!.must as estypes.QueryDslQueryContainer[]).push({
+        match_all: {},
+      });
+    }
+
     const result = await this.es.search<MovieDocument>({
       index: MOVIE_INDEX,
       size: limit,
       from,
       sort,
-      query: {
-        bool: {
-          must: [
-            {
-              bool: {
-                should: [
-                  // Search tên phim (boost cao nhất)
-                  {
-                    match: {
-                      title: {
-                        query,
-                        boost: 3,
-                        fuzziness: 'AUTO',
-                      },
-                    },
-                  },
-                  // Search tên diễn viên / đạo diễn
-                  {
-                    nested: {
-                      path: 'cast',
-                      query: {
-                        match: {
-                          'cast.name': {
-                            query,
-                            boost: 2,
-                            fuzziness: 'AUTO',
-                          },
-                        },
-                      },
-                      inner_hits: {
-                        size: 3,
-                        _source: ['cast.name', 'cast.role'],
-                      },
-                    },
-                  },
-                ],
-                minimum_should_match: 1,
-              },
-            },
-          ],
-          filter,
-        },
-      } as estypes.QueryDslQueryContainer,
+      query: queryContainer,
       highlight: {
         fields: {
           title: {},

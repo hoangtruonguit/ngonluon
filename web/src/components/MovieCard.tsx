@@ -4,10 +4,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { movieService } from '@/services/movie.service';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { apiClient } from '@/lib/api';
+import { useTranslations } from 'next-intl';
 
 interface MovieCardProps {
+    id?: string;
     title: string;
     rating?: string;
     description: string;
@@ -16,9 +19,13 @@ interface MovieCardProps {
     slug?: string;
     source?: 'local' | 'tmdb';
     onImport?: () => void;
+    onWatchlistUpdate?: (movieId: string, isInWatchlist: boolean) => void;
 }
 
+
+
 export default function MovieCard({ 
+    id,
     title, 
     rating, 
     description, 
@@ -26,11 +33,46 @@ export default function MovieCard({
     showWatchButton = false, 
     slug,
     source = 'local',
-    onImport
+    onImport,
+    onWatchlistUpdate
 }: MovieCardProps) {
     const highResImageUrl = movieService.getHighResImage(imageUrl);
     const router = useRouter();
+    const { isLoggedIn, watchlistIds, updateWatchlist, openLoginPrompt } = useAuth();
     const [isImporting, setIsImporting] = useState(false);
+    const [isWatchlistLoading, setIsWatchlistLoading] = useState(false);
+    const t = useTranslations('Common');
+
+    const isInWatchlist = id ? watchlistIds.has(id) : false;
+
+    const handleWatchlistToggle = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!isLoggedIn) {
+            openLoginPrompt();
+            return;
+        }
+
+        if (!id) return;
+
+        setIsWatchlistLoading(true);
+        try {
+            if (isInWatchlist) {
+                await apiClient.removeFromWatchlist(id);
+                updateWatchlist(id, false);
+                if (onWatchlistUpdate) onWatchlistUpdate(id, false);
+            } else {
+                await apiClient.addToWatchlist(id);
+                updateWatchlist(id, true);
+                if (onWatchlistUpdate) onWatchlistUpdate(id, true);
+            }
+        } catch (error) {
+            console.error('Failed to toggle watchlist:', error);
+        } finally {
+            setIsWatchlistLoading(false);
+        }
+    };
 
     const handleImportClick = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -76,30 +118,48 @@ export default function MovieCard({
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                Importing...
+                                {t('importing')}
                             </span>
-                        ) : 'Import Movie'}
+                        ) : t('importMovie')}
                     </button>
                 ) : (
-                    showWatchButton && slug && (
-                        <button
-                            className="w-full bg-primary py-2 rounded-lg text-white text-xs font-bold uppercase tracking-widest hover:bg-primary/90 transition-colors"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                router.push(`/watch/${slug}`);
-                            }}
-                        >
-                            Watch Now
-                        </button>
-                    )
+                    <div className="flex flex-col gap-2 w-full">
+                        {showWatchButton && slug && (
+                            <button
+                                className="w-full bg-primary py-2 rounded-lg text-white text-xs font-bold uppercase tracking-widest hover:bg-primary/90 transition-colors"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    router.push(`/watch/${slug}`);
+                                }}
+                            >
+                                {t('watchNow')}
+                            </button>
+                        )}
+                        {source === 'local' && id && (
+                            <button
+                                className={`w-full py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+                                    isInWatchlist 
+                                        ? 'bg-white/10 text-white hover:bg-white/20' 
+                                        : 'bg-white/20 text-white hover:bg-white/30'
+                                }`}
+                                onClick={handleWatchlistToggle}
+                                disabled={isWatchlistLoading}
+                            >
+                                {isWatchlistLoading ? (
+                                    <svg className="animate-spin h-3 w-3 text-white" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                ) : (
+                                    <span>{isInWatchlist ? `✓ ${t('inMyList')}` : `+ ${t('myList')}`}</span>
+                                )}
+                            </button>
+                        )}
+                    </div>
                 )}
             </div>
         </div>
     );
-
-    if (source === 'local' && slug) {
-        return <Link href={`/movies/${slug}`}>{card}</Link>;
-    }
 
     return card;
 }
