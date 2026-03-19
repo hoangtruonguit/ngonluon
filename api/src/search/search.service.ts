@@ -13,6 +13,7 @@ export interface SearchResult {
   posterUrl: string | null;
   releaseYear: number | null;
   rating: number;
+  description?: string;
   genres: string[];
   highlight?: Record<string, string[]>;
   matchedCast?: { name: string; role: string }[];
@@ -40,6 +41,7 @@ export class SearchService {
       minRating?: number;
       sortBy?: string;
       page?: number;
+      context?: string;
     } = {},
   ) {
     const { limit = 20, page = 1 } = options;
@@ -48,6 +50,7 @@ export class SearchService {
     // 1. Search ES trước
     const esResult = await this.esService.search(query, options);
 
+    let total = esResult.total;
     const results: SearchResult[] = esResult.hits.map((hit) => ({
       source: 'local' as const,
       id: hit.id,
@@ -57,29 +60,32 @@ export class SearchService {
       releaseYear: hit.releaseYear,
       rating: hit.rating,
       genres: hit.genres,
+      description: (hit as { description?: string }).description,
       highlight: hit.highlight,
     }));
 
     // 2. Nếu ES ít kết quả (< 5) hoặc không có -> fallback TMDB (chỉ khi có query)
     if (query && results.length < MIN_LOCAL_RESULTS) {
       const remaining = limit - results.length;
-      const tmdbResults = await this.searchTmdb(
-        query,
-        remaining,
-        results,
-        page,
-      );
-      results.push(...tmdbResults);
+      const tmdbData = await this.searchTmdb(query, remaining, results, page);
+      results.push(...tmdbData.results);
+      // Nếu local không có gì, lấy total từ TMDB để pagination hoạt động
+      if (total === 0) {
+        total = tmdbData.total;
+      }
     }
 
     return {
-      total: esResult.total,
+      total,
       results,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
     };
   }
 
-  async suggest(query: string) {
-    return this.esService.suggest(query, 5);
+  async suggest(query: string, context?: string) {
+    return this.esService.suggest(query, 5, context);
   }
 
   // ─── TMDB Fallback ─────────────────────────────────
@@ -88,10 +94,10 @@ export class SearchService {
     limit: number,
     existingResults: SearchResult[],
     page: number,
-  ): Promise<SearchResult[]> {
+  ): Promise<{ results: SearchResult[]; total: number }> {
     try {
       const tmdbData = await this.tmdbService.searchMovies(query, page);
-      if (!tmdbData?.results) return [];
+      if (!tmdbData?.results) return { results: [], total: 0 };
 
       // Dedup bằng title + releaseYear để tránh trùng phim cùng tên khác năm
       const existingKeys = new Set(
@@ -101,7 +107,7 @@ export class SearchService {
         }),
       );
 
-      return tmdbData.results
+      const mappedResults = tmdbData.results
         .filter((item: TmdbMovie) => {
           const year = item.release_date
             ? parseInt(item.release_date.split('-')[0], 10)
@@ -119,11 +125,17 @@ export class SearchService {
             ? parseInt(item.release_date.split('-')[0], 10)
             : null,
           rating: item.vote_average ?? 0,
+          description: item.overview,
           genres: [], // TMDB search chỉ trả genre_ids
         }));
+
+      return {
+        results: mappedResults,
+        total: tmdbData.total_results,
+      };
     } catch (error) {
       this.logger.warn(`TMDB search failed: ${error}`);
-      return [];
+      return { results: [], total: 0 };
     }
   }
 

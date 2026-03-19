@@ -52,4 +52,36 @@ export const winstonConfig = {
   ],
 };
 
+// Dedicated logger for Elasticsearch queries
+export const esLogger = WinstonModule.createLogger({
+  transports: [
+    new winston.transports.DailyRotateFile({
+      filename: 'logs/elasticsearch-%DATE%.log',
+      datePattern: 'YYYY-MM-DD',
+      zippedArchive: true,
+      maxSize: '20m',
+      maxFiles: '30d',
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.printf((info) => {
+          return `${String(info.timestamp)}: ${String(info.message)}`;
+        }),
+      ),
+    }),
+    // Also log to console in development
+    ...(process.env.NODE_ENV !== 'production'
+      ? [
+          new winston.transports.Console({
+            format: winston.format.combine(
+              winston.format.colorize(),
+              winston.format.printf(
+                (info) => `[Elasticsearch] ${String(info.message)}`,
+              ),
+            ),
+          }),
+        ]
+      : []),
+  ],
+});
+
 export const logger = WinstonModule.createLogger(winstonConfig);

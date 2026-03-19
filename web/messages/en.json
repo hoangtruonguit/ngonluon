@@ -62,13 +62,15 @@
         "imdb": "IMDb",
         "minutesAbbr": "m",
         "hoursAbbr": "h",
-        "timeLeft": "{time} left"
+        "timeLeft": "{time} left",
+        "releasedYear": "Released year : {year}"
     },
     "Layout": {
         "title": "NgonLuon - The best Trailer",
         "description": "Premium Movie Streaming Service"
     },
     "Header": {
+        "home": "Home",
         "movies": "Movies",
         "tvShows": "TV Shows",
         "categories": "Categories",

@@ -2,15 +2,13 @@
 import { useTranslations } from 'next-intl';
 
 interface SearchSidebarProps {
-    activeTab: string;
-    setActiveTab: (tab: string) => void;
     filterGenres: string[];
     toggleGenre: (slug: string) => void;
     genresList: { name: string; slug: string }[];
-    filterYearFrom: string;
-    filterYearTo: string;
-    setFilterYearFrom: (val: string) => void;
-    setFilterYearTo: (val: string) => void;
+    filterYearFrom: string | undefined;
+    filterYearTo: string | undefined;
+    setFilterYearFrom: (val: string | undefined) => void;
+    setFilterYearTo: (val: string | undefined) => void;
     filterMinRating: string;
     setFilterMinRating: (val: string) => void;
     isStudiosOpen: boolean;
@@ -20,8 +18,6 @@ interface SearchSidebarProps {
 }
 
 export default function SearchSidebar({
-    activeTab,
-    setActiveTab,
     filterGenres,
     toggleGenre,
     genresList,
@@ -41,29 +37,16 @@ export default function SearchSidebar({
         <aside className="w-80 border-r border-white/5 bg-[#0a0506]/80 backdrop-blur-xl flex flex-col overflow-y-auto custom-scrollbar shadow-2xl z-10">
             <div className="p-8 space-y-10">
                 {/* Header Toggles */}
-                <div className="flex bg-white/5 p-1 rounded-xl">
-                    <button 
-                        onClick={() => setActiveTab('all')}
-                        className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'all' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-white/40 hover:text-white/60'}`}
-                    >
-                        {t('allResults')}
-                    </button>
-                    <button 
-                        onClick={() => setActiveTab('trending')}
-                        className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'trending' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-white/40 hover:text-white/60'}`}
-                    >
-                        {t('trending')}
-                    </button>
-                </div>
+
 
                 <div>
                     <h3 className="text-white text-base font-bold mb-6 flex items-center justify-between">
                         {t('filters')}
-                        { (filterGenres.length > 0 || filterYearFrom !== '1990' || filterYearTo !== '2024' || filterMinRating !== '0') && (
+                        {(filterGenres.length > 0 || filterYearFrom !== undefined || filterYearTo !== undefined || filterMinRating !== '0') && (
                             <button onClick={onClearFilters} className="text-primary text-xs font-medium hover:underline">{t('reset')}</button>
                         )}
                     </h3>
-                    
+
                     {/* Genre Section */}
                     <div className="mb-8">
                         <p className="text-white/40 text-xs font-bold uppercase tracking-[0.2em] mb-4">{t('genre')}</p>
@@ -71,7 +54,7 @@ export default function SearchSidebar({
                             {genresList.map(g => (
                                 <label key={g.slug} className="flex items-center gap-3 cursor-pointer group">
                                     <div className="relative">
-                                        <input 
+                                        <input
                                             type="checkbox"
                                             checked={filterGenres.includes(g.slug)}
                                             onChange={() => toggleGenre(g.slug)}
@@ -92,7 +75,7 @@ export default function SearchSidebar({
                         <div className="flex justify-between items-center mb-4">
                             <p className="text-white/40 text-xs font-bold uppercase tracking-[0.2em]">{t('releaseYear')}</p>
                             <span className="text-[10px] bg-white/5 px-2 py-0.5 rounded text-white/60 font-mono tracking-tighter">
-                                {filterYearFrom} — {filterYearTo}
+                                {filterYearFrom || 'Any'} — {filterYearTo || 'Any'}
                             </span>
                         </div>
                         <div className="space-y-4 px-1">
@@ -102,20 +85,22 @@ export default function SearchSidebar({
                             <div className="flex gap-4">
                                 <div className="flex-1">
                                     <label className="text-[10px] text-white/30 uppercase mb-1 block">{t('from')}</label>
-                                    <input 
+                                    <input
                                         type="number"
-                                        value={filterYearFrom}
-                                        onChange={(e) => setFilterYearFrom(e.target.value)}
-                                        className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50" 
+                                        value={filterYearFrom || ''}
+                                        onChange={(e) => setFilterYearFrom(e.target.value || undefined)}
+                                        className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
+                                        placeholder="Any"
                                     />
                                 </div>
                                 <div className="flex-1">
                                     <label className="text-[10px] text-white/30 uppercase mb-1 block">{t('to')}</label>
-                                    <input 
+                                    <input
                                         type="number"
-                                        value={filterYearTo}
-                                        onChange={(e) => setFilterYearTo(e.target.value)}
-                                        className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50" 
+                                        value={filterYearTo || ''}
+                                        onChange={(e) => setFilterYearTo(e.target.value || undefined)}
+                                        className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
+                                        placeholder="Any"
                                     />
                                 </div>
                             </div>
@@ -127,7 +112,7 @@ export default function SearchSidebar({
                         <p className="text-white/40 text-xs font-bold uppercase tracking-[0.2em] mb-4">{t('userRating')}</p>
                         <div className="grid grid-cols-2 gap-2">
                             {['0', '7', '8', '9'].map(r => (
-                                <button 
+                                <button
                                     key={r}
                                     onClick={() => setFilterMinRating(r)}
                                     className={`py-2 rounded-lg text-xs font-bold border transition-all ${filterMinRating === r ? 'bg-primary/10 border-primary text-primary shadow-lg shadow-primary/5' : 'bg-white/5 border-transparent text-white/40 hover:text-white/60'}`}
@@ -140,7 +125,7 @@ export default function SearchSidebar({
 
                     {/* Studios Collapsible */}
                     <div className="mb-10">
-                        <button 
+                        <button
                             onClick={() => setIsStudiosOpen(!isStudiosOpen)}
                             className="w-full flex items-center justify-between text-white/40 text-xs font-bold uppercase tracking-[0.2em] mb-4 hover:text-white transition-colors"
                         >
@@ -161,7 +146,7 @@ export default function SearchSidebar({
                         )}
                     </div>
 
-                    <button 
+                    <button
                         onClick={() => onApplyFilters({ resetPage: true })}
                         className="w-full bg-primary py-4 rounded-xl font-bold text-sm text-white shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
                     >

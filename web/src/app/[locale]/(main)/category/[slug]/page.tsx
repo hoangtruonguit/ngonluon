@@ -13,7 +13,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         'movies': tHeader('movies'),
         'tv-shows': tHeader('tvShows'),
         'trending': tHome('trending'),
-        'new-releases': tHome('newReleases')
+        'new-releases': tHome('newReleases'),
+        'now-playing': tHome('nowPlaying')
     };
 
     const CATEGORY_TYPES: Record<string, string> = {
@@ -23,6 +24,11 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
 
     const title = CATEGORY_TITLES[slug] || slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     const type = CATEGORY_TYPES[slug];
+    
+    const initialFilters: any = { type };
+    if (slug === 'new-releases') initialFilters.sortBy = 'newest';
+    if (slug === 'trending' || slug === 'now-playing') initialFilters.sortBy = 'popularity';
+    if (slug === 'now-playing') initialFilters.yearFrom = '2024';
 
     const breadcrumbItems = [
         { label: tSearch('home'), href: '/' },
@@ -34,7 +40,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         <DiscoveryTemplate
             baseTitle={title}
             breadcrumbItems={breadcrumbItems}
-            initialFilters={{ type } as any}
+            initialFilters={initialFilters}
         />
     );
 }

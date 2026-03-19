@@ -16,7 +16,7 @@ import { ElasticsearchModule } from './elasticsearch/elasticsearch.module';
 import { SearchModule } from './search/search.module';
 import { WatchlistModule } from './watchlist/watchlist.module';
 import { WatchHistoryModule } from './watch-history/watch-history.module';
-import { MovieSyncEsListener } from './listeners/moive-sync-es.listener';
+import { MovieSyncListener } from './elasticsearch/moive-sync.listener';
 import { validate } from './common/config/env.validation';
 import { RabbitMQModule } from './rabbitmq/rabbitmq.module';
 
@@ -50,7 +50,7 @@ import { RabbitMQModule } from './rabbitmq/rabbitmq.module';
   controllers: [AppController],
   providers: [
     AppService,
-    MovieSyncEsListener,
+    MovieSyncListener,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

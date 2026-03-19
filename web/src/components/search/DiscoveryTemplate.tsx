@@ -43,14 +43,15 @@ function DiscoveryContent({
     // Read from URL params
     const q = searchParams.get('q') || initialFilters.q || '';
     const genres = useMemo(() => searchParams.get('genres')?.split(',') || initialFilters.genres || [], [searchParams, initialFilters.genres]);
-    const yearFrom = searchParams.get('yearFrom') || initialFilters.yearFrom || '1990';
-    const yearTo = searchParams.get('yearTo') || initialFilters.yearTo || '2024';
+    const yearFrom = searchParams.get('yearFrom') || initialFilters.yearFrom || undefined;
+    const yearTo = searchParams.get('yearTo') || initialFilters.yearTo || undefined;
     const minRating = searchParams.get('minRating') || initialFilters.minRating || '0';
     const sortBy = searchParams.get('sortBy') || initialFilters.sortBy || 'relevance';
     const page = parseInt(searchParams.get('page') || '1', 10);
 
     const [results, setResults] = useState<SearchResult[]>([]);
     const [total, setTotal] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
     const [genresList, setGenresList] = useState<{name: string, slug: string}[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -59,9 +60,9 @@ function DiscoveryContent({
     const [filterYearFrom, setFilterYearFrom] = useState(yearFrom);
     const [filterYearTo, setFilterYearTo] = useState(yearTo);
     const [filterMinRating, setFilterMinRating] = useState(minRating);
-    const [activeTab, setActiveTab] = useState(initialFilters.type || 'all'); 
     const [isStudiosOpen, setIsStudiosOpen] = useState(false);
     const [importingId, setImportingId] = useState<number | null>(null);
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
     // Fetch genres once
     useEffect(() => {
@@ -82,7 +83,6 @@ function DiscoveryContent({
                 const response = await searchService.search({
                     q, 
                     genre: genreNames.join(','),
-                    type: activeTab !== 'all' ? activeTab : undefined,
                     yearFrom: yearFrom ? parseInt(yearFrom) : undefined,
                     yearTo: yearTo ? parseInt(yearTo) : undefined,
                     minRating: minRating ? parseFloat(minRating) : undefined,
@@ -92,6 +92,7 @@ function DiscoveryContent({
                 });
                 setResults(response.results || []);
                 setTotal(response.total || 0);
+                setTotalPages(response.totalPages || 0);
             } catch (error) {
                 console.error('Failed to load discovery results', error);
             } finally {
@@ -101,7 +102,7 @@ function DiscoveryContent({
 
         fetchSearch();
         setFilterMinRating(minRating);
-    }, [q, genres, yearFrom, yearTo, minRating, sortBy, page, genresList, activeTab]);
+    }, [q, genres, yearFrom, yearTo, minRating, sortBy, page, genresList]);
 
     const handleApplyFilters = (overrideParams: Record<string, unknown> = {}) => {
         const params = new URLSearchParams();
@@ -112,11 +113,11 @@ function DiscoveryContent({
         const finalGenres = (overrideParams.genres !== undefined ? overrideParams.genres : filterGenres) as string[];
         if (finalGenres.length > 0) params.set('genres', finalGenres.join(','));
         
-        const fYearFrom = (overrideParams.yearFrom !== undefined ? overrideParams.yearFrom : filterYearFrom) as string;
-        if (fYearFrom && fYearFrom !== '1990') params.set('yearFrom', fYearFrom);
+        const fYearFrom = (overrideParams.yearFrom !== undefined ? overrideParams.yearFrom : filterYearFrom) as string | undefined;
+        if (fYearFrom) params.set('yearFrom', fYearFrom);
         
-        const fYearTo = (overrideParams.yearTo !== undefined ? overrideParams.yearTo : filterYearTo) as string;
-        if (fYearTo && fYearTo !== '2024') params.set('yearTo', fYearTo);
+        const fYearTo = (overrideParams.yearTo !== undefined ? overrideParams.yearTo : filterYearTo) as string | undefined;
+        if (fYearTo) params.set('yearTo', fYearTo);
         
         const fMinRating = overrideParams.minRating !== undefined ? String(overrideParams.minRating) : filterMinRating;
         if (fMinRating && fMinRating !== '0') params.set('minRating', fMinRating);
@@ -131,8 +132,8 @@ function DiscoveryContent({
     const handleClearFilters = () => {
         setFilterQuery('');
         setFilterGenres(initialFilters.genres || []);
-        setFilterYearFrom('1990');
-        setFilterYearTo('2024');
+        setFilterYearFrom(undefined);
+        setFilterYearTo(undefined);
         setFilterMinRating('0');
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         router.push(pathname as any);
@@ -148,7 +149,7 @@ function DiscoveryContent({
         setImportingId(tmdbId);
         try {
             const slug = await searchService.importMovie(tmdbId);
-            router.push(`/movies/${slug}`);
+            router.push(`/watch/${slug}`);
         } catch (error) {
             console.error('Failed to import movie', error);
             alert(t('importError'));
@@ -161,8 +162,6 @@ function DiscoveryContent({
         <div className="flex flex-col h-screen bg-background-dark text-white overflow-hidden font-sans">
             <div className="flex flex-1 overflow-hidden">
                 <SearchSidebar 
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
                     filterGenres={filterGenres}
                     toggleGenre={toggleGenre}
                     genresList={genresList}
@@ -195,10 +194,10 @@ function DiscoveryContent({
                                         <button onClick={() => toggleGenre(g)} className="hover:text-primary"><span className="material-symbols-outlined text-[14px]">close</span></button>
                                     </div>
                                 ))}
-                                {yearFrom !== '1990' && (
+                                {yearFrom !== undefined && (
                                     <div className="bg-white/5 border border-white/10 pl-3 pr-2 py-1.5 rounded-full flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-white/60">
                                         {t('minYear', { year: yearFrom })}
-                                        <button onClick={() => {setFilterYearFrom('1990'); handleApplyFilters({yearFrom: '1990'});}} className="hover:text-primary"><span className="material-symbols-outlined text-[14px]">close</span></button>
+                                        <button onClick={() => {setFilterYearFrom(undefined); handleApplyFilters({yearFrom: undefined});}} className="hover:text-primary"><span className="material-symbols-outlined text-[14px]">close</span></button>
                                     </div>
                                 )}
                                 {minRating !== '0' && (
@@ -211,11 +210,18 @@ function DiscoveryContent({
                         </div>
 
                         <SearchToolbar 
-                            total={total}
-                            resultsCount={results.length}
-                            page={page}
-                            sortBy={sortBy}
-                            onSortChange={(val) => handleApplyFilters({ sortBy: val, resetPage: true })}
+                            total={total} 
+                            resultsCount={results.length} 
+                            page={page} 
+                            sortBy={sortBy} 
+                            viewMode={viewMode}
+                            onViewModeChange={setViewMode}
+                            onSortChange={(val) => {
+                                const params = new URLSearchParams(searchParams.toString());
+                                params.set('sortBy', val);
+                                params.set('page', '1');
+                                router.push(`${pathname}?${params.toString()}`);
+                            }}
                         />
 
                         <section className="mb-16">
@@ -224,14 +230,15 @@ function DiscoveryContent({
                                 isLoading={isLoading}
                                 importingId={importingId}
                                 onImport={handleImport}
-                                onWatch={(slug) => router.push(`/movies/${slug}`)}
                                 query={q}
                                 onClearFilters={handleClearFilters}
+                                viewMode={viewMode}
                             />
                             
                             <SearchPagination 
                                 page={page}
                                 total={total}
+                                totalPages={totalPages}
                                 onPageChange={(p) => handleApplyFilters({ page: p })}
                             />
                         </section>

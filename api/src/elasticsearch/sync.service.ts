@@ -88,6 +88,7 @@ export class SyncService {
         id: true,
         title: true,
         slug: true,
+        description: true,
         posterUrl: true,
         releaseYear: true,
         rating: true,
@@ -118,6 +119,7 @@ export class SyncService {
       id: movie.id,
       title: movie.title,
       slug: movie.slug,
+      description: movie.description || '',
       posterUrl: movie.posterUrl,
       releaseYear: movie.releaseYear,
       rating: movie.rating ?? 0,
@@ -137,6 +139,7 @@ type SyncMoviePayload = Prisma.MovieGetPayload<{
     id: true;
     title: true;
     slug: true;
+    description: true;
     posterUrl: true;
     releaseYear: true;
     rating: true;

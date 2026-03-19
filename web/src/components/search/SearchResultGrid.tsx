@@ -1,21 +1,38 @@
 'use client';
 
-import Image from 'next/image';
 import { SearchResult } from '@/services/search.service';
 import MovieCard from '@/components/MovieCard';
 import { useTranslations } from 'next-intl';
+import MovieListItem from './MovieListItem';
 
-export const SearchSkeleton = () => (
-// ... (rest same)
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+export const SearchSkeleton = ({ viewMode = 'grid' }: { viewMode?: 'grid' | 'list' }) => (
+    <div className={viewMode === 'grid'
+        ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
+        : "flex flex-col gap-6"
+    }>
         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
-            <div key={i} className="flex flex-col gap-4 animate-pulse">
-                <div className="aspect-[2/3] w-full rounded-2xl bg-white/5"></div>
-                <div className="space-y-2">
-                    <div className="h-4 w-3/4 bg-white/5 rounded"></div>
-                    <div className="h-3 w-1/2 bg-white/5 rounded"></div>
+            viewMode === 'grid' ? (
+                <div key={i} className="flex flex-col gap-4 animate-pulse">
+                    <div className="aspect-[2/3] w-full rounded-2xl bg-white/5"></div>
+                    <div className="space-y-2">
+                        <div className="h-4 w-3/4 bg-white/5 rounded"></div>
+                        <div className="h-3 w-1/2 bg-white/5 rounded"></div>
+                    </div>
                 </div>
-            </div>
+            ) : (
+                <div key={i} className="flex gap-6 p-4 rounded-3xl bg-white/[0.02] border border-white/5 animate-pulse">
+                    <div className="aspect-[2/3] w-32 md:w-48 shrink-0 rounded-2xl bg-white/5"></div>
+                    <div className="flex-grow space-y-4 py-2">
+                        <div className="h-8 w-1/3 bg-white/5 rounded"></div>
+                        <div className="h-4 w-1/2 bg-white/5 rounded"></div>
+                        <div className="space-y-2">
+                            <div className="h-3 w-full bg-white/5 rounded"></div>
+                            <div className="h-3 w-full bg-white/5 rounded"></div>
+                            <div className="h-3 w-3/4 bg-white/5 rounded"></div>
+                        </div>
+                    </div>
+                </div>
+            )
         ))}
     </div>
 );
@@ -25,9 +42,9 @@ interface SearchResultGridProps {
     isLoading: boolean;
     importingId: number | null;
     onImport: (tmdbId: number) => void;
-    onWatch: (slug: string) => void;
     query: string;
     onClearFilters: () => void;
+    viewMode: 'grid' | 'list';
 }
 
 export default function SearchResultGrid({
@@ -35,12 +52,12 @@ export default function SearchResultGrid({
     isLoading,
     importingId,
     onImport,
-    onWatch,
     query,
-    onClearFilters
+    onClearFilters,
+    viewMode
 }: SearchResultGridProps) {
     const t = useTranslations('Search');
-    if (isLoading) return <SearchSkeleton />;
+    if (isLoading) return <SearchSkeleton viewMode={viewMode} />;
 
     if (results.length === 0) {
         if (query) {
@@ -59,20 +76,43 @@ export default function SearchResultGrid({
     }
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 gap-y-8">
+        <div className={viewMode === 'grid'
+            ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 gap-y-8"
+            : "flex flex-col gap-6"
+        }>
             {results.map((movie) => (
-                <MovieCard
-                    key={`${movie.source}-${movie.id}`}
-                    id={movie.id}
-                    title={movie.title}
-                    rating={movie.rating > 0 ? movie.rating.toFixed(1) : undefined}
-                    description={""}
-                    imageUrl={movie.posterUrl || 'https://placehold.co/400x600/1a1a1a/444444?text=No+Poster'}
-                    showWatchButton={movie.source === 'local'}
-                    slug={movie.slug}
-                    source={movie.source}
-                    onImport={() => movie.tmdbId && onImport(movie.tmdbId)}
-                />
+                viewMode === 'grid' ? (
+                    <MovieCard
+                        key={`${movie.source}-${movie.id}`}
+                        id={movie.id}
+                        title={movie.title}
+                        rating={movie.rating > 0 ? movie.rating.toFixed(1) : undefined}
+                        description={""}
+                        imageUrl={movie.posterUrl || 'https://placehold.co/400x600/1a1a1a/444444?text=No+Poster'}
+                        showWatchButton={movie.source === 'local'}
+                        slug={movie.slug || ""}
+                        source={movie.source}
+                        onImport={() => movie.tmdbId && onImport(movie.tmdbId)}
+                        isImporting={movie.tmdbId === importingId}
+                        releaseYear={movie.releaseYear ?? undefined}
+                        showYear={true}
+                    />
+                ) : (
+                    <MovieListItem
+                        key={`${movie.source}-${movie.id}`}
+                        id={movie.id}
+                        title={movie.title}
+                        rating={movie.rating > 0 ? movie.rating.toFixed(1) : undefined}
+                        description={movie.description || ""}
+                        imageUrl={movie.posterUrl || 'https://placehold.co/400x600/1a1a1a/444444?text=No+Poster'}
+                        showWatchButton={movie.source === 'local'}
+                        slug={movie.slug || ""}
+                        source={movie.source}
+                        onImport={() => movie.tmdbId && onImport(movie.tmdbId)}
+                        isImporting={movie.tmdbId === importingId}
+                        releaseYear={movie.releaseYear ?? undefined}
+                    />
+                )
             ))}
         </div>
     );

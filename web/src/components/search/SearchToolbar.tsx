@@ -6,6 +6,8 @@ interface SearchToolbarProps {
     resultsCount: number;
     page: number;
     sortBy: string;
+    viewMode: 'grid' | 'list';
+    onViewModeChange: (mode: 'grid' | 'list') => void;
     onSortChange: (sortBy: string) => void;
 }
 
@@ -14,6 +16,8 @@ export default function SearchToolbar({
     resultsCount,
     page,
     sortBy,
+    viewMode,
+    onViewModeChange,
     onSortChange
 }: SearchToolbarProps) {
     const t = useTranslations('Search');
@@ -48,8 +52,18 @@ export default function SearchToolbar({
                 </div>
 
                 <div className="flex bg-[#0a0506] border border-white/5 rounded-xl p-0.5">
-                    <button className="p-2 text-primary bg-white/5 rounded-lg"><span className="material-symbols-outlined text-base">grid_view</span></button>
-                    <button className="p-2 text-white/20 hover:text-white/40 transition-colors"><span className="material-symbols-outlined text-base">view_list</span></button>
+                    <button 
+                        onClick={() => onViewModeChange('grid')}
+                        className={`p-2 rounded-lg transition-all duration-300 ${viewMode === 'grid' ? 'text-primary bg-white/5 shadow-inner' : 'text-white/20 hover:text-white/40'}`}
+                    >
+                        <span className="material-symbols-outlined text-base">grid_view</span>
+                    </button>
+                    <button 
+                        onClick={() => onViewModeChange('list')}
+                        className={`p-2 rounded-lg transition-all duration-300 ${viewMode === 'list' ? 'text-primary bg-white/5 shadow-inner' : 'text-white/20 hover:text-white/40'}`}
+                    >
+                        <span className="material-symbols-outlined text-base">view_list</span>
+                    </button>
                 </div>
             </div>
         </div>

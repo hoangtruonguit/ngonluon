@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Query, Body } from '@nestjs/common';
+import { Controller, Get, Post, Query, Body, Req } from '@nestjs/common';
+import { Request } from 'express';
 import { SearchService } from './search.service';
 import {
   SearchQueryDto,
@@ -12,7 +13,7 @@ export class SearchController {
 
   // GET /search?q=avengers&genre=Action&limit=20
   @Get()
-  async search(@Query() dto: SearchQueryDto) {
+  async search(@Query() dto: SearchQueryDto, @Req() req: Request) {
     return this.searchService.search(dto.q, {
       limit: dto.limit,
       page: dto.page,
@@ -22,13 +23,14 @@ export class SearchController {
       yearTo: dto.yearTo,
       minRating: dto.minRating,
       sortBy: dto.sortBy,
+      context: `${req.method} ${req.url}`,
     });
   }
 
   // GET /search/suggest?q=aven
   @Get('suggest')
-  async suggest(@Query() dto: SuggestQueryDto) {
-    return this.searchService.suggest(dto.q);
+  async suggest(@Query() dto: SuggestQueryDto, @Req() req: Request) {
+    return this.searchService.suggest(dto.q, `${req.method} ${req.url}`);
   }
 
   // POST /search/import — user click phim TMDB → import vào DB
