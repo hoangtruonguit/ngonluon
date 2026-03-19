@@ -57,11 +57,10 @@ Feature-based module structure under `api/src/`:
 - `mail/` — Nodemailer email service (templates + queue-based sending)
 - `rabbitmq/` — RabbitMQ integration for async jobs (mail, indexing)
 - `redis/` — ioredis caching service
-- `elasticsearch/` — Search indexing and sync
-- `tmdb/` — TMDB API client for data seeding
-- `events/`, `listeners/` — EventEmitter-based async event handling
+- `elasticsearch/` — Search indexing, sync service, and `MovieSyncListener` (EventEmitter-based)
+- `tmdb/` — TMDB API client for data seeding; CLI commands in `tmdb/commands/`
+- `common/` — Shared guards, filters, interceptors, decorators, events, logger (Winston)
 - `prisma/` — Database service wrapping PrismaClient
-- `common/` — Shared guards, filters, interceptors, decorators, logger (Winston)
 
 Database entities (PostgreSQL via Prisma): `User` (roles: ADMIN, USER, VIP), `Movie`/`Series`, `Season`, `Episode`, `Cast`, `Review`, `Comment`, `WatchHistory`, `Watchlist`, `Subscription`, `Genre`.
 
@@ -99,5 +98,13 @@ NEXT_PUBLIC_API_URL=http://localhost:3001
 ## CI/CD
 
 GitHub Actions at `.github/workflows/ci.yml` runs on push/PR to `main`:
-- **API job**: Install → Prisma generate → Migrate → Lint → Build → Test (with PostgreSQL, Elasticsearch, Redis, RabbitMQ services)
-- **Web job**: Install (`--legacy-peer-deps`) → Lint → Build
+- **api-unit**: Install → Prisma generate → Lint → Build → Unit Test with Coverage
+- **api-e2e**: (needs api-unit) Install → Prisma generate → Migrate → E2E Test (with PostgreSQL, Elasticsearch, Redis, RabbitMQ services). RabbitMQ is mocked in E2E tests to avoid queue race conditions.
+- **web**: Install (`--legacy-peer-deps`) → Lint → Build
+
+## Testing
+
+- **Unit tests** use NestJS `Test.createTestingModule` with mocked dependencies (Prisma, Redis, etc.)
+- **E2E tests** override `RabbitMQService` and `AMQP_CONNECTION_MANAGER` with stubs — real RabbitMQ has race conditions between `setupTopology` and consumer `addSetup`
+- Use `NestJS Logger` (not `console.*`) across all services for consistent logging
+- Run `pnpm run test` from `api/` before pushing
