@@ -43,6 +43,9 @@ async function bootstrap() {
   await app.listen(configService.get<number>('PORT') || 3001);
 }
 bootstrap().catch((err) => {
-  console.error('Unhandled bootstrap error:', err);
+  logger.error(
+    'Unhandled bootstrap error:',
+    err instanceof Error ? err.stack : String(err),
+  );
   process.exit(1);
 });

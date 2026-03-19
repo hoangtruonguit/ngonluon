@@ -54,6 +54,7 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleDestroy() {
     await this.channelWrapper.close();
+    await this.connectionManager.close();
   }
 
   private initializeChannel() {
@@ -155,7 +156,7 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     // Store consumer for reconnection setup
     this.consumers.push({ queue, handler });
 
-    // Add to existing channel if connected
+    // addSetup runs after the channel's initial setup (setupTopology), so queue is guaranteed to exist
     // eslint-disable-next-line @typescript-eslint/require-await
     await this.channelWrapper.addSetup(async (channel: ConfirmChannel) => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises

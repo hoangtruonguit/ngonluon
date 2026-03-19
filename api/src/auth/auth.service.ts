@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -17,6 +18,8 @@ import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
@@ -54,6 +57,8 @@ export class AuthService {
 
     // Emit welcome email event via MailProducer
     await this.mailProducer.sendWelcomeEmail(email, fullName);
+
+    this.logger.log(`User registered: ${email}`);
 
     return {
       id: user.id,
@@ -113,6 +118,8 @@ export class AuthService {
       this.usersService.updateRefreshToken(user.id, hashedRefreshToken),
     ]);
 
+    this.logger.log(`User logged in: ${email}`);
+
     return plainToInstance(
       AuthResponseDto,
       {
@@ -155,6 +162,7 @@ export class AuthService {
       );
       if (!isRefreshTokenValid) {
         // Potential token reuse attack - clear token and revoke session
+        this.logger.warn(`Token reuse detected for user: ${userId}`);
         await this.usersService.updateRefreshToken(userId, null);
         throw new UnauthorizedException('Token reuse detected');
       }
@@ -191,6 +199,8 @@ export class AuthService {
         this.usersService.updatePublicKey(user.id, publicKey),
         this.usersService.updateRefreshToken(user.id, hashedRefreshToken),
       ]);
+
+      this.logger.log(`Token refreshed for user: ${user.id}`);
 
       return plainToInstance(
         AuthResponseDto,

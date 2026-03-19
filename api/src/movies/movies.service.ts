@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCommentDto } from './dto/comment.dto';
 import { SearchMoviesDto } from './dto/search-movies.dto';
@@ -7,6 +7,8 @@ import { MovieWithGenres, MovieDetailed } from './types/movie.types';
 
 @Injectable()
 export class MoviesService {
+  private readonly logger = new Logger(MoviesService.name);
+
   constructor(private prisma: PrismaService) {}
 
   async getTrendingMovies(limit: number = 20) {
@@ -82,6 +84,7 @@ export class MoviesService {
 
   async searchMovies(params: SearchMoviesDto) {
     const { q, genre, year, rating, sortBy, page, limit } = params;
+    this.logger.log(`Search movies: q=${q}, genre=${genre}, page=${page}`);
 
     const parsedPage = page ? parseInt(page, 10) : 1;
     const parsedLimit = limit ? parseInt(limit, 10) : 20;
@@ -180,6 +183,7 @@ export class MoviesService {
     });
 
     if (!movie) {
+      this.logger.warn(`Movie not found: ${slug}`);
       return null;
     }
 
@@ -220,6 +224,8 @@ export class MoviesService {
     if (!movie) {
       throw new Error('Movie not found');
     }
+
+    this.logger.log(`Comment added to movie ${movieId} by user ${userId}`);
 
     return this.prisma.comment.create({
       data: {

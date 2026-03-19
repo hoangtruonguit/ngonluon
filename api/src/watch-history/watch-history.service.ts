@@ -1,12 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SaveProgressDto } from './dto/save-progress.dto';
 
 @Injectable()
 export class WatchHistoryService {
+  private readonly logger = new Logger(WatchHistoryService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   async saveProgress(userId: string, dto: SaveProgressDto) {
+    this.logger.log(`Saving progress for user ${userId}, movie ${dto.movieId}`);
     const existing = await this.prisma.watchHistory.findFirst({
       where: {
         userId,
@@ -73,6 +76,7 @@ export class WatchHistoryService {
   }
 
   async clearHistory(userId: string) {
+    this.logger.log(`Clearing history for user ${userId}`);
     return this.prisma.watchHistory.deleteMany({
       where: { userId },
     });

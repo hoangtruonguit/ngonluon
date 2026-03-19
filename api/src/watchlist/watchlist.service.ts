@@ -2,11 +2,14 @@ import {
   Injectable,
   ConflictException,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class WatchlistService {
+  private readonly logger = new Logger(WatchlistService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   async addToWatchlist(userId: string, movieId: string) {
@@ -30,7 +33,10 @@ export class WatchlistService {
         },
       });
     } catch (error) {
-      console.error('[WatchlistService] Error adding to watchlist:', error);
+      this.logger.error(
+        `Error adding to watchlist for user ${userId}, movie ${movieId}`,
+        error instanceof Error ? error.stack : String(error),
+      );
       if (
         error instanceof ConflictException ||
         error instanceof NotFoundException
@@ -84,9 +90,9 @@ export class WatchlistService {
 
       return { isInWatchlist: !!entry };
     } catch (error) {
-      console.error(
-        `[WatchlistService] Error getting status for user ${userId}, movie ${movieId}:`,
-        error,
+      this.logger.error(
+        `Error getting status for user ${userId}, movie ${movieId}`,
+        error instanceof Error ? error.stack : String(error),
       );
       throw error;
     }
@@ -112,9 +118,9 @@ export class WatchlistService {
         },
       });
     } catch (error) {
-      console.error(
-        `[WatchlistService] Error getting watchlist for user ${userId}:`,
-        error,
+      this.logger.error(
+        `Error getting watchlist for user ${userId}`,
+        error instanceof Error ? error.stack : String(error),
       );
       throw error;
     }

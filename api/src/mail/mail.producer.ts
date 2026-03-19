@@ -1,12 +1,15 @@
 // email/email.producer.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { RabbitMQService, ROUTING_KEYS } from '../rabbitmq/rabbitmq.service';
 
 @Injectable()
 export class MailProducer {
+  private readonly logger = new Logger(MailProducer.name);
+
   constructor(private readonly rabbitMQService: RabbitMQService) {}
 
   async sendWelcomeEmail(to: string, fullName: string) {
+    this.logger.log(`Queued welcome email for ${to}`);
     await this.rabbitMQService.publish(ROUTING_KEYS.EMAIL_WELCOME, {
       to,
       subject: 'Tiệc tùng thôi! Chào mừng bạn đến với NgonLuon',
@@ -16,6 +19,7 @@ export class MailProducer {
   }
 
   async sendResetPasswordEmail(to: string, resetUrl: string) {
+    this.logger.log(`Queued reset password email for ${to}`);
     await this.rabbitMQService.publish(ROUTING_KEYS.EMAIL_RESET_PASSWORD, {
       to,
       subject: 'Reset mật khẩu - NgonLuon',
@@ -30,6 +34,7 @@ export class MailProducer {
     planName: string,
     endDate: string,
   ) {
+    this.logger.log(`Queued subscription email for ${to}`);
     await this.rabbitMQService.publish(ROUTING_KEYS.EMAIL_SUBSCRIPTION, {
       to,
       subject: `Nâng cấp ${planName} thành công!`,
