@@ -12,10 +12,64 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # ─── API (NestJS) ─────────────────────────────────
-  api:
-    name: API — Lint, Build & Test
+  # ─── API: Lint & Unit Tests (no services needed) ───
+  api-unit:
+    name: API — Lint, Build & Unit Test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: api
+
+    env:
+      NODE_ENV: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: api/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Unit Test with Coverage
+        run: pnpm run test:cov
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-coverage
+          path: api/coverage/
+          retention-days: 7
+
+  # ─── API: E2E Tests (with services) ────────────────
+  api-e2e:
+    name: API — E2E Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: api-unit
 
     services:
       postgres:
@@ -31,7 +85,7 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-      
+
       elasticsearch:
         image: elasticsearch:7.17.10
         env:
@@ -82,6 +136,7 @@ jobs:
       REDIS_HOST: localhost
       REDIS_PORT: 6379
       RABBITMQ_URL: amqp://localhost:5672
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
 
     steps:
       - name: Checkout code
@@ -108,19 +163,14 @@ jobs:
       - name: Run migrations
         run: npx prisma migrate deploy
 
-      - name: Lint
-        run: pnpm run lint
-
-      - name: Build
-        run: pnpm run build
-
-      - name: Test
-        run: pnpm run test
+      - name: E2E Test
+        run: pnpm run test:e2e
 
   # ─── WEB (Next.js) ────────────────────────────────
   web:
     name: Web — Lint, Build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     defaults:
       run:
@@ -140,8 +190,15 @@ jobs:
           cache: 'npm'
           cache-dependency-path: web/package-lock.json
 
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: web/.next/cache
+          key: nextjs-${{ hashFiles('web/package-lock.json') }}-${{ hashFiles('web/src/**') }}
+          restore-keys: nextjs-${{ hashFiles('web/package-lock.json') }}-
+
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci --legacy-peer-deps
 
       - name: Lint
         run: npm run lint
