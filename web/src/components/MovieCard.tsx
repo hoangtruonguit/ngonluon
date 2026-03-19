@@ -1,10 +1,9 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import { movieService } from '@/services/movie.service';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiClient } from '@/lib/api';
 import { useTranslations } from 'next-intl';
@@ -20,8 +19,10 @@ interface MovieCardProps {
     source?: 'local' | 'tmdb';
     onImport?: () => void;
     onWatchlistUpdate?: (movieId: string, isInWatchlist: boolean) => void;
+    isImporting?: boolean;
+    releaseYear?: number | null;
+    showYear?: boolean;
 }
-
 
 
 export default function MovieCard({ 
@@ -34,15 +35,19 @@ export default function MovieCard({
     slug,
     source = 'local',
     onImport,
-    onWatchlistUpdate
+    onWatchlistUpdate,
+    isImporting: propIsImporting,
+    releaseYear,
+    showYear = false
 }: MovieCardProps) {
     const highResImageUrl = movieService.getHighResImage(imageUrl);
     const router = useRouter();
     const { isLoggedIn, watchlistIds, updateWatchlist, openLoginPrompt } = useAuth();
-    const [isImporting, setIsImporting] = useState(false);
+    const [isImportingLocal, setIsImportingLocal] = useState(false);
     const [isWatchlistLoading, setIsWatchlistLoading] = useState(false);
     const t = useTranslations('Common');
 
+    const isImporting = propIsImporting ?? isImportingLocal;
     const isInWatchlist = id ? watchlistIds.has(id) : false;
 
     const handleWatchlistToggle = async (e: React.MouseEvent) => {
@@ -78,7 +83,7 @@ export default function MovieCard({
         e.preventDefault();
         e.stopPropagation();
         if (onImport) {
-            setIsImporting(true);
+            setIsImportingLocal(true);
             onImport();
         }
     };
@@ -93,18 +98,42 @@ export default function MovieCard({
             )}
 
             <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-110">
-                <Image src={highResImageUrl} alt={title} fill sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 250px" className="object-cover" />
+                <Image 
+                    src={highResImageUrl} 
+                    alt={title} 
+                    fill 
+                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 250px" 
+                    className="object-cover"
+                    unoptimized={highResImageUrl.includes('placehold.co')}
+                />
             </div>
 
             <div className={`card-overlay absolute inset-0 bg-black/80 transition-opacity duration-300 flex flex-col justify-end p-6 space-y-3 ${source === 'tmdb' ? 'opacity-100 md:opacity-0 group-hover:opacity-100' : 'opacity-0'}`}>
                 {rating && (
-                    <div className="flex items-center gap-2">
-                        <span className="text-primary font-black">{rating}</span>
-                        <span className="text-white/50 text-xs uppercase font-bold tracking-widest">{source === 'tmdb' ? 'TMDB' : 'IMDb'}</span>
+                    <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-2">
+                            <span className="text-primary font-black text-lg">{rating}</span>
+                            <span className="text-white/50 text-[10px] uppercase font-black tracking-widest">{source === 'tmdb' ? 'TMDB' : 'IMDb'}</span>
+                        </div>
+                        {showYear && releaseYear && (
+                            <div className="flex items-center gap-1.5 opacity-80">
+                                <span className="material-symbols-outlined text-[14px] text-primary/80">calendar_today</span>
+                                <span className="text-[10px] font-black uppercase tracking-wider text-white/60">
+                                    {releaseYear}
+                                </span>
+                            </div>
+                        )}
                     </div>
                 )}
-                <h4 className="text-white font-bold text-xl">{title}</h4>
-                <p className="text-white/70 text-xs line-clamp-3">{description}</p>
+                <div className="space-y-1">
+                    <h4 className="text-white font-bold text-xl line-clamp-2 leading-tight">{title}</h4>
+                    {showYear && releaseYear && (
+                        <p className="text-[10px] font-bold text-primary/80 uppercase tracking-widest">
+                            {t('releasedYear', { year: releaseYear })}
+                        </p>
+                    )}
+                </div>
+                <p className="text-white/70 text-xs line-clamp-2">{description}</p>
                 
                 {source === 'tmdb' ? (
                     <button

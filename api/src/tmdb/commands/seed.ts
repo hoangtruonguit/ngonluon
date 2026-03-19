@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from '../app.module';
-import { TmdbService } from './tmdb.service';
+import { AppModule } from '../../app.module';
+import { TmdbService } from '../tmdb.service';
 
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(AppModule);

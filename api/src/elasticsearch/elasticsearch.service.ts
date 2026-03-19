@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ElasticsearchService as NestElasticsearchService } from '@nestjs/elasticsearch';
 import { estypes } from '@elastic/elasticsearch';
+import { esLogger } from '../common/logger/logger.config';
 
 export interface MovieDocument {
   id: string;
@@ -11,6 +12,7 @@ export interface MovieDocument {
   rating: number;
   type: string;
   genres: string[];
+  description: string;
   cast: { name: string; role: 'ACTOR' | 'DIRECTOR' }[];
 }
 
@@ -74,6 +76,10 @@ export class ElasticsearchService implements OnModuleInit {
               name: { type: 'text', analyzer: 'movie_analyzer' },
               role: { type: 'keyword' },
             },
+          },
+          description: {
+            type: 'text',
+            analyzer: 'movie_analyzer',
           },
 
           // ── Filter fields ──
@@ -153,6 +159,7 @@ export class ElasticsearchService implements OnModuleInit {
       minRating?: number;
       sortBy?: string;
       page?: number;
+      context?: string;
     } = {},
   ) {
     const {
@@ -164,6 +171,7 @@ export class ElasticsearchService implements OnModuleInit {
       minRating,
       sortBy,
       page = 1,
+      context,
     } = options;
 
     const filter: estypes.QueryDslQueryContainer[] = [];
@@ -216,12 +224,26 @@ export class ElasticsearchService implements OnModuleInit {
           should: [
             // Search tên phim (boost cao nhất)
             {
-              match: {
-                title: {
-                  query,
-                  boost: 3,
-                  fuzziness: 'AUTO',
-                },
+              bool: {
+                should: [
+                  {
+                    match: {
+                      title: {
+                        query,
+                        boost: 3,
+                        fuzziness: 'AUTO',
+                      },
+                    },
+                  },
+                  {
+                    match_phrase_prefix: {
+                      title: {
+                        query,
+                        boost: 4, // Prefix match often gets higher priority in suggestion-like search
+                      },
+                    },
+                  },
+                ],
               },
             },
             // Search tên diễn viên / đạo diễn
@@ -254,7 +276,7 @@ export class ElasticsearchService implements OnModuleInit {
       });
     }
 
-    const result = await this.es.search<MovieDocument>({
+    const searchParams: estypes.SearchRequest = {
       index: MOVIE_INDEX,
       size: limit,
       from,
@@ -274,8 +296,18 @@ export class ElasticsearchService implements OnModuleInit {
         'rating',
         'type',
         'genres',
+        'description',
       ],
-    });
+    };
+
+    const queryBody = { ...searchParams };
+    delete (queryBody as Record<string, unknown>).index;
+    const logPrefix = context ? `# API Request: ${context}\n` : '';
+    esLogger.log(
+      `${logPrefix}GET /${MOVIE_INDEX}/_search\n${JSON.stringify(queryBody, null, 2)}`,
+    );
+
+    const result = await this.es.search<MovieDocument>(searchParams);
 
     const total =
       typeof result.hits.total === 'number'
@@ -303,8 +335,8 @@ export class ElasticsearchService implements OnModuleInit {
 
   // ─── Autocomplete ──────────────────────────────────
 
-  async suggest(query: string, limit: number = 5) {
-    const result = await this.es.search<MovieDocument>({
+  async suggest(query: string, limit: number = 5, context?: string) {
+    const suggestParams: estypes.SearchRequest = {
       index: MOVIE_INDEX,
       size: limit,
       query: {
@@ -328,9 +360,26 @@ export class ElasticsearchService implements OnModuleInit {
           ],
         },
       } as estypes.QueryDslQueryContainer,
-      _source: ['id', 'title', 'slug', 'posterUrl', 'releaseYear', 'genres'],
-    });
+      _source: [
+        'id',
+        'title',
+        'slug',
+        'posterUrl',
+        'releaseYear',
+        'genres',
+        'description',
+      ],
+    };
 
-    return result.hits.hits.map((hit) => hit._source);
+    const queryBody = { ...suggestParams };
+    delete (queryBody as Record<string, unknown>).index;
+    const logPrefix = context ? `# API Request: ${context}\n` : '';
+    esLogger.log(
+      `${logPrefix}GET /${MOVIE_INDEX}/_search (Suggest)\n${JSON.stringify(queryBody, null, 2)}`,
+    );
+
+    const result = await this.es.search<MovieDocument>(suggestParams);
+
+    return result.hits.hits.map((hit) => hit._source as MovieDocument);
   }
 }

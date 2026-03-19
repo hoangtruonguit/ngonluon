@@ -7,7 +7,7 @@ import {
   MovieCreatedEvent,
   MovieUpdatedEvent,
   MovieDeletedEvent,
-} from '../events/movie.events';
+} from '../common/events/movie.events';
 import { Prisma } from '@prisma/client';
 
 @Injectable()

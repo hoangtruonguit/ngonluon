@@ -1,16 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { SyncService } from '../elasticsearch/sync.service';
+import { SyncService } from './sync.service';
 import {
   MovieCreatedEvent,
   MovieUpdatedEvent,
   MovieDeletedEvent,
   MoviesBulkCreatedEvent,
-} from '../events/movie.events';
+} from '../common/events/movie.events';
 
 @Injectable()
-export class MovieSyncEsListener {
-  private readonly logger = new Logger(MovieSyncEsListener.name);
+export class MovieSyncListener {
+  private readonly logger = new Logger(MovieSyncListener.name);
 
   constructor(private readonly syncService: SyncService) {}
 

@@ -6,6 +6,7 @@ export interface SearchResult {
     tmdbId?: number;
     title: string;
     slug?: string;
+    description?: string;
     posterUrl: string | null;
     releaseYear: number | null;
     rating: number;
@@ -17,6 +18,9 @@ export interface SearchResult {
 export interface SearchResponse {
     total: number;
     results: SearchResult[];
+    page: number;
+    limit: number;
+    totalPages: number;
 }
 
 export interface SearchParams {
@@ -48,7 +52,7 @@ export const searchService = {
             return response.data;
         } catch (error) {
             console.error('Search failed:', error);
-            return { total: 0, results: [] };
+            return { total: 0, results: [], page: 1, limit: 12, totalPages: 0 };
         }
     },
     suggest: async (q: string): Promise<SearchResult[]> => {

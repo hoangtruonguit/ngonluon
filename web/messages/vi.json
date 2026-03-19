@@ -62,13 +62,15 @@
         "imdb": "IMDb",
         "minutesAbbr": "phút",
         "hoursAbbr": "giờ",
-        "timeLeft": "còn {time}"
+        "timeLeft": "còn {time}",
+        "releasedYear": "Năm phát hành : {year}"
     },
     "Layout": {
         "title": "NgonLuon - Xem phim tốt nhất",
         "description": "Dịch vụ phát trực tuyến phim cao cấp"
     },
     "Header": {
+        "home": "Trang chủ",
         "movies": "Phim",
         "tvShows": "Truyền hình",
         "categories": "Thể loại",

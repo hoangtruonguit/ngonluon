@@ -8,8 +8,8 @@ import { getTranslations } from 'next-intl/server';
 export default async function Home() {
     const [trendingMovies, nowPlayingMovies, newReleases, genres] = await Promise.all([
         movieService.getTrendingMovies(5), // Only need 5 for hero
-        movieService.getNowPlayingMovies(20),
-        movieService.getNewReleases(10),
+        movieService.getNowPlayingMovies(5),
+        movieService.getNewReleases(5),
         movieService.getGenres(),
     ]);
 
@@ -45,7 +45,16 @@ export default async function Home() {
 
                 {/* Now Playing Carousel */}
                 <section className="pl-6 lg:pl-24 max-w-[1440px] mx-auto overflow-hidden">
-                    <h2 className="text-white text-2xl font-bold tracking-tight mb-6">{t('nowPlaying')}</h2>
+                    <div className="flex items-end justify-between pr-6 lg:pr-24 mb-6">
+                        <h2 className="text-white text-2xl font-bold tracking-tight">{t('nowPlaying')}</h2>
+                        <Link 
+                            href="/category/now-playing" 
+                            className="text-primary text-sm font-bold flex items-center gap-1 hover:underline transition-all duration-300"
+                        >
+                            {t('viewAll')}
+                            <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                        </Link>
+                    </div>
                     <div className="flex gap-6 overflow-x-auto hide-scrollbar pb-6">
                         {nowPlayingMovies.map((movie) => (
                             <MovieCard
@@ -64,7 +73,16 @@ export default async function Home() {
 
                 {/* New Releases Carousel */}
                 <section className="pl-6 lg:pl-24 max-w-[1440px] mx-auto overflow-hidden">
-                    <h2 className="text-white text-2xl font-bold tracking-tight mb-6">{t('newReleases')}</h2>
+                    <div className="flex items-end justify-between pr-6 lg:pr-24 mb-6">
+                        <h2 className="text-white text-2xl font-bold tracking-tight">{t('newReleases')}</h2>
+                        <Link 
+                            href="/category/new-releases" 
+                            className="text-primary text-sm font-bold flex items-center gap-1 hover:underline transition-all duration-300"
+                        >
+                            {t('viewAll')}
+                            <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                        </Link>
+                    </div>
                     <div className="flex gap-6 overflow-x-auto hide-scrollbar pb-6">
                         {newReleases.map((movie) => (
                             <MovieCard
