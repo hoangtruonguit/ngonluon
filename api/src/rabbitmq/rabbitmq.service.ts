@@ -48,9 +48,8 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     private readonly connectionManager: AmqpConnectionManager,
   ) {}
 
-  async onModuleInit() {
+  onModuleInit() {
     this.initializeChannel();
-    await this.channelWrapper.waitForConnect();
   }
 
   async onModuleDestroy() {
@@ -156,11 +155,10 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     // Store consumer for reconnection setup
     this.consumers.push({ queue, handler });
 
-    // Add to existing channel if connected
-    // eslint-disable-next-line @typescript-eslint/require-await
+    // Add to existing channel if connected — assert queue first to handle race with setupTopology
     await this.channelWrapper.addSetup(async (channel: ConfirmChannel) => {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.registerConsumer(channel, queue, handler);
+      await channel.assertQueue(queue, { durable: true });
+      await this.registerConsumer(channel, queue, handler);
     });
   }
 
