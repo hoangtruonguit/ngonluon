@@ -3,6 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
+import { RabbitMQService } from './../src/rabbitmq/rabbitmq.service';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
@@ -10,7 +11,27 @@ describe('AppController (e2e)', () => {
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider('AMQP_CONNECTION_MANAGER')
+      .useValue({
+        createChannel: () => ({
+          addSetup: () => Promise.resolve(),
+          publish: () => Promise.resolve(),
+          close: () => Promise.resolve(),
+          on: () => ({}),
+          waitForConnect: () => Promise.resolve(),
+        }),
+        close: () => Promise.resolve(),
+      })
+      .overrideProvider(RabbitMQService)
+      .useValue({
+        onModuleInit: () => {},
+        onModuleDestroy: () => Promise.resolve(),
+        publish: () => Promise.resolve(),
+        consume: () => Promise.resolve(),
+        consumeDLQ: () => Promise.resolve(),
+      })
+      .compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
