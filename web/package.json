@@ -9,8 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "amqp-connection-manager": "^5.0.0",
-    "amqplib": "^0.10.9",
     "next": "16.1.1",
     "next-intl": "^4.8.3",
     "react": "19.2.3",
@@ -18,7 +16,6 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/amqplib": "^0.10.8",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

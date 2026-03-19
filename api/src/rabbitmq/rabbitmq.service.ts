@@ -48,8 +48,9 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     private readonly connectionManager: AmqpConnectionManager,
   ) {}
 
-  onModuleInit() {
+  async onModuleInit() {
     this.initializeChannel();
+    await this.channelWrapper.waitForConnect();
   }
 
   async onModuleDestroy() {
