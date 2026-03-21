@@ -38,7 +38,7 @@ export default function UserGrowthChart({ data }: UserGrowthChartProps) {
                                     fontSize: '12px',
                                 }}
                                 labelFormatter={(v) => new Date(v).toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' })}
-                                formatter={(val: number) => [val, 'New Users']}
+                                formatter={(val) => [Number(val), 'New Users']}
                             />
                             <Area
                                 type="monotone"

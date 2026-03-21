@@ -33,7 +33,7 @@ export default function MiniChart({ data, title, color, valueLabel = 'Value' }: 
                                     fontSize: '12px',
                                 }}
                                 labelStyle={{ color: 'rgba(255,255,255,0.5)' }}
-                                formatter={(val: number) => [val.toLocaleString(), valueLabel]}
+                                formatter={(val) => [Number(val).toLocaleString(), valueLabel]}
                             />
                             <Area
                                 type="monotone"
