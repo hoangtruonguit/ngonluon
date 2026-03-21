@@ -1,7 +1,15 @@
-import { Controller, Post, Query, Logger } from '@nestjs/common';
+import { Controller, Post, Query, Logger, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { TmdbService } from './tmdb.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
 
+@ApiTags('TMDB')
+@ApiBearerAuth()
 @Controller('tmdb')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('ADMIN')
 export class TmdbController {
   private readonly logger = new Logger(TmdbController.name);
 

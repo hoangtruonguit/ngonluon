@@ -119,9 +119,32 @@ class ApiClient {
         return this.get<UserResponseDto>('/auth/me');
     }
 
-    // User endpoints
     async updateProfile(data: { fullName?: string; avatarUrl?: string }): Promise<ApiResponse<UserResponseDto>> {
         return this.patch<UserResponseDto>('/users/profile', data);
+    }
+
+    async uploadAvatar(file: File): Promise<ApiResponse<{ avatarUrl: string }>> {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const url = `${this.baseUrl}/users/avatar`;
+        const response = await fetch(url, {
+            method: 'POST',
+            body: formData,
+            credentials: 'include',
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw {
+                statusCode: response.status,
+                message: data.message || 'An error occurred',
+                data: data.data || null,
+            };
+        }
+
+        return data;
     }
 
     // Watchlist endpoints
@@ -159,11 +182,21 @@ class ApiClient {
     }
 }
 
+/**
+ * Resolve an avatar URL: prepend API base for relative paths (e.g. /uploads/avatars/...).
+ */
+export function resolveAvatarUrl(url: string | null | undefined): string | null {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    return `${API_BASE_URL}${url}`;
+}
+
 export interface UserResponseDto {
     id: string;
     email: string;
     fullName: string;
     avatarUrl?: string;
+    roles?: string[];
 }
 
 export interface MovieResponseDto {

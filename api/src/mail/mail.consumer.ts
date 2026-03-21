@@ -28,7 +28,6 @@ export class MailConsumer implements OnModuleInit {
     );
 
     // Consume DLQ — log failed emails cho monitoring
-    // Consume DLQ — log failed emails cho monitoring
     await this.rabbitMQService.consumeDLQ(
       async (message: EmailPayload, headers: Record<string, any>) => {
         this.logger.error(

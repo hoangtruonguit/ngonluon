@@ -3,9 +3,9 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { movieService } from '@/services/movie.service';
-import CommentSection from '@/components/CommentSection';
-import MovieCard from '@/components/MovieCard';
-import MovieActionButtons from '@/components/MovieActionButtons';
+import CommentSection from '@/components/movie/CommentSection';
+import MovieCard from '@/components/movie/MovieCard';
+import MovieActionButtons from '@/components/movie/MovieActionButtons';
 import type { Metadata } from 'next';
 
 interface MovieDetailsPageProps {

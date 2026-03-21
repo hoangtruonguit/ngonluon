@@ -4,6 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import { AxiosResponse } from 'axios';
 import { MoviesRepository } from '../movies/movies.repository';
+import { RedisService } from '../redis/redis.service';
 
 export interface TmdbMovie {
   id: number;
@@ -64,6 +65,7 @@ export class TmdbService {
     private readonly httpService: HttpService,
     private readonly moviesRepository: MoviesRepository,
     private readonly configService: ConfigService,
+    private readonly redisService: RedisService,
   ) {
     this.apiKey = this.configService.get<string>('TMDB_API_KEY') || '';
     if (!this.apiKey) {
@@ -120,49 +122,73 @@ export class TmdbService {
   // ─── Import Single Movie (cho user click TMDB result) ──
 
   async importSingleMovie(tmdbId: number): Promise<string> {
-    const details = await this.fetchFromTmdb<TmdbMovie>(`/movie/${tmdbId}`);
+    const lockKey = `tmdb:import:lock:${tmdbId}`;
 
-    // Check đã tồn tại chưa
-    const existing = await this.moviesRepository.findByTitle(details.title);
-    if (existing) return existing.slug;
-
-    const slug = this.generateSlug(details.title);
-    const trailerUrl = await this.getVideoUrl(tmdbId);
-
-    // Create movie → repository emit 'movie.created' → ES sync
-    const movie = await this.moviesRepository.create({
-      title: details.title,
-      slug,
-      description: details.overview,
-      posterUrl: this.getPosterUrl(details.poster_path),
-      thumbnailUrl: this.getBackdropUrl(details.backdrop_path),
-      releaseYear: details.release_date
-        ? parseInt(details.release_date.split('-')[0], 10)
-        : null,
-      rating: details.vote_average,
-      durationMinutes: details.runtime ?? null,
-      trailerUrl,
-      type: 'MOVIE',
-    });
-
-    // Sync genres
-    if (details.genres) {
-      for (const genre of details.genres) {
-        const genreSlug = this.generateGenreSlug(genre.name);
-        await this.moviesRepository.upsertGenre({
-          id: genre.id,
-          name: genre.name,
-          slug: genreSlug,
-        });
-        await this.moviesRepository.addGenreToMovie(movie.id, genre.id);
-      }
+    // Check lock to prevent concurrent workers from importing the same movie
+    const isLocked = await this.redisService.get(lockKey);
+    if (isLocked) {
+      this.logger.debug(
+        `Movie ${tmdbId} is currently being imported by another worker. Skipping.`,
+      );
+      return '';
     }
 
-    // Sync cast
-    await this.seedMovieCredits(tmdbId, movie.id);
+    // Acquire lock for 60 seconds
+    await this.redisService.set(lockKey, '1', 60);
 
-    this.logger.log(`Imported from TMDB: ${details.title}`);
-    return slug;
+    try {
+      const details = await this.fetchFromTmdb<TmdbMovie>(`/movie/${tmdbId}`);
+
+      // Check đã tồn tại chưa
+      const existing = await this.moviesRepository.findByTitle(details.title);
+      if (existing) {
+        this.logger.debug(
+          `Movie ${details.title} already exists in DB. Skipping import.`,
+        );
+        return existing.slug;
+      }
+
+      const slug = this.generateSlug(details.title);
+      const trailerUrl = await this.getVideoUrl(tmdbId);
+
+      // Create movie → repository emit 'movie.created' → ES sync
+      const movie = await this.moviesRepository.create({
+        title: details.title,
+        slug,
+        description: details.overview,
+        posterUrl: this.getPosterUrl(details.poster_path),
+        thumbnailUrl: this.getBackdropUrl(details.backdrop_path),
+        releaseYear: details.release_date
+          ? parseInt(details.release_date.split('-')[0], 10)
+          : null,
+        rating: details.vote_average,
+        durationMinutes: details.runtime ?? null,
+        trailerUrl,
+        type: 'MOVIE',
+      });
+
+      // Sync genres
+      if (details.genres) {
+        for (const genre of details.genres) {
+          const genreSlug = this.generateGenreSlug(genre.name);
+          await this.moviesRepository.upsertGenre({
+            id: genre.id,
+            name: genre.name,
+            slug: genreSlug,
+          });
+          await this.moviesRepository.addGenreToMovie(movie.id, genre.id);
+        }
+      }
+
+      // Sync cast
+      await this.seedMovieCredits(tmdbId, movie.id);
+
+      this.logger.log(`Imported from TMDB: ${details.title}`);
+      return slug;
+    } finally {
+      // Release lock
+      await this.redisService.del(lockKey);
+    }
   }
 
   // ─── Seed: Genres ──────────────────────────────────

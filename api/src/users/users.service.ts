@@ -23,6 +23,10 @@ export class UsersService {
     return this.usersRepository.findById(id);
   }
 
+  async findByIdWithRoles(id: string) {
+    return this.usersRepository.findByIdWithRoles(id);
+  }
+
   async updatePublicKey(id: string, publicKey: string): Promise<void> {
     await this.usersRepository.updatePublicKey(id, publicKey);
   }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from '@/i18n/routing';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 
 interface BreadcrumbItem {
@@ -21,9 +21,8 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
             {items.map((item, index) => (
                 <React.Fragment key={index}>
                     {item.href ? (
-                        <span 
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            onClick={() => item.href && router.push(item.href as any)} 
+                        <span
+                            onClick={() => item.href && router.push(item.href)}
                             className="hover:text-primary cursor-pointer transition-colors"
                         >
                             {item.label}

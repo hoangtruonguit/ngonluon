@@ -21,6 +21,9 @@ export const QUEUES = {
   EMAIL: 'email.queue',
   EMAIL_RETRY: 'email.retry.queue',
   EMAIL_DLQ: 'email.dlq',
+  MOVIE_IMPORT: 'movie.import',
+  MOVIE_IMPORT_RETRY: 'movie.import.retry',
+  MOVIE_IMPORT_DLQ: 'movie.import.dlq',
 } as const;
 
 export const ROUTING_KEYS = {
@@ -28,6 +31,8 @@ export const ROUTING_KEYS = {
   EMAIL_RESET_PASSWORD: 'email.reset_password',
   EMAIL_SUBSCRIPTION: 'email.subscription',
   EMAIL_ALL: 'email.*',
+  MOVIE_IMPORT: 'movie.import',
+  MOVIE_IMPORT_RETRY: 'movie.import.retry',
 } as const;
 
 const MAX_RETRIES = 3;
@@ -41,12 +46,18 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     queue: string;
     handler: (message: any, headers: any) => Promise<void>;
   }[] = [];
+  private topologyReady: Promise<void>;
+  private resolveTopology: () => void;
 
   constructor(
     private readonly configService: ConfigService,
     @Inject('AMQP_CONNECTION_MANAGER')
     private readonly connectionManager: AmqpConnectionManager,
-  ) {}
+  ) {
+    this.topologyReady = new Promise((resolve) => {
+      this.resolveTopology = resolve;
+    });
+  }
 
   onModuleInit() {
     this.initializeChannel();
@@ -63,6 +74,7 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
       setup: async (channel: ConfirmChannel) => {
         // Setup topology
         await this.setupTopology(channel);
+        this.resolveTopology();
         // Re-register consumers if any
         await this.reRegisterConsumers(channel);
       },
@@ -124,7 +136,46 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
 
     await channel.bindQueue(QUEUES.EMAIL, EXCHANGES.MAIN, 'email.retry');
 
-    // ── Dead Letter Queue ──
+    // ── Movie Import Queue ──
+    await channel.assertQueue(QUEUES.MOVIE_IMPORT, {
+      durable: true,
+      arguments: {
+        'x-dead-letter-exchange': EXCHANGES.DLQ,
+      },
+    });
+    await channel.bindQueue(
+      QUEUES.MOVIE_IMPORT,
+      EXCHANGES.MAIN,
+      ROUTING_KEYS.MOVIE_IMPORT,
+    );
+
+    // ── Movie Import Retry Queue (với TTL) ──
+    await channel.assertQueue(QUEUES.MOVIE_IMPORT_RETRY, {
+      durable: true,
+      arguments: {
+        'x-dead-letter-exchange': EXCHANGES.MAIN,
+        'x-dead-letter-routing-key': ROUTING_KEYS.MOVIE_IMPORT,
+        'x-message-ttl': RETRY_DELAYS[0],
+      },
+    });
+    await channel.bindQueue(
+      QUEUES.MOVIE_IMPORT_RETRY,
+      EXCHANGES.RETRY,
+      ROUTING_KEYS.MOVIE_IMPORT_RETRY,
+    );
+    await channel.bindQueue(
+      QUEUES.MOVIE_IMPORT,
+      EXCHANGES.MAIN,
+      ROUTING_KEYS.MOVIE_IMPORT_RETRY,
+    );
+
+    // ── Movie Import DLQ ──
+    await channel.assertQueue(QUEUES.MOVIE_IMPORT_DLQ, {
+      durable: true,
+    });
+    await channel.bindQueue(QUEUES.MOVIE_IMPORT_DLQ, EXCHANGES.DLQ, '');
+
+    // ── Email Dead Letter Queue ──
     await channel.assertQueue(QUEUES.EMAIL_DLQ, {
       durable: true,
     });
@@ -157,10 +208,8 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     this.consumers.push({ queue, handler });
 
     // addSetup runs after the channel's initial setup (setupTopology), so queue is guaranteed to exist
-    // eslint-disable-next-line @typescript-eslint/require-await
     await this.channelWrapper.addSetup(async (channel: ConfirmChannel) => {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.registerConsumer(channel, queue, handler);
+      await this.registerConsumer(channel, queue, handler);
     });
   }
 
@@ -175,6 +224,7 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     queue: string,
     handler: (message: any, headers: any) => Promise<void>,
   ) {
+    await this.topologyReady;
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     await channel.consume(queue, async (msg) => {
       if (!msg) return;
@@ -199,7 +249,8 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
           const delay =
             RETRY_DELAYS[Math.min(retryCount, RETRY_DELAYS.length - 1)];
 
-          channel.publish(EXCHANGES.RETRY, 'email.retry', msg.content, {
+          const retryRoutingKey = queue.replace(/\.?queue$/, '') + '.retry';
+          channel.publish(EXCHANGES.RETRY, retryRoutingKey, msg.content, {
             persistent: true,
             contentType: 'application/json',
             headers: {

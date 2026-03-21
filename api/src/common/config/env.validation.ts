@@ -3,8 +3,9 @@ import {
   IsEnum,
   IsNumber,
   IsString,
-  validateSync,
   IsBoolean,
+  IsOptional,
+  validateSync,
 } from 'class-validator';
 
 enum Environment {
@@ -20,9 +21,15 @@ class EnvironmentVariables {
   @IsNumber()
   PORT: number;
 
+  // Database
+  @IsString()
+  DATABASE_URL: string;
+
+  // JWT
   @IsString()
   JWT_REFRESH_SECRET: string;
 
+  // Mail
   @IsString()
   MAIL_HOST: string;
 
@@ -31,6 +38,33 @@ class EnvironmentVariables {
 
   @IsBoolean()
   ENABLE_MAIL: boolean;
+
+  // RabbitMQ
+  @IsString()
+  RABBITMQ_URL: string;
+
+  // TMDB
+  @IsString()
+  TMDB_API_KEY: string;
+
+  // CORS (optional — defaults to localhost:3000)
+  @IsOptional()
+  @IsString()
+  CORS_ORIGINS?: string;
+
+  // Redis (optional — defaults handled by ioredis)
+  @IsOptional()
+  @IsString()
+  REDIS_HOST?: string;
+
+  @IsOptional()
+  @IsNumber()
+  REDIS_PORT?: number;
+
+  // Elasticsearch (optional — defaults handled by client)
+  @IsOptional()
+  @IsString()
+  ELASTICSEARCH_URL?: string;
 }
 
 export function validate(config: Record<string, any>) {
@@ -41,6 +75,9 @@ export function validate(config: Record<string, any>) {
       PORT: parseInt(String(config.PORT), 10),
       MAIL_PORT: parseInt(String(config.MAIL_PORT), 10),
       ENABLE_MAIL: String(config.ENABLE_MAIL) === 'true',
+      ...(config.REDIS_PORT
+        ? { REDIS_PORT: parseInt(String(config.REDIS_PORT), 10) }
+        : {}),
     },
     { enableImplicitConversion: true },
   );

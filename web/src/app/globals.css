@@ -6,8 +6,8 @@
   --color-background-dark: #0a0a0a;
   --color-surface-dark: #1a1a1a;
 
-  --font-sans: var(--font-spline-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-spline-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
 .material-symbols-outlined {

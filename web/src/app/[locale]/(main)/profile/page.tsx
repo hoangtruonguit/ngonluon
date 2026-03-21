@@ -1,15 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import useSWR from 'swr';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiClient } from '@/lib/api';
 import { useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
-import Breadcrumb from '@/components/Breadcrumb';
+import Breadcrumb from '@/components/ui/Breadcrumb';
 import ProfileInfo from '@/components/profile/ProfileInfo';
 import WatchlistSection from '@/components/profile/WatchlistSection';
 import WatchHistorySection from '@/components/profile/WatchHistorySection';
 import { WatchlistItemResponseDto, WatchHistoryResponseDto } from '@/lib/api';
+
+const fetchWatchlist = () => apiClient.getWatchlist().then(res => res.data);
+const fetchWatchHistory = () => apiClient.getWatchHistory().then(res => res.data);
 
 export default function ProfilePage() {
     const { user, isLoggedIn, isLoading: authLoading, refreshUser } = useAuth();
@@ -20,39 +24,33 @@ export default function ProfilePage() {
     const [isUpdating, setIsUpdating] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-    const [watchlist, setWatchlist] = useState<WatchlistItemResponseDto[]>([]);
-    const [watchHistory, setWatchHistory] = useState<WatchHistoryResponseDto[]>([]);
-    const [isDataLoading, setIsDataLoading] = useState(true);
+    const {
+        data: watchlist,
+        isLoading: isWatchlistLoading,
+        mutate: mutateWatchlist
+    } = useSWR<WatchlistItemResponseDto[]>(
+        user ? 'watchlist' : null,
+        fetchWatchlist,
+    );
+
+    const {
+        data: watchHistory,
+        isLoading: isHistoryLoading,
+        mutate: mutateHistory
+    } = useSWR<WatchHistoryResponseDto[]>(
+        user ? 'watch-history' : null,
+        fetchWatchHistory,
+    );
+
+    const isDataLoading = isWatchlistLoading || isHistoryLoading;
 
     useEffect(() => {
         if (!authLoading && !isLoggedIn) {
             router.push('/login');
         }
-    }, [isLoggedIn, authLoading, router]);
+    }, [authLoading, isLoggedIn, router]);
 
-    useEffect(() => {
-        if (user) {
-            // Fetch watchlist and history
-            const fetchData = async () => {
-                setIsDataLoading(true);
-                try {
-                    const [wlResponse, whResponse] = await Promise.all([
-                        apiClient.getWatchlist(),
-                        apiClient.getWatchHistory()
-                    ]);
-                    setWatchlist(wlResponse.data);
-                    setWatchHistory(whResponse.data);
-                } catch (error) {
-                    console.error('Failed to fetch user data', error);
-                } finally {
-                    setIsDataLoading(false);
-                }
-            };
-            fetchData();
-        }
-    }, [user]);
-
-    const handleUpdateProfile = async (data: { fullName: string; avatarUrl?: string }) => {
+    const handleUpdateProfile = useCallback(async (data: { fullName: string; avatarUrl?: string }) => {
         setIsUpdating(true);
         setMessage(null);
 
@@ -73,7 +71,25 @@ export default function ProfilePage() {
         } finally {
             setIsUpdating(false);
         }
-    };
+    }, [refreshUser, t]);
+
+    const handleWatchlistUpdate = useCallback((movieId: string, isInWatchlist: boolean) => {
+        if (!isInWatchlist) {
+            mutateWatchlist(
+                (prev) => prev?.filter(item => item.movieId !== movieId),
+                { revalidate: false }
+            );
+        }
+    }, [mutateWatchlist]);
+
+    const handleClearHistory = useCallback(() => {
+        mutateHistory([], { revalidate: false });
+    }, [mutateHistory]);
+
+    const breadcrumbItems = useMemo(() => [
+        { label: tHeader('home'), href: '/' },
+        { label: tHeader('myProfile'), active: true }
+    ], [tHeader]);
 
     if (authLoading || !isLoggedIn) {
         return (
@@ -82,11 +98,6 @@ export default function ProfilePage() {
             </div>
         );
     }
-
-    const breadcrumbItems = [
-        { label: tHeader('home'), href: '/' },
-        { label: tHeader('myProfile'), active: true }
-    ];
 
     return (
         <div className="min-h-screen bg-background-dark text-white pt-24 pb-20 font-sans">
@@ -108,19 +119,15 @@ export default function ProfilePage() {
                     {/* Content Sections */}
                     <div className="space-y-32">
                         <WatchlistSection
-                            items={watchlist}
+                            items={watchlist ?? []}
                             isLoading={isDataLoading}
-                            onWatchlistUpdate={(movieId, isInWatchlist) => {
-                                if (!isInWatchlist) {
-                                    setWatchlist(prev => prev.filter(item => item.movieId !== movieId));
-                                }
-                            }}
+                            onWatchlistUpdate={handleWatchlistUpdate}
                         />
 
                         <WatchHistorySection
-                            items={watchHistory}
+                            items={watchHistory ?? []}
                             isLoading={isDataLoading}
-                            onClear={() => setWatchHistory([])}
+                            onClear={handleClearHistory}
                         />
                     </div>
                 </div>

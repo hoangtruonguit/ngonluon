@@ -6,7 +6,9 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import { logger } from './common/logger/logger.config';
 
 async function bootstrap() {
@@ -14,6 +16,11 @@ async function bootstrap() {
     logger: logger,
   });
 
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
   app.use(cookieParser());
 
   app.useGlobalPipes(
@@ -23,10 +30,14 @@ async function bootstrap() {
     }),
   );
   app.useGlobalInterceptors(new TransformInterceptor(new Reflector()));
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(new HttpExceptionFilter(), new PrismaExceptionFilter());
 
+  const configService = app.get(ConfigService);
+  const allowedOrigins = configService.get<string>('CORS_ORIGINS');
   app.enableCors({
-    origin: true, // In production, replace with specific origins
+    origin: allowedOrigins
+      ? allowedOrigins.split(',').map((o) => o.trim())
+      : ['http://localhost:3000'],
     credentials: true,
   });
 
@@ -39,7 +50,6 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
 
-  const configService = app.get(ConfigService);
   await app.listen(configService.get<number>('PORT') || 3001);
 }
 bootstrap().catch((err) => {

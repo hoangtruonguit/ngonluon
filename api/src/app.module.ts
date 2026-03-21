@@ -19,9 +19,17 @@ import { WatchHistoryModule } from './watch-history/watch-history.module';
 import { MovieSyncListener } from './elasticsearch/moive-sync.listener';
 import { validate } from './common/config/env.validation';
 import { RabbitMQModule } from './rabbitmq/rabbitmq.module';
+import { AdminModule } from './admin/admin.module';
+
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'uploads'),
+      serveRoot: '/uploads',
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
@@ -40,6 +48,7 @@ import { RabbitMQModule } from './rabbitmq/rabbitmq.module';
     SearchModule,
     WatchlistModule,
     WatchHistoryModule,
+    AdminModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60000,

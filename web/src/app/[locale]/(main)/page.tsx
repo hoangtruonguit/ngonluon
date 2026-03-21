@@ -1,7 +1,6 @@
 import { Link } from '@/i18n/routing';
-import ContinueWatchingSection from '@/components/ContinueWatchingSection';
-import MovieCard from '@/components/MovieCard';
-import HeroCarousel from '@/components/HeroCarousel';
+import MovieCard from '@/components/movie/MovieCard';
+import HeroCarousel from '@/components/movie/HeroCarousel';
 import { movieService } from '@/services/movie.service';
 import { getTranslations } from 'next-intl/server';
 

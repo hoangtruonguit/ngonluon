@@ -5,12 +5,13 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { movieService } from '@/services/movie.service';
 import { searchService, SearchResult } from '@/services/search.service';
-import { useRouter, usePathname } from '@/i18n/routing';
+import { useRouter } from 'next/navigation';
+import { usePathname } from '@/i18n/routing';
 import SearchSidebar from '@/components/search/SearchSidebar';
 import SearchToolbar from '@/components/search/SearchToolbar';
 import SearchPagination from '@/components/search/SearchPagination';
 import SearchResultGrid from '@/components/search/SearchResultGrid';
-import Breadcrumb from '@/components/Breadcrumb';
+import Breadcrumb from '@/components/ui/Breadcrumb';
 
 export interface SearchFilters {
     q?: string;
@@ -61,7 +62,6 @@ function DiscoveryContent({
     const [filterYearTo, setFilterYearTo] = useState(yearTo);
     const [filterMinRating, setFilterMinRating] = useState(minRating);
     const [isStudiosOpen, setIsStudiosOpen] = useState(false);
-    const [importingId, setImportingId] = useState<number | null>(null);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
     // Fetch genres once
@@ -125,8 +125,7 @@ function DiscoveryContent({
         if (overrideParams.sortBy || sortBy !== 'relevance') params.set('sortBy', (overrideParams.sortBy as string) || sortBy);
         if (overrideParams.page || (page > 1 && !overrideParams.resetPage)) params.set('page', ((overrideParams.page as number) || page).toString());
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        router.push(`${pathname}?${params.toString()}` as any);
+        router.push(`${pathname}?${params.toString()}`);
     };
 
     const handleClearFilters = () => {
@@ -135,27 +134,13 @@ function DiscoveryContent({
         setFilterYearFrom(undefined);
         setFilterYearTo(undefined);
         setFilterMinRating('0');
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        router.push(pathname as any);
+        router.push(pathname);
     };
 
     const toggleGenre = (slug: string) => {
         setFilterGenres(prev => 
             prev.includes(slug) ? prev.filter(s => s !== slug) : [...prev, slug]
         );
-    };
-
-    const handleImport = async (tmdbId: number) => {
-        setImportingId(tmdbId);
-        try {
-            const slug = await searchService.importMovie(tmdbId);
-            router.push(`/watch/${slug}`);
-        } catch (error) {
-            console.error('Failed to import movie', error);
-            alert(t('importError'));
-        } finally {
-            setImportingId(null);
-        }
     };
 
     return (
@@ -225,11 +210,9 @@ function DiscoveryContent({
                         />
 
                         <section className="mb-16">
-                            <SearchResultGrid 
+                            <SearchResultGrid
                                 results={results}
                                 isLoading={isLoading}
-                                importingId={importingId}
-                                onImport={handleImport}
                                 query={q}
                                 onClearFilters={handleClearFilters}
                                 viewMode={viewMode}

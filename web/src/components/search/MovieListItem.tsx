@@ -13,9 +13,6 @@ interface MovieListItemProps {
     imageUrl: string;
     showWatchButton: boolean;
     slug: string;
-    source?: 'local' | 'tmdb';
-    onImport?: () => void;
-    isImporting?: boolean;
     releaseYear?: number;
 }
 
@@ -26,9 +23,6 @@ export default function MovieListItem({
     imageUrl,
     showWatchButton,
     slug,
-    source = 'local',
-    onImport,
-    isImporting,
     releaseYear
 }: MovieListItemProps) {
     const t = useTranslations('Common');
@@ -54,7 +48,7 @@ export default function MovieListItem({
                             {rating && (
                                 <div className="flex items-center gap-2">
                                     <span className="text-primary font-black text-lg">{rating}</span>
-                                    <span className="text-white/50 text-[10px] uppercase font-black tracking-widest">{source === 'tmdb' ? 'TMDB' : 'IMDb'}</span>
+                                    <span className="text-white/50 text-[10px] uppercase font-black tracking-widest">IMDb</span>
                                 </div>
                             )}
                             {releaseYear && (
@@ -67,7 +61,7 @@ export default function MovieListItem({
                     </div>
 
                     <div className="flex shrink-0 gap-2 w-full sm:w-auto">
-                        {showWatchButton ? (
+                        {showWatchButton && (
                             <Link
                                 href={`/watch/${slug}`}
                                 className="flex-1 sm:flex-none px-6 py-2.5 bg-primary text-secondary font-black rounded-xl text-sm flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-all duration-300"
@@ -75,17 +69,6 @@ export default function MovieListItem({
                                 <span className="material-symbols-outlined text-lg">play_arrow</span>
                                 {t('watchNow')}
                             </Link>
-                        ) : (
-                            <button
-                                onClick={onImport}
-                                disabled={isImporting}
-                                className="flex-1 sm:flex-none px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white font-black rounded-xl text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-all duration-300"
-                            >
-                                <span className={`material-symbols-outlined text-lg ${isImporting ? 'animate-spin' : ''}`}>
-                                    {isImporting ? 'sync' : 'cloud_download'}
-                                </span>
-                                {isImporting ? t('importing') : t('importMovie')}
-                            </button>
                         )}
                         <Link
                             href={`/watch/${slug}`}

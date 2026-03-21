@@ -6,10 +6,8 @@ import Image from 'next/image';
 import { useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
-import dynamic from 'next/dynamic';
-
-const Footer = dynamic(() => import('@/components/Footer'));
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
+import Footer from '@/components/layout/Footer';
 
 // Hoist RegEx outside render (js-hoist-regexp)
 const EMAIL_REGEX = /\S+@\S+\.\S+/;
@@ -17,6 +15,10 @@ const LOWER_REGEX = /[a-z]/;
 const UPPER_REGEX = /[A-Z]/;
 const NUM_REGEX = /[0-9]/;
 const SPECIAL_REGEX = /[^a-zA-Z0-9]/;
+
+// Hoist arrays outside render (js-hoist-constant)
+const STRENGTH_LEVELS = [1, 2, 3, 4] as const;
+const STRENGTH_COLORS = ['', 'bg-red-500', 'bg-pink-500', 'bg-yellow-500', 'bg-green-500'];
 
 // Hoist static JSX (rendering-hoist-jsx)
 const staticBackground = (
@@ -269,16 +271,12 @@ export default function RegisterPage() {
                                 </div>
                                 {/* Password Strength */}
                                 <div className="mt-1 flex gap-1 h-1">
-                                    {[1, 2, 3, 4].map((level) => {
-                                        const strengthColors = ['', 'bg-red-500', 'bg-pink-500', 'bg-yellow-500', 'bg-green-500'];
-                                        return (
-                                            <div
-                                                key={level}
-                                                className={`flex-1 rounded-full ${level <= passwordStrength ? strengthColors[passwordStrength] : 'bg-white/10'
-                                                    }`}
-                                            ></div>
-                                        );
-                                    })}
+                                    {STRENGTH_LEVELS.map((level) => (
+                                        <div
+                                            key={level}
+                                            className={`flex-1 rounded-full ${level <= passwordStrength ? STRENGTH_COLORS[passwordStrength] : 'bg-white/10'}`}
+                                        ></div>
+                                    ))}
                                 </div>
                                 <p className="text-[10px] text-[#ad9db9]">{t('passwordHint')}</p>
                                 {errors.password && <p className="text-red-400 text-xs">{errors.password}</p>}

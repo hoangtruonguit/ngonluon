@@ -3,16 +3,18 @@
 import Image from 'next/image';
 import { Link } from '@/i18n/routing';
 import { useAuth } from '@/contexts/AuthContext';
-import LanguageSwitcher from './LanguageSwitcher';
+import { resolveAvatarUrl } from '@/lib/api';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 
 
-import { useState, useEffect } from 'react';
-import { useRouter } from '@/i18n/routing';
+import { useState, useEffect, useRef } from 'react';
+import { useRouter, usePathname } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 
 export default function Header() {
     const { isLoggedIn, isLoading, user, logout } = useAuth();
     const router = useRouter();
+    const pathname = usePathname();
     const t = useTranslations('Header');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -23,12 +25,17 @@ export default function Header() {
     };
 
     // Close menu on click outside
+    const menuRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
         if (!isMenuOpen) return;
-        
-        const handleClickOutside = () => setIsMenuOpen(false);
-        window.addEventListener('click', handleClickOutside);
-        return () => window.removeEventListener('click', handleClickOutside);
+
+        const handleClickOutside = (e: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+                setIsMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isMenuOpen]);
 
     // Debounce search
@@ -48,9 +55,11 @@ export default function Header() {
         }
     };
 
+    const isSearchPage = pathname === '/search' || pathname.startsWith('/search/');
+
     return (
         <header className="fixed top-0 left-0 right-0 z-50 transition-colors duration-300 glass border-b border-white/10 py-4">
-            <div className="max-w-[1440px] mx-auto px-6 lg:px-24 flex items-center justify-between">
+            <div className={`${isSearchPage ? 'w-full' : 'max-w-[1440px]'} mx-auto px-6 lg:px-24 flex items-center justify-between`}>
                 <div className="flex items-center gap-12">
                     <Link href="/" className="flex items-center gap-2 text-primary">
                         <span className="material-symbols-outlined text-4xl font-bold">movie_filter</span>
@@ -83,21 +92,19 @@ export default function Header() {
                     </div>
                     <div className="flex items-center gap-3">
                         {isLoggedIn && (
-                            <div className="relative">
+                            <div className="relative" ref={menuRef}>
                                 <div
                                     className="size-9 rounded-full overflow-hidden cursor-pointer transition-all active:scale-95 border-2 border-purple-500"
                                     title="Account menu"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setIsMenuOpen(!isMenuOpen);
-                                    }}
+                                    onClick={() => setIsMenuOpen(!isMenuOpen)}
                                 >
                                         <Image
-                                            src={user?.avatarUrl || "https://lh3.googleusercontent.com/aida-public/AB6AXuD1Lf8ou0dErc0m7he9KunMHpoZUwHkhj8ivVp9cRwQ4mirIRJgnx_vIeGEnUtTLkYCKvlmYkFdb2joykQ0oV7gR_3PFj34pGk9-K3KR0IWd52SclJqQ9EzVsau7YEmrMYfR6oFnDaoAegwzxIQ7cw49DPaNUPO3vWht8VRkGTkWgbMydPRlrPZIZcJY1DQxmFRuicd6Cxv-h_tnrMtsx_yTNXQuwh625X2vYyrvMahidyo0JG6YSCm5kBK7QkI8HS24eOXJgXYPEU"}
+                                            src={resolveAvatarUrl(user?.avatarUrl) || "https://lh3.googleusercontent.com/aida-public/AB6AXuD1Lf8ou0dErc0m7he9KunMHpoZUwHkhj8ivVp9cRwQ4mirIRJgnx_vIeGEnUtTLkYCKvlmYkFdb2joykQ0oV7gR_3PFj34pGk9-K3KR0IWd52SclJqQ9EzVsau7YEmrMYfR6oFnDaoAegwzxIQ7cw49DPaNUPO3vWht8VRkGTkWgbMydPRlrPZIZcJY1DQxmFRuicd6Cxv-h_tnrMtsx_yTNXQuwh625X2vYyrvMahidyo0JG6YSCm5kBK7QkI8HS24eOXJgXYPEU"}
                                             alt="User profile avatar"
                                             fill
                                             sizes="36px"
                                             className="object-cover"
+                                            unoptimized={!!user?.avatarUrl}
                                         />
                                     </div>
 
@@ -108,8 +115,18 @@ export default function Header() {
                                                 <p className="text-white font-bold text-sm truncate">{user?.fullName}</p>
                                                 <p className="text-white/40 text-[10px] uppercase font-black tracking-widest truncate">{user?.email}</p>
                                             </div>
-                                            <Link 
-                                                href="/profile" 
+                                            {user?.roles?.includes('ADMIN') && (
+                                                <Link
+                                                    href="/admin"
+                                                    className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-white/70 hover:text-primary transition-all group"
+                                                    onClick={() => setIsMenuOpen(false)}
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">admin_panel_settings</span>
+                                                    <span className="text-sm font-bold">{t('adminPanel')}</span>
+                                                </Link>
+                                            )}
+                                            <Link
+                                                href="/profile"
                                                 className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-white/70 hover:text-primary transition-all group"
                                                 onClick={() => setIsMenuOpen(false)}
                                             >

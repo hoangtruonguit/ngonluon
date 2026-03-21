@@ -1,16 +1,20 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
+import useSWR from 'swr';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from '@/i18n/routing';
 import { movieService, MovieComment } from '@/services/movie.service';
+import { resolveAvatarUrl } from '@/lib/api';
 import Image from 'next/image';
 
 interface CommentSectionProps {
     movieId: string;
     className?: string;
 }
+
+const fetchComments = (movieId: string) => movieService.getCommentsByMovie(movieId, 0, 50);
 
 export default function CommentSection({ movieId, className = "mt-12" }: CommentSectionProps) {
     const { isLoggedIn } = useAuth();
@@ -20,35 +24,14 @@ export default function CommentSection({ movieId, className = "mt-12" }: Comment
     const [comment, setComment] = useState('');
     const [isSpoiler, setIsSpoiler] = useState(false);
     const [sortBy, setSortBy] = useState<'newest' | 'top'>('newest');
-    const [comments, setComments] = useState<MovieComment[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
 
-    const [prevMovieId, setPrevMovieId] = useState(movieId);
+    const { data: comments = [], isLoading, mutate } = useSWR<MovieComment[]>(
+        movieId ? `comments-${movieId}` : null,
+        () => fetchComments(movieId),
+    );
 
-    // Adjust state during render when movieId changes
-    if (movieId !== prevMovieId) {
-        setPrevMovieId(movieId);
-        setIsLoading(true);
-        setComments([]);
-    }
-
-    const fetchComments = useCallback(async () => {
-        const fetched = await movieService.getCommentsByMovie(movieId, 0, 50);
-        setComments(fetched);
-        setIsLoading(false);
-    }, [movieId]);
-
-    useEffect(() => {
-        if (movieId) {
-            const timer = setTimeout(() => {
-                fetchComments();
-            }, 0);
-            return () => clearTimeout(timer);
-        }
-    }, [movieId, fetchComments]);
-
-    const handlePostComment = async () => {
+    const handlePostComment = useCallback(async () => {
         if (!isLoggedIn) {
             router.push('/login');
             return;
@@ -61,18 +44,14 @@ export default function CommentSection({ movieId, className = "mt-12" }: Comment
         if (newComment) {
             setComment('');
             setIsSpoiler(false);
-            setComments([newComment, ...comments]);
+            mutate((prev) => [newComment, ...(prev ?? [])], { revalidate: false });
         }
         setIsSubmitting(false);
-    };
+    }, [isLoggedIn, comment, isSpoiler, movieId, router, mutate]);
 
-    const sortedComments = [...comments].sort((a, b) => {
-        if (sortBy === 'newest') {
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        }
-        // If sorting by top, we'd need likes count. Let's just fallback to newest for now.
-        return 0;
-    });
+    const sortedComments = sortBy === 'newest'
+        ? [...comments].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        : comments;
 
     return (
         <div className={`bg-surface-dark/30 rounded-xl p-6 border border-white/5 ${className}`}>
@@ -102,7 +81,6 @@ export default function CommentSection({ movieId, className = "mt-12" }: Comment
             <div className="mb-10">
                 <div className="flex gap-4">
                     <div className="size-10 rounded-full bg-gray-700 shrink-0 overflow-hidden relative">
-                         {/* user avatar could go here if logged in */}
                          <span className="material-symbols-outlined absolute inset-0 flex items-center justify-center text-gray-400">person</span>
                     </div>
                     <div className="flex-1 space-y-4">
@@ -121,7 +99,7 @@ export default function CommentSection({ movieId, className = "mt-12" }: Comment
                                     <span className="text-xs text-gray-400">{t('spoilerTag')}</span>
                                 </label>
                             </div>
-                            <button 
+                            <button
                                 onClick={handlePostComment}
                                 disabled={isSubmitting || (isLoggedIn && !comment.trim())}
                                 className="px-8 py-2 bg-primary text-secondary font-bold rounded-lg hover:scale-105 transition-transform w-full sm:w-auto disabled:opacity-50 disabled:hover:scale-100"
@@ -141,7 +119,7 @@ export default function CommentSection({ movieId, className = "mt-12" }: Comment
                         <div key={c.id} className="flex gap-4">
                             <div className="size-10 rounded-full bg-gray-700 shrink-0 overflow-hidden relative">
                                 {c.user.avatarUrl ? (
-                                    <Image src={c.user.avatarUrl} alt={c.user.fullName || 'User'} fill sizes="40px" className="object-cover" />
+                                    <Image src={resolveAvatarUrl(c.user.avatarUrl)!} alt={c.user.fullName || 'User'} fill sizes="40px" className="object-cover" unoptimized />
                                 ) : (
                                     <span className="material-symbols-outlined absolute inset-0 flex items-center justify-center text-gray-400">person</span>
                                 )}

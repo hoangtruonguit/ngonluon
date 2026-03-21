@@ -1,6 +1,6 @@
 'use client';
 
-import MovieCard from '@/components/MovieCard';
+import MovieCard from '@/components/movie/MovieCard';
 import { useTranslations } from 'next-intl';
 import { WatchlistItemResponseDto } from '@/lib/api';
 

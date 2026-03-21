@@ -1,5 +1,4 @@
-import type { Metadata } from "next";
-import { Spline_Sans } from "next/font/google";
+import { Inter } from "next/font/google";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -9,9 +8,9 @@ import { AuthProvider } from '@/contexts/AuthContext';
 
 import { getTranslations } from 'next-intl/server';
 
-const splineSans = Spline_Sans({
-  variable: "--font-spline-sans",
-  subsets: ["latin"],
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin", "vietnamese"],
   weight: ["300", "400", "500", "600", "700"],
 });
 
@@ -32,24 +31,22 @@ export default async function RootLayout({
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
+  const [{ locale }, messages] = await Promise.all([params, getMessages()]);
 
   if (!routing.locales.includes(locale as 'en' | 'vi')) {
     notFound();
   }
 
-  // Providing all messages to the client
-  // side is the easiest way to get started
-  const messages = await getMessages();
-
   return (
     <html lang={locale} className="dark">
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
       </head>
       <body
-        suppressHydrationWarning={true}
-        className={`${splineSans.variable} font-sans antialiased bg-background-light dark:bg-background-dark text-slate-900 dark:text-white`}
+        suppressHydrationWarning
+        className={`${inter.variable} font-sans antialiased bg-background-light dark:bg-background-dark text-slate-900 dark:text-white`}
       >
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>

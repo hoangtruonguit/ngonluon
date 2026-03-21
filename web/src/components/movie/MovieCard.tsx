@@ -17,37 +17,31 @@ interface MovieCardProps {
     showWatchButton?: boolean;
     slug?: string;
     source?: 'local' | 'tmdb';
-    onImport?: () => void;
     onWatchlistUpdate?: (movieId: string, isInWatchlist: boolean) => void;
-    isImporting?: boolean;
     releaseYear?: number | null;
     showYear?: boolean;
 }
 
 
-export default function MovieCard({ 
+export default function MovieCard({
     id,
-    title, 
-    rating, 
-    description, 
-    imageUrl, 
-    showWatchButton = false, 
+    title,
+    rating,
+    description,
+    imageUrl,
+    showWatchButton = false,
     slug,
     source = 'local',
-    onImport,
     onWatchlistUpdate,
-    isImporting: propIsImporting,
     releaseYear,
     showYear = false
 }: MovieCardProps) {
     const highResImageUrl = movieService.getHighResImage(imageUrl);
     const router = useRouter();
     const { isLoggedIn, watchlistIds, updateWatchlist, openLoginPrompt } = useAuth();
-    const [isImportingLocal, setIsImportingLocal] = useState(false);
     const [isWatchlistLoading, setIsWatchlistLoading] = useState(false);
     const t = useTranslations('Common');
 
-    const isImporting = propIsImporting ?? isImportingLocal;
     const isInWatchlist = id ? watchlistIds.has(id) : false;
 
     const handleWatchlistToggle = async (e: React.MouseEvent) => {
@@ -79,24 +73,8 @@ export default function MovieCard({
         }
     };
 
-    const handleImportClick = (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (onImport) {
-            setIsImportingLocal(true);
-            onImport();
-        }
-    };
-
     const card = (
         <div className="movie-card relative min-w-[200px] lg:min-w-[240px] aspect-[2/3] rounded-xl overflow-hidden cursor-pointer group shadow-2xl flex-shrink-0">
-            {/* Source Badge */}
-            {source === 'tmdb' && (
-                <div className="absolute top-3 right-3 z-10 bg-primary/90 text-secondary text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter shadow-lg ring-1 ring-white/20">
-                    TMDB
-                </div>
-            )}
-
             <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-110">
                 <Image 
                     src={highResImageUrl} 
@@ -108,12 +86,12 @@ export default function MovieCard({
                 />
             </div>
 
-            <div className={`card-overlay absolute inset-0 bg-black/80 transition-opacity duration-300 flex flex-col justify-end p-6 space-y-3 ${source === 'tmdb' ? 'opacity-100 md:opacity-0 group-hover:opacity-100' : 'opacity-0'}`}>
+            <div className="card-overlay absolute inset-0 bg-black/80 transition-opacity duration-300 flex flex-col justify-end p-6 space-y-3 opacity-0 group-hover:opacity-100">
                 {rating && (
                     <div className="flex items-center justify-between w-full">
                         <div className="flex items-center gap-2">
                             <span className="text-primary font-black text-lg">{rating}</span>
-                            <span className="text-white/50 text-[10px] uppercase font-black tracking-widest">{source === 'tmdb' ? 'TMDB' : 'IMDb'}</span>
+                            <span className="text-white/50 text-[10px] uppercase font-black tracking-widest">IMDb</span>
                         </div>
                         {showYear && releaseYear && (
                             <div className="flex items-center gap-1.5 opacity-80">
@@ -135,57 +113,39 @@ export default function MovieCard({
                 </div>
                 <p className="text-white/70 text-xs line-clamp-2">{description}</p>
                 
-                {source === 'tmdb' ? (
-                    <button
-                        className={`w-full mt-2 py-2.5 rounded-lg text-secondary text-xs font-black uppercase tracking-widest shadow-xl transition-all ${isImporting ? 'bg-primary/50 cursor-not-allowed' : 'bg-primary hover:bg-primary/90'}`}
-                        onClick={handleImportClick}
-                        disabled={isImporting}
-                    >
-                        {isImporting ? (
-                            <span className="flex items-center justify-center gap-2">
-                                <svg className="animate-spin h-4 w-4 text-secondary" viewBox="0 0 24 24">
+                <div className="flex flex-col gap-2 w-full">
+                    {showWatchButton && slug && (
+                        <button
+                            className="w-full bg-primary py-2 rounded-lg text-white text-xs font-bold uppercase tracking-widest hover:bg-primary/90 transition-colors"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/watch/${slug}`);
+                            }}
+                        >
+                            {t('watchNow')}
+                        </button>
+                    )}
+                    {source === 'local' && id && (
+                        <button
+                            className={`w-full py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+                                isInWatchlist
+                                    ? 'bg-white/10 text-white hover:bg-white/20'
+                                    : 'bg-white/20 text-white hover:bg-white/30'
+                            }`}
+                            onClick={handleWatchlistToggle}
+                            disabled={isWatchlistLoading}
+                        >
+                            {isWatchlistLoading ? (
+                                <svg className="animate-spin h-3 w-3 text-white" viewBox="0 0 24 24">
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                {t('importing')}
-                            </span>
-                        ) : t('importMovie')}
-                    </button>
-                ) : (
-                    <div className="flex flex-col gap-2 w-full">
-                        {showWatchButton && slug && (
-                            <button
-                                className="w-full bg-primary py-2 rounded-lg text-white text-xs font-bold uppercase tracking-widest hover:bg-primary/90 transition-colors"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    router.push(`/watch/${slug}`);
-                                }}
-                            >
-                                {t('watchNow')}
-                            </button>
-                        )}
-                        {source === 'local' && id && (
-                            <button
-                                className={`w-full py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
-                                    isInWatchlist 
-                                        ? 'bg-white/10 text-white hover:bg-white/20' 
-                                        : 'bg-white/20 text-white hover:bg-white/30'
-                                }`}
-                                onClick={handleWatchlistToggle}
-                                disabled={isWatchlistLoading}
-                            >
-                                {isWatchlistLoading ? (
-                                    <svg className="animate-spin h-3 w-3 text-white" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                ) : (
-                                    <span>{isInWatchlist ? `✓ ${t('inMyList')}` : `+ ${t('myList')}`}</span>
-                                )}
-                            </button>
-                        )}
-                    </div>
-                )}
+                            ) : (
+                                <span>{isInWatchlist ? `✓ ${t('inMyList')}` : `+ ${t('myList')}`}</span>
+                            )}
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     );
