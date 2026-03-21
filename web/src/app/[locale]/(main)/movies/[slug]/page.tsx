@@ -208,49 +208,9 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
                 )}
 
                 {/* Reviews and Stats */}
-                <section className="grid lg:grid-cols-3 gap-12">
-                    {/* Audience Rating */}
-                    <div className="lg:col-span-1 space-y-8">
-                        <h3 className="text-2xl font-bold uppercase tracking-wider mb-6">{t('audienceRating')}</h3>
-                        <div className="bg-surface-dark p-8 rounded-2xl border border-white/5 space-y-6">
-                            <div className="flex items-center gap-4">
-                                <div className="text-5xl font-bold text-white">
-                                    {movie.audienceRating.totalReviews > 0
-                                        ? movie.audienceRating.average
-                                        : '—'}
-                                </div>
-                                <div>
-                                    <StarRating rating={movie.audienceRating.average} />
-                                    <p className="text-xs text-slate-400 font-medium uppercase mt-1">
-                                        {t('ratingsCount', { count: movie.audienceRating.totalReviews })}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* Rating Distribution Bars */}
-                            <div className="space-y-3">
-                                {movie.audienceRating.distribution.map((item, index) => (
-                                    <div key={index} className="flex items-center gap-3">
-                                        <span className="text-xs font-bold w-4">{5 - index}</span>
-                                        <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
-                                            <div
-                                                className="h-full bg-primary rounded-full transition-all"
-                                                style={{ width: `${item.percentage}%` }}
-                                            />
-                                        </div>
-                                        <span className="text-xs text-slate-400 w-8 text-right">{item.percentage}%</span>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <button className="w-full py-3 rounded-lg border border-primary text-primary font-bold hover:bg-primary hover:text-white transition-all text-sm">
-                                {t('rateMovie')}
-                            </button>
-                        </div>
-                    </div>
-
+                <section className="grid lg:grid-cols-1 gap-12">
                     {/* User Reviews */}
-                    <div className="lg:col-span-2 h-full">
+                    <div className="lg:col-span-1 h-full">
                         <CommentSection movieId={movie.id} className="h-full flex flex-col" />
                     </div>
                 </section>
