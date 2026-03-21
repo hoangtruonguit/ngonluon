@@ -74,7 +74,14 @@ export default function MovieCard({
     };
 
     const card = (
-        <div className="movie-card relative min-w-[200px] lg:min-w-[240px] aspect-[2/3] rounded-xl overflow-hidden cursor-pointer group shadow-2xl flex-shrink-0">
+        <div 
+            className="movie-card relative min-w-[200px] lg:min-w-[240px] aspect-[2/3] rounded-xl overflow-hidden cursor-pointer group shadow-2xl flex-shrink-0"
+            onClick={() => {
+                if (slug) {
+                    router.push(`/watch/${slug}`);
+                }
+            }}
+        >
             <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-110">
                 <Image 
                     src={highResImageUrl} 

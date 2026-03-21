@@ -7,7 +7,6 @@ const nextConfig: NextConfig = {
   /* config options here */
   images: {
     qualities: [100, 75],
-    domains: ['placehold.co', 'lh3.googleusercontent.com', 'image.tmdb.org', 'images.unsplash.com', 'api.dicebear.com'],
     remotePatterns: [
       {
         protocol: 'https',
