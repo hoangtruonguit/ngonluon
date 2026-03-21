@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { movieService } from '@/services/movie.service';
 import { useAuth } from '@/contexts/AuthContext';
-import MovieActionButtons from '@/components/MovieActionButtons';
+import MovieActionButtons from '@/components/movie/MovieActionButtons';
 import { useTranslations } from 'next-intl';
 
 interface HeroMovie {

@@ -39,9 +39,15 @@ const mockUser = {
   updatedAt: new Date(),
 };
 
+const mockUserWithRoles = {
+  ...mockUser,
+  roles: [{ role: { name: 'USER' } }],
+};
+
 const mockUsersService = {
   findOne: jest.fn(),
   findById: jest.fn(),
+  findByIdWithRoles: jest.fn(),
   create: jest.fn(),
   updatePublicKey: jest.fn().mockResolvedValue(undefined),
   updateRefreshToken: jest.fn().mockResolvedValue(undefined),
@@ -149,6 +155,7 @@ describe('AuthService', () => {
 
     it('should login successfully and return tokens', async () => {
       mockUsersService.findOne.mockResolvedValue(mockUser);
+      mockUsersService.findByIdWithRoles.mockResolvedValue(mockUserWithRoles);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
       const result = await service.login(loginDto);
@@ -189,6 +196,7 @@ describe('AuthService', () => {
     it('should refresh tokens successfully', async () => {
       mockJwtService.verify.mockReturnValue({ sub: 'user-id-1' });
       mockUsersService.findById.mockResolvedValue(mockUser);
+      mockUsersService.findByIdWithRoles.mockResolvedValue(mockUserWithRoles);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
       const result = await service.refresh('valid-refresh-token');
@@ -231,16 +239,16 @@ describe('AuthService', () => {
 
   describe('getMe()', () => {
     it('should return user profile', async () => {
-      mockUsersService.findById.mockResolvedValue(mockUser);
+      mockUsersService.findByIdWithRoles.mockResolvedValue(mockUserWithRoles);
 
       const result = await service.getMe('user-id-1');
 
       expect(result).toBeDefined();
-      expect(mockUsersService.findById).toHaveBeenCalledWith('user-id-1');
+      expect(mockUsersService.findByIdWithRoles).toHaveBeenCalledWith('user-id-1');
     });
 
     it('should throw UnauthorizedException when user not found', async () => {
-      mockUsersService.findById.mockResolvedValue(null);
+      mockUsersService.findByIdWithRoles.mockResolvedValue(null);
 
       await expect(service.getMe('non-existent')).rejects.toThrow(
         UnauthorizedException,

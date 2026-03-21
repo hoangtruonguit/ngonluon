@@ -19,7 +19,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-import LoginPromptModal from '@/components/LoginPromptModal';
+import LoginPromptModal from '@/components/ui/LoginPromptModal';
 
 function hasAuthCookie(): boolean {
     if (typeof window === 'undefined') return false;

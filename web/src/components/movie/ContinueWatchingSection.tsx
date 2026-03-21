@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import ContinueWatchingCard from '@/components/ContinueWatchingCard';
+import ContinueWatchingCard from '@/components/movie/ContinueWatchingCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from 'next-intl';
 

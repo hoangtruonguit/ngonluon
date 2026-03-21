@@ -120,6 +120,10 @@ export class AuthService {
 
     this.logger.log(`User logged in: ${email}`);
 
+    // 7. Fetch roles for response
+    const userWithRoles = await this.usersService.findByIdWithRoles(user.id);
+    const roles = userWithRoles?.roles?.map((ur) => ur.role.name) || [];
+
     return plainToInstance(
       AuthResponseDto,
       {
@@ -130,6 +134,7 @@ export class AuthService {
           email: user.email,
           fullName: user.fullName,
           avatarUrl: user.avatarUrl || null,
+          roles,
         },
         expiresIn: 3600, // 1 hour in seconds
       },
@@ -202,6 +207,10 @@ export class AuthService {
 
       this.logger.log(`Token refreshed for user: ${user.id}`);
 
+      // Fetch roles for response
+      const userWithRoles = await this.usersService.findByIdWithRoles(user.id);
+      const roles = userWithRoles?.roles?.map((ur) => ur.role.name) || [];
+
       return plainToInstance(
         AuthResponseDto,
         {
@@ -212,6 +221,7 @@ export class AuthService {
             email: user.email,
             fullName: user.fullName,
             avatarUrl: user.avatarUrl || null,
+            roles,
           },
           expiresIn: 3600,
         },
@@ -223,10 +233,12 @@ export class AuthService {
   }
 
   async getMe(userId: string) {
-    const user = await this.usersService.findById(userId);
+    const user = await this.usersService.findByIdWithRoles(userId);
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
+
+    const roles = user.roles?.map((ur) => ur.role.name) || [];
 
     return plainToInstance(
       UserResponseDto,
@@ -235,6 +247,7 @@ export class AuthService {
         email: user.email,
         fullName: user.fullName,
         avatarUrl: user.avatarUrl || null,
+        roles,
       },
       { excludeExtraneousValues: true },
     );

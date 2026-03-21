@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ElasticsearchService } from '../elasticsearch/elasticsearch.service';
 import { TmdbService, TmdbMovie } from '../tmdb/tmdb.service';
-import { SyncService } from '../elasticsearch/sync.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { RabbitMQService } from '../rabbitmq/rabbitmq.service';
+import { TmdbImportProducer } from '../tmdb/tmdb-import.producer';
 
 export interface SearchResult {
   source: 'local' | 'tmdb';
@@ -26,8 +26,8 @@ export class SearchService {
   constructor(
     private readonly esService: ElasticsearchService,
     private readonly tmdbService: TmdbService,
-    private readonly syncService: SyncService,
-    private readonly prisma: PrismaService,
+    private readonly rabbitMQService: RabbitMQService,
+    private readonly TmdbImportProducer: TmdbImportProducer,
   ) {}
 
   async search(
@@ -45,7 +45,7 @@ export class SearchService {
     } = {},
   ) {
     const { limit = 20, page = 1 } = options;
-    const MIN_LOCAL_RESULTS = 5;
+    const MIN_LOCAL_RESULTS = 40;
 
     // 1. Search ES trước
     const esResult = await this.esService.search(query, options);
@@ -64,14 +64,38 @@ export class SearchService {
       highlight: hit.highlight,
     }));
 
-    // 2. Nếu ES ít kết quả (< 5) hoặc không có -> fallback TMDB (chỉ khi có query)
-    if (query && results.length < MIN_LOCAL_RESULTS) {
+    // 2. Nếu ES ít kết quả (total < 40) hoặc không có -> fallback TMDB (chỉ khi có query)
+    if (query && total < MIN_LOCAL_RESULTS) {
       const remaining = limit - results.length;
-      const tmdbData = await this.searchTmdb(query, remaining, results, page);
+
+      // Lấy thêm local key để dedup (tránh trùng phim ở trang khác)
+      const allLocalResult = await this.esService.search(query, {
+        ...options,
+        limit: MIN_LOCAL_RESULTS,
+        page: 1,
+      });
+
+      const tmdbData = await this.searchTmdb(
+        query,
+        remaining,
+        allLocalResult.hits,
+        page,
+      );
       results.push(...tmdbData.results);
       // Nếu local không có gì, lấy total từ TMDB để pagination hoạt động
       if (total === 0) {
         total = tmdbData.total;
+      }
+
+      // Fire-and-forget: queue TMDB movies for background import
+      if (tmdbData.results.length) {
+        const tmdbIds = tmdbData.results
+          .filter((item) => item.source === 'tmdb' && item.tmdbId)
+          .map((item) => item.tmdbId!);
+
+        if (tmdbIds.length) {
+          await this.TmdbImportProducer.importBatchQueue(tmdbIds);
+        }
       }
     }
 
@@ -92,7 +116,7 @@ export class SearchService {
   private async searchTmdb(
     query: string,
     limit: number,
-    existingResults: SearchResult[],
+    existingHits: any[],
     page: number,
   ): Promise<{ results: SearchResult[]; total: number }> {
     try {
@@ -101,10 +125,12 @@ export class SearchService {
 
       // Dedup bằng title + releaseYear để tránh trùng phim cùng tên khác năm
       const existingKeys = new Set(
-        existingResults.map((r) => {
-          const year = r.releaseYear ?? '';
-          return `${r.title.toLowerCase()}::${year}`;
-        }),
+        existingHits.map(
+          (r: { title: string; releaseYear?: number | null }) => {
+            const year = r.releaseYear ?? '';
+            return `${r.title.toLowerCase()}::${year}`;
+          },
+        ),
       );
 
       const mappedResults = tmdbData.results

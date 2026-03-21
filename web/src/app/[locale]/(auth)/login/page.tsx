@@ -5,11 +5,9 @@ import Image from 'next/image';
 import { Link, useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
-import dynamic from 'next/dynamic';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
+import Footer from '@/components/layout/Footer';
 import { apiClient } from '@/lib/api';
-
-const Footer = dynamic(() => import('@/components/Footer'));
 
 // Hoist static JSX (rendering-hoist-jsx)
 const staticBackground = (

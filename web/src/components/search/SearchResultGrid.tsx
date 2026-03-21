@@ -1,7 +1,7 @@
 'use client';
 
 import { SearchResult } from '@/services/search.service';
-import MovieCard from '@/components/MovieCard';
+import MovieCard from '@/components/movie/MovieCard';
 import { useTranslations } from 'next-intl';
 import MovieListItem from './MovieListItem';
 
@@ -40,8 +40,6 @@ export const SearchSkeleton = ({ viewMode = 'grid' }: { viewMode?: 'grid' | 'lis
 interface SearchResultGridProps {
     results: SearchResult[];
     isLoading: boolean;
-    importingId: number | null;
-    onImport: (tmdbId: number) => void;
     query: string;
     onClearFilters: () => void;
     viewMode: 'grid' | 'list';
@@ -50,8 +48,6 @@ interface SearchResultGridProps {
 export default function SearchResultGrid({
     results,
     isLoading,
-    importingId,
-    onImport,
     query,
     onClearFilters,
     viewMode
@@ -92,8 +88,6 @@ export default function SearchResultGrid({
                         showWatchButton={movie.source === 'local'}
                         slug={movie.slug || ""}
                         source={movie.source}
-                        onImport={() => movie.tmdbId && onImport(movie.tmdbId)}
-                        isImporting={movie.tmdbId === importingId}
                         releaseYear={movie.releaseYear ?? undefined}
                         showYear={true}
                     />
@@ -107,9 +101,6 @@ export default function SearchResultGrid({
                         imageUrl={movie.posterUrl || 'https://placehold.co/400x600/1a1a1a/444444?text=No+Poster'}
                         showWatchButton={movie.source === 'local'}
                         slug={movie.slug || ""}
-                        source={movie.source}
-                        onImport={() => movie.tmdbId && onImport(movie.tmdbId)}
-                        isImporting={movie.tmdbId === importingId}
                         releaseYear={movie.releaseYear ?? undefined}
                     />
                 )

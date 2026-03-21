@@ -17,6 +17,10 @@ export class UserResponseDto {
   @ApiProperty({ example: 'https://example.com/avatar.jpg' })
   @Expose()
   avatarUrl?: string;
+
+  @ApiProperty({ example: ['USER'], isArray: true })
+  @Expose()
+  roles: string[];
 }
 
 export class AuthResponseDto {

@@ -1,17 +1,20 @@
 'use client';
 
-import React, { useState, useEffect, use } from 'react';
+import React, { use, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import useSWR from 'swr';
 import { movieService, MovieDetail } from '@/services/movie.service';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 import VideoPlayer from './components/VideoPlayer';
 import MovieInfo from './components/MovieInfo';
-import ActionButtons from '@/components/ActionButtons';
-import CommentSection from '@/components/CommentSection';
-import RecommendedMovies from '@/components/RecommendedMovies';
-import Breadcrumb from '@/components/Breadcrumb';
+import ActionButtons from '@/components/movie/ActionButtons';
+import CommentSection from '@/components/movie/CommentSection';
+import RecommendedMovies from '@/components/movie/RecommendedMovies';
+import Breadcrumb from '@/components/ui/Breadcrumb';
+
+const fetchMovie = (slug: string) => movieService.getMovieBySlug(slug);
 
 interface WatchPageProps {
     params: Promise<{ slug: string; locale: string }>;
@@ -22,17 +25,19 @@ export default function WatchPage({ params }: WatchPageProps) {
     const router = useRouter();
     const t = useTranslations('Watch');
     const tHeader = useTranslations('Header');
-    const [movie, setMovie] = useState<MovieDetail | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchMovie = async () => {
-            const data = await movieService.getMovieBySlug(slug);
-            setMovie(data);
-            setIsLoading(false);
-        };
-        fetchMovie();
-    }, [slug]);
+    const { data: movie, isLoading, error } = useSWR<MovieDetail | null>(
+        `movie-${slug}`,
+        () => fetchMovie(slug),
+    );
+
+    const handleGoBack = useCallback(() => router.back(), [router]);
+
+    const breadcrumbItems = useMemo(() => [
+        { label: tHeader('home'), href: '/' },
+        { label: tHeader('movies'), href: '/' },
+        { label: movie?.title ?? '', active: true }
+    ], [tHeader, movie?.title]);
 
     if (isLoading) {
         return (
@@ -42,11 +47,11 @@ export default function WatchPage({ params }: WatchPageProps) {
         );
     }
 
-    if (!movie) {
+    if (error || !movie) {
         return (
             <div className="h-screen w-full bg-background-dark flex flex-col items-center justify-center text-white space-y-4">
                 <h1 className="text-4xl font-bold">{t('movieNotFound')}</h1>
-                <button onClick={() => router.back()} className="bg-primary text-secondary px-6 py-2 rounded-full font-bold">
+                <button onClick={handleGoBack} className="bg-primary text-secondary px-6 py-2 rounded-full font-bold">
                     {t('goBack')}
                 </button>
             </div>
@@ -59,14 +64,7 @@ export default function WatchPage({ params }: WatchPageProps) {
             <div className="pt-24" />
 
             <main className="max-w-[1440px] mx-auto px-6 lg:px-24 py-6">
-                <Breadcrumb
-                    items={[
-                        { label: tHeader('home'), href: '/' },
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        { label: tHeader('movies'), href: '/' as any },
-                        { label: movie.title, active: true }
-                    ]}
-                />
+                <Breadcrumb items={breadcrumbItems} />
 
                 <div className="flex flex-col gap-10">
                     <div className="w-full">

@@ -1,9 +1,7 @@
-// components/RecommendedMovies.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import useSWR from 'swr';
 import { Movie, movieService } from '@/services/movie.service';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -12,37 +10,18 @@ interface RecommendedMoviesProps {
     slug: string;
 }
 
-interface SimilarMovie {
-    id: string;
-    title: string;
-    slug: string;
-    posterUrl: string;
-    releaseYear: number;
-    genres: string[];
-    rating: number;
-}
+const fetchSimilar = (slug: string) => movieService.getSimilarMovies(slug);
 
 export default function RecommendedMovies({ slug }: RecommendedMoviesProps) {
-    const router = useRouter();
     const t = useTranslations('Watch');
-    const [movies, setMovies] = useState<Movie[]>([]);
-
-    useEffect(() => {
-        const fetchSimilar = async () => {
-            try {
-                const data = await movieService.getSimilarMovies(slug);
-                setMovies(data);
-            } catch (error) {
-                console.error('Failed to fetch similar movies:', error);
-            }
-        };
-        fetchSimilar();
-    }, [slug]);
+    const { data: movies = [] } = useSWR<Movie[]>(
+        `similar-${slug}`,
+        () => fetchSimilar(slug),
+    );
 
     if (movies.length === 0) return null;
 
     return (
-
         <section>
             <div className="flex items-center justify-between mb-8">
                 <h2 className="text-2xl font-bold border-l-4 border-primary pl-4 uppercase tracking-wider">{t('recommendedTitle')}</h2>

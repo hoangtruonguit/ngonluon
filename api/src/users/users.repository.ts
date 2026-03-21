@@ -22,6 +22,13 @@ export class UsersRepository {
     return this.prisma.user.findUnique({ where: { id } });
   }
 
+  async findByIdWithRoles(id: string) {
+    return this.prisma.user.findUnique({
+      where: { id },
+      include: { roles: { include: { role: true } } },
+    });
+  }
+
   async updatePublicKey(id: string, publicKey: string): Promise<void> {
     await this.prisma.user.update({
       where: { id },

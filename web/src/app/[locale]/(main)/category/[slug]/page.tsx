@@ -1,13 +1,25 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import DiscoveryTemplate from '@/components/search/DiscoveryTemplate';
 import { getTranslations } from 'next-intl/server';
 
+const CATEGORY_TYPES: Record<string, string> = {
+    'movies': 'MOVIE',
+    'tv-shows': 'SERIES',
+};
+
+interface CategoryFilters {
+    type?: string;
+    sortBy?: string;
+    yearFrom?: string;
+}
+
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
-    const { slug } = await params;
-    const tSearch = await getTranslations('Search');
-    const tHome = await getTranslations('Home');
-    const tHeader = await getTranslations('Header');
+    const [{ slug }, tSearch, tHome, tHeader] = await Promise.all([
+        params,
+        getTranslations('Search'),
+        getTranslations('Home'),
+        getTranslations('Header'),
+    ]);
 
     const CATEGORY_TITLES: Record<string, string> = {
         'movies': tHeader('movies'),
@@ -17,15 +29,10 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         'now-playing': tHome('nowPlaying')
     };
 
-    const CATEGORY_TYPES: Record<string, string> = {
-        'movies': 'MOVIE',
-        'tv-shows': 'SERIES',
-    };
-
     const title = CATEGORY_TITLES[slug] || slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     const type = CATEGORY_TYPES[slug];
-    
-    const initialFilters: any = { type };
+
+    const initialFilters: CategoryFilters = { type };
     if (slug === 'new-releases') initialFilters.sortBy = 'newest';
     if (slug === 'trending' || slug === 'now-playing') initialFilters.sortBy = 'popularity';
     if (slug === 'now-playing') initialFilters.yearFrom = '2024';

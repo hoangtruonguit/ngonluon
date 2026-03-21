@@ -65,13 +65,4 @@ export const searchService = {
         }
     },
 
-    importMovie: async (tmdbId: number): Promise<string> => {
-        try {
-            const response = await apiClient.post<{ slug: string }>('/search/import', { tmdbId });
-            return response.data.slug;
-        } catch (error) {
-            console.error('Import failed:', error);
-            throw error;
-        }
-    }
 };
