@@ -8,7 +8,9 @@ import { useTranslations } from 'next-intl';
 
 const navItems = [
     { href: '/admin' as const, icon: 'dashboard', labelKey: 'dashboard' },
+    { href: '/admin/analytics' as const, icon: 'analytics', labelKey: 'analytics' },
     { href: '/admin/movies' as const, icon: 'movie', labelKey: 'movies' },
+    { href: '/admin/users' as const, icon: 'group', labelKey: 'users' },
     { href: '/admin/crawl' as const, icon: 'cloud_download', labelKey: 'crawl' },
 ];
 
