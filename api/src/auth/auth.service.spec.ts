@@ -244,7 +244,9 @@ describe('AuthService', () => {
       const result = await service.getMe('user-id-1');
 
       expect(result).toBeDefined();
-      expect(mockUsersService.findByIdWithRoles).toHaveBeenCalledWith('user-id-1');
+      expect(mockUsersService.findByIdWithRoles).toHaveBeenCalledWith(
+        'user-id-1',
+      );
     });
 
     it('should throw UnauthorizedException when user not found', async () => {
