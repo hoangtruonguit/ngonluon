@@ -90,6 +90,7 @@ export default function SearchResultGrid({
                         source={movie.source}
                         releaseYear={movie.releaseYear ?? undefined}
                         showYear={true}
+                        isPremium={movie.isPremium}
                     />
                 ) : (
                     <MovieListItem

@@ -56,7 +56,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen relative overflow-x-hidden flex flex-col">
+        <div className="min-h-screen relative overflow-hidden flex flex-col">
             {/* Background Cinematic Layer */}
             {staticBackground}
 

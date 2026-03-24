@@ -32,6 +32,14 @@ export interface ActivityFeedItem {
   createdAt: string;
 }
 
+export interface SubscriptionStats {
+  byPlan: { planName: string; count: number }[];
+  totalActive: number;
+  newThisMonth: number;
+  churnRate: number;
+  timeline: TimeSeriesPoint[];
+}
+
 export interface OverviewStats {
   totalUsers: number;
   totalMovies: number;

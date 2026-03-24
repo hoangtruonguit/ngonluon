@@ -13,6 +13,7 @@ export interface SearchResult {
     genres: string[];
     highlight?: Record<string, string[]>;
     matchedCast?: { name: string; role: string }[];
+    isPremium?: boolean;
 }
 
 export interface SearchResponse {

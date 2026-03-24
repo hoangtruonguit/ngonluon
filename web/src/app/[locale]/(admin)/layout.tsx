@@ -3,7 +3,7 @@
 import { Link, usePathname } from '@/i18n/routing';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from '@/i18n/routing';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 const navItems = [
@@ -21,6 +21,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const t = useTranslations('Admin');
 
     const isAdmin = user?.roles?.includes('ADMIN');
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     useEffect(() => {
         if (!isLoading && (!isLoggedIn || !isAdmin)) {
@@ -43,13 +44,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     return (
         <div className="min-h-screen bg-background-dark flex">
+            {/* Mobile sidebar overlay */}
+            {sidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/60 z-40 md:hidden"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+
             {/* Sidebar */}
-            <aside className="w-64 bg-surface-dark border-r border-white/10 flex flex-col fixed h-full">
-                <div className="p-6 border-b border-white/10">
+            <aside className={`w-64 bg-surface-dark border-r border-white/10 flex flex-col fixed h-full z-50 transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
+                <div className="p-6 border-b border-white/10 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2 text-primary">
                         <span className="material-symbols-outlined text-3xl">movie_filter</span>
                         <span className="text-white text-xl font-extrabold">Admin</span>
                     </Link>
+                    <button className="md:hidden text-white/60 hover:text-white" onClick={() => setSidebarOpen(false)}>
+                        <span className="material-symbols-outlined">close</span>
+                    </button>
                 </div>
                 <nav className="flex-1 p-4 space-y-1">
                     {navItems.map((item) => {
@@ -58,6 +70,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             <Link
                                 key={item.href}
                                 href={item.href}
+                                onClick={() => setSidebarOpen(false)}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
                                     isActive
                                         ? 'bg-primary/10 text-primary'
@@ -79,8 +92,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 ml-64">
-                <div className="p-8">
+            <main className="flex-1 md:ml-64">
+                {/* Mobile top bar */}
+                <div className="md:hidden flex items-center gap-3 p-4 border-b border-white/10 bg-surface-dark sticky top-0 z-30">
+                    <button onClick={() => setSidebarOpen(true)} className="text-white p-1">
+                        <span className="material-symbols-outlined text-2xl">menu</span>
+                    </button>
+                    <span className="text-white font-bold">Admin</span>
+                </div>
+                <div className="p-4 sm:p-6 md:p-8">
                     {children}
                 </div>
             </main>

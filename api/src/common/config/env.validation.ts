@@ -65,6 +65,27 @@ class EnvironmentVariables {
   @IsOptional()
   @IsString()
   ELASTICSEARCH_URL?: string;
+
+  // Stripe (optional — only needed for subscription features)
+  @IsOptional()
+  @IsString()
+  STRIPE_SECRET_KEY?: string;
+
+  @IsOptional()
+  @IsString()
+  STRIPE_WEBHOOK_SECRET?: string;
+
+  @IsOptional()
+  @IsString()
+  STRIPE_PRICE_BASIC?: string;
+
+  @IsOptional()
+  @IsString()
+  STRIPE_PRICE_PREMIUM?: string;
+
+  @IsOptional()
+  @IsString()
+  FRONTEND_URL?: string;
 }
 
 export function validate(config: Record<string, any>) {

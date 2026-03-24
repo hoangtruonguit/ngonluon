@@ -122,8 +122,8 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
                                 {movie.rating >= 8 && (
                                     <span className="px-2 py-0.5 rounded bg-primary text-[10px] font-bold uppercase">{t('trending')}</span>
                                 )}
-                                {movie.isVip && (
-                                    <span className="px-2 py-0.5 rounded bg-white/10 text-[10px] font-bold uppercase text-white">VIP</span>
+                                {movie.isPremium && (
+                                    <span className="px-2 py-0.5 rounded bg-yellow-500/20 text-[10px] font-bold uppercase text-yellow-400">Premium</span>
                                 )}
                             </div>
 
@@ -232,6 +232,7 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
                                     imageUrl={movie.thumbnailUrl || movie.posterUrl}
                                     showWatchButton={true}
                                     slug={movie.slug}
+                                    isPremium={movie.isPremium}
                                 />
                             ))}
                         </div>

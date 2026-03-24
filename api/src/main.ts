@@ -14,6 +14,7 @@ import { logger } from './common/logger/logger.config';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: logger,
+    rawBody: true,
   });
 
   app.use(

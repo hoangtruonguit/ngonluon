@@ -93,6 +93,7 @@ export class SyncService {
         releaseYear: true,
         rating: true,
         type: true,
+        isPremium: true,
         genres: {
           select: {
             genre: {
@@ -124,6 +125,7 @@ export class SyncService {
       releaseYear: movie.releaseYear,
       rating: movie.rating ?? 0,
       type: movie.type,
+      isPremium: movie.isPremium,
       genres: movie.genres?.map((mg) => mg.genre.name) ?? [],
       cast:
         movie.cast?.map((c) => ({
@@ -144,6 +146,7 @@ type SyncMoviePayload = Prisma.MovieGetPayload<{
     releaseYear: true;
     rating: true;
     type: true;
+    isPremium: true;
     genres: {
       select: {
         genre: {

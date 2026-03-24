@@ -14,6 +14,7 @@ export interface MovieDocument {
   genres: string[];
   description: string;
   cast: { name: string; role: 'ACTOR' | 'DIRECTOR' }[];
+  isPremium: boolean;
 }
 
 const MOVIE_INDEX = 'movies';
@@ -88,6 +89,7 @@ export class ElasticsearchService implements OnModuleInit {
           language: { type: 'keyword' },
           releaseYear: { type: 'integer' },
           rating: { type: 'float' },
+          isPremium: { type: 'boolean' },
 
           // ── Display only (không index, không search) ──
           id: { type: 'keyword' },
@@ -297,6 +299,7 @@ export class ElasticsearchService implements OnModuleInit {
         'type',
         'genres',
         'description',
+        'isPremium',
       ],
     };
 
@@ -368,6 +371,7 @@ export class ElasticsearchService implements OnModuleInit {
         'releaseYear',
         'genres',
         'description',
+        'isPremium',
       ],
     };
 

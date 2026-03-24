@@ -159,6 +159,31 @@ export class AnalyticsRepository {
     });
   }
 
+  async getSubscriptionsByPlan() {
+    return this.prisma.subscription.groupBy({
+      by: ['planName'],
+      where: { status: 'ACTIVE' },
+      _count: { id: true },
+    });
+  }
+
+  async getSubscriptionsSince(since: Date) {
+    return this.prisma.subscription.findMany({
+      where: { createdAt: { gte: since } },
+      select: { createdAt: true, planName: true, status: true },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async countCancelledSubscriptionsSince(since: Date) {
+    return this.prisma.subscription.count({
+      where: {
+        status: 'CANCELLED',
+        cancelledAt: { gte: since },
+      },
+    });
+  }
+
   async getRecentUsers(take: number) {
     return this.prisma.user.findMany({
       take,

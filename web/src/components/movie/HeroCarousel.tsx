@@ -78,6 +78,7 @@ export default function HeroCarousel({ movies }: HeroCarouselProps) {
                             className="object-cover brightness-50"
                             priority={index === 0}
                             quality={100}
+                            unoptimized
                         />
                     </div>
 
@@ -124,11 +125,12 @@ export default function HeroCarousel({ movies }: HeroCarouselProps) {
                         aria-label={`Go to slide ${index + 1}`}
                     >
                         <Image
-                            src={movieService.getHighResImage(movie.thumbnailUrl || movie.posterUrl)}
+                            src={movieService.getHighResImage(movie.thumbnailUrl || movie.posterUrl) || 'https://placehold.co/400x600/1a1a1a/444444?text=No+Poster'}
                             alt={movie.title}
                             fill
                             sizes="100px"
                             className="object-cover"
+                            unoptimized
                         />
                         {/* Title overlay on hover/active */}
                         <div className={`absolute inset-0 bg-black/40 flex items-end p-1 transition-opacity duration-300 ${index === currentIndex ? 'opacity-100' : 'opacity-0 group-hover/thumb:opacity-100'

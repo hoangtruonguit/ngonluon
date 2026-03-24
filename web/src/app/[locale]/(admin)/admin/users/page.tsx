@@ -9,7 +9,6 @@ import RoleEditModal from '@/components/admin/RoleEditModal';
 const ROLE_BADGE: Record<string, string> = {
     ADMIN: 'bg-red-500/20 text-red-400',
     USER: 'bg-blue-500/20 text-blue-400',
-    VIP: 'bg-yellow-500/20 text-yellow-400',
 };
 
 export default function UserManagementPage() {
@@ -81,7 +80,6 @@ export default function UserManagementPage() {
                     <option value="">{t('allRoles')}</option>
                     <option value="ADMIN">ADMIN</option>
                     <option value="USER">USER</option>
-                    <option value="VIP">VIP</option>
                 </select>
             </div>
 

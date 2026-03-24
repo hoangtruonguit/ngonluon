@@ -8,6 +8,7 @@ import {
   GenrePopularityItem,
   ActivityFeedItem,
   OverviewStats,
+  SubscriptionStats,
 } from './interfaces/analytics.interfaces';
 
 export type {
@@ -17,6 +18,7 @@ export type {
   GenrePopularityItem,
   ActivityFeedItem,
   OverviewStats,
+  SubscriptionStats,
 };
 
 @Injectable()
@@ -65,6 +67,60 @@ export class AnalyticsService {
     };
 
     await this.redis.set('admin:overview', JSON.stringify(result), 300);
+    return result;
+  }
+
+  async getSubscriptionStats(): Promise<SubscriptionStats> {
+    const cacheKey = 'admin:subscription-stats';
+    const cached = await this.redis.get(cacheKey);
+    if (cached) return JSON.parse(cached) as SubscriptionStats;
+
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+
+    const [byPlanRaw, totalActive, recentSubs, cancelledCount] =
+      await Promise.all([
+        this.repository.getSubscriptionsByPlan(),
+        this.repository.countActiveSubscriptions(),
+        this.repository.getSubscriptionsSince(ninetyDaysAgo),
+        this.repository.countCancelledSubscriptionsSince(thirtyDaysAgo),
+      ]);
+
+    const byPlan = byPlanRaw.map((r) => ({
+      planName: r.planName,
+      count: r._count.id,
+    }));
+
+    const newThisMonth = recentSubs.filter(
+      (s) => s.createdAt >= thirtyDaysAgo,
+    ).length;
+
+    const churnRate =
+      totalActive + cancelledCount > 0
+        ? Math.round((cancelledCount / (totalActive + cancelledCount)) * 1000) /
+          10
+        : 0;
+
+    // Build timeline
+    const grouped = new Map<string, number>();
+    for (const s of recentSubs) {
+      const day = s.createdAt.toISOString().split('T')[0];
+      grouped.set(day, (grouped.get(day) ?? 0) + 1);
+    }
+    const timeline = [...grouped.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, count]) => ({ date, count }));
+
+    const result: SubscriptionStats = {
+      byPlan,
+      totalActive,
+      newThisMonth,
+      churnRate,
+      timeline,
+    };
+
+    await this.redis.set(cacheKey, JSON.stringify(result), 600);
     return result;
   }
 

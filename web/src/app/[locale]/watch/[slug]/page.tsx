@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import useSWR from 'swr';
 import { movieService, MovieDetail } from '@/services/movie.service';
+import { subscriptionService } from '@/services/subscription.service';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import VideoPlayer from './components/VideoPlayer';
@@ -13,6 +14,7 @@ import ActionButtons from '@/components/movie/ActionButtons';
 import CommentSection from '@/components/movie/CommentSection';
 import RecommendedMovies from '@/components/movie/RecommendedMovies';
 import Breadcrumb from '@/components/ui/Breadcrumb';
+import PremiumLockOverlay from '@/components/PremiumLockOverlay';
 
 const fetchMovie = (slug: string) => movieService.getMovieBySlug(slug);
 
@@ -31,6 +33,20 @@ export default function WatchPage({ params }: WatchPageProps) {
         () => fetchMovie(slug),
     );
 
+    const needsSubscription = movie?.requiresSubscription || movie?.isPremium;
+
+    const { data: subscription, isLoading: isSubLoading } = useSWR(
+        needsSubscription ? 'my-subscription' : null,
+        () => subscriptionService.getMySubscription(),
+    );
+
+    const hasAnySubscription = !!subscription;
+
+    let showLock = false;
+    if (needsSubscription && !hasAnySubscription) {
+        showLock = true;
+    }
+
     const handleGoBack = useCallback(() => router.back(), [router]);
 
     const breadcrumbItems = useMemo(() => [
@@ -39,7 +55,7 @@ export default function WatchPage({ params }: WatchPageProps) {
         { label: movie?.title ?? '', active: true }
     ], [tHeader, movie?.title]);
 
-    if (isLoading) {
+    if (isLoading || (needsSubscription && isSubLoading)) {
         return (
             <div className="h-screen w-full bg-background-dark flex items-center justify-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary" />
@@ -68,7 +84,7 @@ export default function WatchPage({ params }: WatchPageProps) {
 
                 <div className="flex flex-col gap-10">
                     <div className="w-full">
-                        <VideoPlayer movie={movie} />
+                        {showLock ? <PremiumLockOverlay /> : <VideoPlayer movie={movie} />}
                         <ActionButtons />
                         <MovieInfo movie={movie} />
                         <CommentSection movieId={movie.id} />

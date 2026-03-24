@@ -17,6 +17,7 @@ export default function Header() {
     const pathname = usePathname();
     const t = useTranslations('Header');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
     const handleLogout = async () => {
@@ -72,24 +73,34 @@ export default function Header() {
                         <Link className="text-white/70 hover:text-primary transition-colors text-sm font-semibold" href="/">{t('myList')}</Link>
                     </nav>
                 </div>
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4 sm:gap-6">
                     <div className="relative hidden md:block">
                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/50 text-xl">search</span>
-                        <input 
-                            className="bg-white/10 border-none rounded-full pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary w-64 text-white placeholder:text-white/40" 
-                            placeholder={t('searchPlaceholder')} 
-                            type="text" 
+                        <input
+                            className="bg-white/10 border-none rounded-full pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary w-64 text-white placeholder:text-white/40"
+                            placeholder={t('searchPlaceholder')}
+                            type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onKeyDown={handleSearchSubmit}
                         />
                     </div>
-                    <button className="md:hidden text-white">
+                    <button className="md:hidden text-white" onClick={() => router.push('/search')}>
                         <span className="material-symbols-outlined">search</span>
                     </button>
                     <div className="hidden sm:block">
                         <LanguageSwitcher />
                     </div>
+                    {/* Hamburger menu button for mobile/tablet */}
+                    <button
+                        className="lg:hidden text-white p-1"
+                        onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
+                        aria-label="Toggle navigation menu"
+                    >
+                        <span className="material-symbols-outlined text-2xl">
+                            {isMobileNavOpen ? 'close' : 'menu'}
+                        </span>
+                    </button>
                     <div className="flex items-center gap-3">
                         {isLoggedIn && (
                             <div className="relative" ref={menuRef}>
@@ -152,6 +163,21 @@ export default function Header() {
                     </div>
                 </div>
             </div>
+
+            {/* Mobile Navigation Drawer */}
+            {isMobileNavOpen && (
+                <div className="lg:hidden border-t border-white/10 bg-background-dark/95 backdrop-blur-xl">
+                    <nav className="flex flex-col px-6 py-4 gap-1">
+                        <Link className="text-white hover:text-primary transition-colors text-sm font-semibold py-3 px-4 rounded-lg hover:bg-white/5" href="/category/movies" onClick={() => setIsMobileNavOpen(false)}>{t('movies')}</Link>
+                        <Link className="text-white/70 hover:text-primary transition-colors text-sm font-semibold py-3 px-4 rounded-lg hover:bg-white/5" href="/category/tv-shows" onClick={() => setIsMobileNavOpen(false)}>{t('tvShows')}</Link>
+                        <Link className="text-white/70 hover:text-primary transition-colors text-sm font-semibold py-3 px-4 rounded-lg hover:bg-white/5" href="/search" onClick={() => setIsMobileNavOpen(false)}>{t('categories')}</Link>
+                        <Link className="text-white/70 hover:text-primary transition-colors text-sm font-semibold py-3 px-4 rounded-lg hover:bg-white/5" href="/" onClick={() => setIsMobileNavOpen(false)}>{t('myList')}</Link>
+                    </nav>
+                    <div className="sm:hidden px-6 pb-4">
+                        <LanguageSwitcher />
+                    </div>
+                </div>
+            )}
         </header>
     );
 }

@@ -63,6 +63,7 @@ function DiscoveryContent({
     const [filterMinRating, setFilterMinRating] = useState(minRating);
     const [isStudiosOpen, setIsStudiosOpen] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     // Fetch genres once
     useEffect(() => {
@@ -145,25 +146,43 @@ function DiscoveryContent({
 
     return (
         <div className="flex flex-col h-screen bg-background-dark text-white overflow-hidden font-sans">
-            <div className="flex flex-1 overflow-hidden">
-                <SearchSidebar 
-                    filterGenres={filterGenres}
-                    toggleGenre={toggleGenre}
-                    genresList={genresList}
-                    filterYearFrom={filterYearFrom}
-                    filterYearTo={filterYearTo}
-                    setFilterYearFrom={setFilterYearFrom}
-                    setFilterYearTo={setFilterYearTo}
-                    filterMinRating={filterMinRating}
-                    setFilterMinRating={setFilterMinRating}
-                    isStudiosOpen={isStudiosOpen}
-                    setIsStudiosOpen={setIsStudiosOpen}
-                    onClearFilters={handleClearFilters}
-                    onApplyFilters={handleApplyFilters}
-                />
+            <div className="flex flex-1 overflow-hidden relative">
+                {/* Mobile sidebar overlay */}
+                {sidebarOpen && (
+                    <div
+                        className="fixed inset-0 bg-black/60 z-30 lg:hidden"
+                        onClick={() => setSidebarOpen(false)}
+                    />
+                )}
 
-                <main className="flex-1 overflow-y-auto custom-scrollbar bg-background-dark/50 pt-20">
-                    <div className="max-w-[1600px] mx-auto p-8 sm:p-12">
+                <div className={`fixed lg:relative z-40 lg:z-auto h-full transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+                    <SearchSidebar
+                        filterGenres={filterGenres}
+                        toggleGenre={toggleGenre}
+                        genresList={genresList}
+                        filterYearFrom={filterYearFrom}
+                        filterYearTo={filterYearTo}
+                        setFilterYearFrom={setFilterYearFrom}
+                        setFilterYearTo={setFilterYearTo}
+                        filterMinRating={filterMinRating}
+                        setFilterMinRating={setFilterMinRating}
+                        isStudiosOpen={isStudiosOpen}
+                        setIsStudiosOpen={setIsStudiosOpen}
+                        onClearFilters={handleClearFilters}
+                        onApplyFilters={(override) => { handleApplyFilters(override); setSidebarOpen(false); }}
+                    />
+                </div>
+
+                <main className="flex-1 overflow-y-auto custom-scrollbar bg-background-dark/50 pt-20 w-full">
+                    <div className="max-w-[1600px] mx-auto p-4 sm:p-8 lg:p-12">
+                        {/* Mobile filter toggle */}
+                        <button
+                            className="lg:hidden flex items-center gap-2 mb-4 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white/70 text-sm font-semibold hover:bg-white/10 transition-colors"
+                            onClick={() => setSidebarOpen(true)}
+                        >
+                            <span className="material-symbols-outlined text-lg">tune</span>
+                            Filters
+                        </button>
                         <div className="mb-10 lg:flex items-center justify-between gap-6">
                             <div className="space-y-4 mb-6 lg:mb-0">
                                 <Breadcrumb items={breadcrumbItems} />

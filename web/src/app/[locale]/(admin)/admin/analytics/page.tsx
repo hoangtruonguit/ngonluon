@@ -33,6 +33,7 @@ export default function AnalyticsPage() {
     const { data: topRated } = useSWR('admin-top-rated', () => adminService.getTopContent('rated', 10));
     const { data: topCommented } = useSWR('admin-top-commented', () => adminService.getTopContent('commented', 10));
     const { data: genrePopularity } = useSWR('admin-genre-popularity', () => adminService.getGenrePopularity());
+    const { data: subStats } = useSWR('admin-subscription-stats', () => adminService.getSubscriptionStats());
 
     return (
         <div>
@@ -57,6 +58,38 @@ export default function AnalyticsPage() {
                     ))}
                 </div>
             </div>
+
+            {/* Subscription Stats */}
+            {subStats && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div className="bg-surface-dark border border-white/10 rounded-2xl p-5">
+                        <p className="text-white/50 text-sm mb-1">{t('activeSubscriptions')}</p>
+                        <p className="text-2xl font-bold text-white">{subStats.totalActive}</p>
+                    </div>
+                    <div className="bg-surface-dark border border-white/10 rounded-2xl p-5">
+                        <p className="text-white/50 text-sm mb-1">{t('newSubscriptions')}</p>
+                        <p className="text-2xl font-bold text-white">{subStats.newThisMonth}</p>
+                    </div>
+                    <div className="bg-surface-dark border border-white/10 rounded-2xl p-5">
+                        <p className="text-white/50 text-sm mb-1">{t('churnRate')}</p>
+                        <p className="text-2xl font-bold text-white">{subStats.churnRate}%</p>
+                    </div>
+                    <div className="bg-surface-dark border border-white/10 rounded-2xl p-5">
+                        <p className="text-white/50 text-sm mb-1">{t('planBreakdown')}</p>
+                        <div className="space-y-1 mt-1">
+                            {subStats.byPlan.map((p) => (
+                                <div key={p.planName} className="flex justify-between text-sm">
+                                    <span className="text-white/70">{p.planName}</span>
+                                    <span className="text-white font-semibold">{p.count}</span>
+                                </div>
+                            ))}
+                            {subStats.byPlan.length === 0 && (
+                                <span className="text-white/40 text-sm">No active plans</span>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* User Growth */}
             <div className="mb-6">

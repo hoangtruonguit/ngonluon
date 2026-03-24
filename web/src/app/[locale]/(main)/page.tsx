@@ -65,6 +65,7 @@ export default async function Home() {
                                 imageUrl={movie.thumbnailUrl || movie.posterUrl}
                                 showWatchButton={true}
                                 slug={movie.slug}
+                                isPremium={movie.isPremium}
                             />
                         ))}
                     </div>
@@ -93,6 +94,7 @@ export default async function Home() {
                                 imageUrl={movie.thumbnailUrl || movie.posterUrl}
                                 showWatchButton={true}
                                 slug={movie.slug}
+                                isPremium={movie.isPremium}
                             />
                         ))}
                     </div>

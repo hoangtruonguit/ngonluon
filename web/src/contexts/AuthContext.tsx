@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { apiClient, UserResponseDto, WatchlistItemResponseDto } from '@/lib/api';
+import { useRouter } from '@/i18n/routing';
 
 interface AuthContextType {
     user: UserResponseDto | null;
@@ -27,6 +28,7 @@ function hasAuthCookie(): boolean {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+    const router = useRouter();
     const [user, setUser] = useState<UserResponseDto | null>(null);
     const [watchlistIds, setWatchlistIds] = useState<Set<string>>(new Set());
     const [isLoading, setIsLoading] = useState(true);
@@ -76,10 +78,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             await apiClient.logout();
             setUser(null);
             setWatchlistIds(new Set());
+            router.push('/login');
         } catch (error) {
             console.error('Logout failed:', error);
             setUser(null);
             setWatchlistIds(new Set());
+            router.push('/login');
         }
     };
 

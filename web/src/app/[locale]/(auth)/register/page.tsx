@@ -158,7 +158,7 @@ export default function RegisterPage() {
     const passwordStrength = getPasswordStrength();
 
     return (
-        <div className="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden">
+        <div className="relative flex h-full min-h-screen w-full flex-col overflow-hidden">
             {/* Background */}
             {staticBackground}
 
