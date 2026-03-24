@@ -1,53 +1,36 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../redis/redis.service';
+import { AnalyticsRepository } from './analytics.repository';
+import {
+  TimeSeriesPoint,
+  WatchActivityPoint,
+  TopContentItem,
+  GenrePopularityItem,
+  ActivityFeedItem,
+  OverviewStats,
+} from './interfaces/analytics.interfaces';
 
-export interface TimeSeriesPoint {
-  date: string;
-  count: number;
-}
-
-export interface WatchActivityPoint {
-  date: string;
-  views: number;
-  watchHours: number;
-  completionRate: number;
-}
-
-export interface TopContentItem {
-  movieId: string;
-  title: string;
-  posterUrl: string | null;
-  value: number;
-}
-
-export interface GenrePopularityItem {
-  genre: string;
-  views: number;
-  watchlistCount: number;
-}
-
-export interface ActivityFeedItem {
-  type: 'review' | 'comment' | 'registration';
-  user: { id: string; fullName: string | null; avatarUrl: string | null };
-  content?: string;
-  movieTitle?: string;
-  rating?: number;
-  createdAt: string;
-}
+export type {
+  TimeSeriesPoint,
+  WatchActivityPoint,
+  TopContentItem,
+  GenrePopularityItem,
+  ActivityFeedItem,
+  OverviewStats,
+};
 
 @Injectable()
 export class AnalyticsService {
   private readonly logger = new Logger(AnalyticsService.name);
 
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly repository: AnalyticsRepository,
     private readonly redis: RedisService,
   ) {}
 
   async getOverviewStats() {
     const cached = await this.redis.get('admin:overview');
-    if (cached) return JSON.parse(cached) as Record<string, number>;
+    if (cached) return JSON.parse(cached) as OverviewStats;
 
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -62,13 +45,13 @@ export class AnalyticsService {
       newUsersLast7d,
       newUsersLast30d,
     ] = await Promise.all([
-      this.prisma.user.count(),
-      this.prisma.movie.count(),
-      this.prisma.review.count(),
-      this.prisma.comment.count(),
-      this.prisma.subscription.count({ where: { status: 'ACTIVE' } }),
-      this.prisma.user.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
-      this.prisma.user.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
+      this.repository.countUsers(),
+      this.repository.countMovies(),
+      this.repository.countReviews(),
+      this.repository.countComments(),
+      this.repository.countActiveSubscriptions(),
+      this.repository.countUsersSince(sevenDaysAgo),
+      this.repository.countUsersSince(thirtyDaysAgo),
     ]);
 
     const result = {
@@ -95,18 +78,17 @@ export class AnalyticsService {
     const days = period === '7d' ? 7 : period === '30d' ? 30 : 90;
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-    const rows: { date: Date; count: bigint }[] = await this.prisma.$queryRaw`
-      SELECT date_trunc('day', created_at) AS date, COUNT(*)::bigint AS count
-      FROM users
-      WHERE created_at >= ${since}
-      GROUP BY date_trunc('day', created_at)
-      ORDER BY date ASC
-    `;
+    const users = await this.repository.getUsersSince(since);
 
-    const result = rows.map((r) => ({
-      date: r.date.toISOString().split('T')[0],
-      count: Number(r.count),
-    }));
+    const grouped = new Map<string, number>();
+    for (const u of users) {
+      const day = u.createdAt.toISOString().split('T')[0];
+      grouped.set(day, (grouped.get(day) ?? 0) + 1);
+    }
+
+    const result = [...grouped.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, count]) => ({ date, count }));
 
     await this.redis.set(cacheKey, JSON.stringify(result), 600);
     return result;
@@ -122,29 +104,34 @@ export class AnalyticsService {
     const days = period === '7d' ? 7 : period === '30d' ? 30 : 90;
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-    const rows: {
-      date: Date;
-      views: bigint;
-      watch_hours: number;
-      completion_rate: number;
-    }[] = await this.prisma.$queryRaw`
-      SELECT
-        date_trunc('day', last_watched_at) AS date,
-        COUNT(*)::bigint AS views,
-        COALESCE(SUM(progress_seconds) / 3600.0, 0) AS watch_hours,
-        COALESCE(AVG(CASE WHEN is_finished THEN 1.0 ELSE 0.0 END), 0) AS completion_rate
-      FROM watch_history
-      WHERE last_watched_at >= ${since}
-      GROUP BY date_trunc('day', last_watched_at)
-      ORDER BY date ASC
-    `;
+    const records = await this.repository.getWatchHistorySince(since);
 
-    const result = rows.map((r) => ({
-      date: r.date.toISOString().split('T')[0],
-      views: Number(r.views),
-      watchHours: Math.round(Number(r.watch_hours) * 10) / 10,
-      completionRate: Math.round(Number(r.completion_rate) * 1000) / 10,
-    }));
+    const grouped = new Map<
+      string,
+      { views: number; totalSeconds: number; finishedCount: number }
+    >();
+    for (const r of records) {
+      const day = r.lastWatchedAt.toISOString().split('T')[0];
+      const entry = grouped.get(day) ?? {
+        views: 0,
+        totalSeconds: 0,
+        finishedCount: 0,
+      };
+      entry.views += 1;
+      entry.totalSeconds += r.progressSeconds;
+      if (r.isFinished) entry.finishedCount += 1;
+      grouped.set(day, entry);
+    }
+
+    const result = [...grouped.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, data]) => ({
+        date,
+        views: data.views,
+        watchHours: Math.round((data.totalSeconds / 3600) * 10) / 10,
+        completionRate:
+          Math.round((data.finishedCount / data.views) * 1000) / 10,
+      }));
 
     await this.redis.set(cacheKey, JSON.stringify(result), 600);
     return result;
@@ -161,17 +148,9 @@ export class AnalyticsService {
     let result: TopContentItem[];
 
     if (type === 'watched') {
-      const rows = await this.prisma.watchHistory.groupBy({
-        by: ['movieId'],
-        _count: { movieId: true },
-        orderBy: { _count: { movieId: 'desc' } },
-        take: limit,
-      });
+      const rows = await this.repository.getTopWatchedMovies(limit);
       const movieIds = rows.map((r) => r.movieId);
-      const movies = await this.prisma.movie.findMany({
-        where: { id: { in: movieIds } },
-        select: { id: true, title: true, posterUrl: true },
-      });
+      const movies = await this.repository.findMoviesByIds(movieIds);
       const movieMap = new Map(movies.map((m) => [m.id, m]));
       result = rows.map((r) => ({
         movieId: r.movieId,
@@ -180,18 +159,9 @@ export class AnalyticsService {
         value: r._count.movieId,
       }));
     } else if (type === 'rated') {
-      const rows = await this.prisma.review.groupBy({
-        by: ['movieId'],
-        _avg: { rating: true },
-        _count: { movieId: true },
-        orderBy: { _avg: { rating: 'desc' } },
-        take: limit,
-      });
+      const rows = await this.repository.getTopRatedMovies(limit);
       const movieIds = rows.map((r) => r.movieId);
-      const movies = await this.prisma.movie.findMany({
-        where: { id: { in: movieIds } },
-        select: { id: true, title: true, posterUrl: true },
-      });
+      const movies = await this.repository.findMoviesByIds(movieIds);
       const movieMap = new Map(movies.map((m) => [m.id, m]));
       result = rows.map((r) => ({
         movieId: r.movieId,
@@ -200,17 +170,9 @@ export class AnalyticsService {
         value: Math.round((r._avg.rating ?? 0) * 10) / 10,
       }));
     } else {
-      const rows = await this.prisma.comment.groupBy({
-        by: ['movieId'],
-        _count: { movieId: true },
-        orderBy: { _count: { movieId: 'desc' } },
-        take: limit,
-      });
+      const rows = await this.repository.getTopCommentedMovies(limit);
       const movieIds = rows.map((r) => r.movieId);
-      const movies = await this.prisma.movie.findMany({
-        where: { id: { in: movieIds } },
-        select: { id: true, title: true, posterUrl: true },
-      });
+      const movies = await this.repository.findMoviesByIds(movieIds);
       const movieMap = new Map(movies.map((m) => [m.id, m]));
       result = rows.map((r) => ({
         movieId: r.movieId,
@@ -229,25 +191,8 @@ export class AnalyticsService {
     const cached = await this.redis.get(cacheKey);
     if (cached) return JSON.parse(cached) as never;
 
-    const rows: { genre: string; views: bigint; watchlist_count: bigint }[] =
-      await this.prisma.$queryRaw`
-      SELECT
-        g.name AS genre,
-        COUNT(DISTINCT wh.id)::bigint AS views,
-        COUNT(DISTINCT wl.id)::bigint AS watchlist_count
-      FROM genres g
-      JOIN movie_genres mg ON mg.genre_id = g.id
-      LEFT JOIN watch_history wh ON wh.movie_id = mg.movie_id
-      LEFT JOIN watchlist wl ON wl.movie_id = mg.movie_id
-      GROUP BY g.name
-      ORDER BY views DESC
-    `;
-
-    const result = rows.map((r) => ({
-      genre: r.genre,
-      views: Number(r.views),
-      watchlistCount: Number(r.watchlist_count),
-    }));
+    const result = await this.repository.getGenresWithCounts();
+    result.sort((a, b) => b.views - a.views);
 
     await this.redis.set(cacheKey, JSON.stringify(result), 600);
     return result;
@@ -257,27 +202,9 @@ export class AnalyticsService {
     const take = Math.min(limit, 50);
 
     const [reviews, comments, users] = await Promise.all([
-      this.prisma.review.findMany({
-        take,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          user: { select: { id: true, fullName: true, avatarUrl: true } },
-          movie: { select: { title: true } },
-        },
-      }),
-      this.prisma.comment.findMany({
-        take,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          user: { select: { id: true, fullName: true, avatarUrl: true } },
-          movie: { select: { title: true } },
-        },
-      }),
-      this.prisma.user.findMany({
-        take,
-        orderBy: { createdAt: 'desc' },
-        select: { id: true, fullName: true, avatarUrl: true, createdAt: true },
-      }),
+      this.repository.getRecentReviews(take),
+      this.repository.getRecentComments(take),
+      this.repository.getRecentUsers(take),
     ]);
 
     const items: ActivityFeedItem[] = [

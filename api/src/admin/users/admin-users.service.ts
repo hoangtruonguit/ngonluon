@@ -1,17 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
 import { RoleName } from '@prisma/client';
+import { AdminUsersRepository } from './admin-users.repository';
+import { ListUsersParams } from './interfaces/admin-users.interfaces';
+
+export type {
+  AdminUser,
+  AdminUserDetail,
+  AdminUserListResponse,
+  ListUsersParams,
+} from './interfaces/admin-users.interfaces';
 
 @Injectable()
 export class AdminUsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly repository: AdminUsersRepository) {}
 
-  async listUsers(params: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    role?: string;
-  }) {
+  async listUsers(params: ListUsersParams) {
     const page = params.page ?? 1;
     const limit = Math.min(params.limit ?? 20, 100);
     const skip = (page - 1) * limit;
@@ -30,29 +33,8 @@ export class AdminUsersService {
     }
 
     const [data, total] = await Promise.all([
-      this.prisma.user.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          email: true,
-          fullName: true,
-          avatarUrl: true,
-          isActive: true,
-          createdAt: true,
-          roles: { include: { role: true } },
-          _count: {
-            select: {
-              reviews: true,
-              comments: true,
-              watchHistory: true,
-            },
-          },
-        },
-      }),
-      this.prisma.user.count({ where }),
+      this.repository.findMany({ where, skip, take: limit }),
+      this.repository.count(where),
     ]);
 
     return {
@@ -65,27 +47,7 @@ export class AdminUsersService {
   }
 
   async getUserDetail(userId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        fullName: true,
-        avatarUrl: true,
-        isActive: true,
-        createdAt: true,
-        roles: { include: { role: true } },
-        _count: {
-          select: {
-            reviews: true,
-            comments: true,
-            watchHistory: true,
-            watchlist: true,
-          },
-        },
-      },
-    });
-
+    const user = await this.repository.findById(userId);
     if (!user) throw new NotFoundException('User not found');
 
     return {
@@ -95,34 +57,23 @@ export class AdminUsersService {
   }
 
   async updateUserRoles(userId: string, roles: RoleName[]) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const user = await this.repository.findUserExists(userId);
     if (!user) throw new NotFoundException('User not found');
 
-    const roleRecords = await this.prisma.role.findMany({
-      where: { name: { in: roles } },
-    });
-
-    await this.prisma.$transaction([
-      this.prisma.userRole.deleteMany({ where: { userId } }),
-      ...roleRecords.map((role) =>
-        this.prisma.userRole.create({
-          data: { userId, roleId: role.id },
-        }),
-      ),
-    ]);
+    const roleRecords = await this.repository.findRolesByNames(roles);
+    await this.repository.replaceUserRoles(
+      userId,
+      roleRecords.map((r) => r.id),
+    );
 
     return this.getUserDetail(userId);
   }
 
   async toggleUserActive(userId: string, isActive: boolean) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const user = await this.repository.findUserExists(userId);
     if (!user) throw new NotFoundException('User not found');
 
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { isActive },
-    });
-
+    await this.repository.updateActiveStatus(userId, isActive);
     return this.getUserDetail(userId);
   }
 }
