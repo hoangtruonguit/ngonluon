@@ -20,6 +20,7 @@ interface MovieCardProps {
     onWatchlistUpdate?: (movieId: string, isInWatchlist: boolean) => void;
     releaseYear?: number | null;
     showYear?: boolean;
+    isPremium?: boolean;
 }
 
 
@@ -34,7 +35,8 @@ export default function MovieCard({
     source = 'local',
     onWatchlistUpdate,
     releaseYear,
-    showYear = false
+    showYear = false,
+    isPremium = false
 }: MovieCardProps) {
     const highResImageUrl = movieService.getHighResImage(imageUrl);
     const router = useRouter();
@@ -74,24 +76,30 @@ export default function MovieCard({
     };
 
     const card = (
-        <div 
+        <div
             className="movie-card relative min-w-[200px] lg:min-w-[240px] aspect-[2/3] rounded-xl overflow-hidden cursor-pointer group shadow-2xl flex-shrink-0"
             onClick={() => {
                 if (slug) {
-                    router.push(`/watch/${slug}`);
+                    router.push(`/movies/${slug}`);
                 }
             }}
         >
             <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-110">
-                <Image 
-                    src={highResImageUrl} 
-                    alt={title} 
-                    fill 
-                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 250px" 
+                <Image
+                    src={highResImageUrl || 'https://placehold.co/400x600/1a1a1a/444444?text=No+Poster'}
+                    alt={title}
+                    fill
+                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 250px"
                     className="object-cover"
-                    unoptimized={highResImageUrl.includes('placehold.co')}
+                    unoptimized={!highResImageUrl || highResImageUrl.includes('placehold.co')}
                 />
             </div>
+
+            {isPremium && (
+                <div className="flex flex-wrap gap-2 absolute">
+                    <span className="px-1 py-1 rounded bg-yellow-500/20 text-[14px] font-bold uppercase text-yellow-500">Premium</span>
+                </div>
+            )}
 
             <div className="card-overlay absolute inset-0 bg-black/80 transition-opacity duration-300 flex flex-col justify-end p-6 space-y-3 opacity-0 group-hover:opacity-100">
                 {rating && (
@@ -110,16 +118,8 @@ export default function MovieCard({
                         )}
                     </div>
                 )}
-                <div className="space-y-1">
-                    <h4 className="text-white font-bold text-xl line-clamp-2 leading-tight">{title}</h4>
-                    {showYear && releaseYear && (
-                        <p className="text-[10px] font-bold text-primary/80 uppercase tracking-widest">
-                            {t('releasedYear', { year: releaseYear })}
-                        </p>
-                    )}
-                </div>
                 <p className="text-white/70 text-xs line-clamp-2">{description}</p>
-                
+
                 <div className="flex flex-col gap-2 w-full">
                     {showWatchButton && slug && (
                         <button
@@ -134,11 +134,10 @@ export default function MovieCard({
                     )}
                     {source === 'local' && id && (
                         <button
-                            className={`w-full py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
-                                isInWatchlist
+                            className={`w-full py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${isInWatchlist
                                     ? 'bg-white/10 text-white hover:bg-white/20'
                                     : 'bg-white/20 text-white hover:bg-white/30'
-                            }`}
+                                }`}
                             onClick={handleWatchlistToggle}
                             disabled={isWatchlistLoading}
                         >

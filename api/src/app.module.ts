@@ -20,6 +20,7 @@ import { MovieSyncListener } from './elasticsearch/moive-sync.listener';
 import { validate } from './common/config/env.validation';
 import { RabbitMQModule } from './rabbitmq/rabbitmq.module';
 import { AdminModule } from './admin/admin.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -49,6 +50,7 @@ import { join } from 'path';
     WatchlistModule,
     WatchHistoryModule,
     AdminModule,
+    SubscriptionsModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60000,

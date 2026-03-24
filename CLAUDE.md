@@ -63,7 +63,7 @@ Feature-based module structure under `api/src/`:
 - `prisma/` — Database service wrapping PrismaClient
 - `common/` — Shared guards, filters, interceptors, decorators, logger (Winston)
 
-Database entities (PostgreSQL via Prisma): `User` (roles: ADMIN, USER, VIP), `Movie`/`Series`, `Season`, `Episode`, `Cast`, `Review`, `Comment`, `WatchHistory`, `Watchlist`, `Subscription`, `Genre`.
+Database entities (PostgreSQL via Prisma): `User` (roles: ADMIN, USER), `Movie`/`Series`, `Season`, `Episode`, `Cast`, `Review`, `Comment`, `WatchHistory`, `Watchlist`, `Subscription` (Stripe-integrated), `Genre`.
 
 Swagger/OpenAPI docs: `http://localhost:3001/api`
 

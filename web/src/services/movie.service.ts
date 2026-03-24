@@ -15,7 +15,8 @@ export interface Movie {
     releaseYear: number;
     rating: number;
     durationMinutes: number;
-    isVip: boolean;
+    isPremium: boolean;
+    requiresSubscription: boolean;
     type: string;
     genres: string[];
 }

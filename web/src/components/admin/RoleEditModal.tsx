@@ -2,12 +2,11 @@
 
 import { useState } from 'react';
 
-const ALL_ROLES = ['ADMIN', 'USER', 'VIP'] as const;
+const ALL_ROLES = ['ADMIN', 'USER'] as const;
 
 const ROLE_COLORS: Record<string, string> = {
     ADMIN: 'bg-red-500/20 text-red-400 border-red-500/30',
     USER: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    VIP: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
 };
 
 interface RoleEditModalProps {

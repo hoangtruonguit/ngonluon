@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Post,
   Patch,
   Param,
   Body,
@@ -12,6 +13,7 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { AdminUsersService } from './admin-users.service';
+import { SubscriptionsService } from '../../subscriptions/subscriptions.service';
 import { UpdateUserRolesDto } from './dto/update-user-roles.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 
@@ -21,7 +23,10 @@ import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('ADMIN')
 export class AdminUsersController {
-  constructor(private readonly adminUsersService: AdminUsersService) {}
+  constructor(
+    private readonly adminUsersService: AdminUsersService,
+    private readonly subscriptionsService: SubscriptionsService,
+  ) {}
 
   @Get()
   listUsers(
@@ -51,5 +56,10 @@ export class AdminUsersController {
   @Patch(':id/status')
   toggleUserStatus(@Param('id') id: string, @Body() dto: UpdateUserStatusDto) {
     return this.adminUsersService.toggleUserActive(id, dto.isActive);
+  }
+
+  @Post(':id/grant-subscription')
+  grantSubscription(@Param('id') id: string) {
+    return this.subscriptionsService.grantComplimentary(id);
   }
 }

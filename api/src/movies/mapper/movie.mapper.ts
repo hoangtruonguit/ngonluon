@@ -14,7 +14,8 @@ export class MovieMapper {
       releaseYear: movie.releaseYear,
       rating: Math.round(movie.rating * 10) / 10,
       durationMinutes: movie.durationMinutes,
-      isVip: movie.isVip,
+      isPremium: movie.isPremium,
+      requiresSubscription: movie.isPremium,
       type: movie.type,
       genres: movie.genres.map((mg) => mg.genre.name),
     };

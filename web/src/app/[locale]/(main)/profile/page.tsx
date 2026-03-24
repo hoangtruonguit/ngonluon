@@ -10,10 +10,14 @@ import Breadcrumb from '@/components/ui/Breadcrumb';
 import ProfileInfo from '@/components/profile/ProfileInfo';
 import WatchlistSection from '@/components/profile/WatchlistSection';
 import WatchHistorySection from '@/components/profile/WatchHistorySection';
+import SubscriptionSection from '@/components/profile/SubscriptionSection';
 import { WatchlistItemResponseDto, WatchHistoryResponseDto } from '@/lib/api';
+import { subscriptionService, Subscription } from '@/services/subscription.service';
 
 const fetchWatchlist = () => apiClient.getWatchlist().then(res => res.data);
 const fetchWatchHistory = () => apiClient.getWatchHistory().then(res => res.data);
+const fetchSubscription = () => subscriptionService.getMySubscription();
+const fetchSubHistory = () => subscriptionService.getHistory();
 
 export default function ProfilePage() {
     const { user, isLoggedIn, isLoading: authLoading, refreshUser } = useAuth();
@@ -40,6 +44,16 @@ export default function ProfilePage() {
     } = useSWR<WatchHistoryResponseDto[]>(
         user ? 'watch-history' : null,
         fetchWatchHistory,
+    );
+
+    const { data: currentSub, mutate: mutateSub } = useSWR<Subscription | null>(
+        user ? 'my-subscription' : null,
+        fetchSubscription,
+    );
+
+    const { data: subHistory } = useSWR<Subscription[]>(
+        user ? 'sub-history' : null,
+        fetchSubHistory,
     );
 
     const isDataLoading = isWatchlistLoading || isHistoryLoading;
@@ -114,6 +128,16 @@ export default function ProfilePage() {
                         onUpdate={handleUpdateProfile}
                         isUpdating={isUpdating}
                         message={message}
+                    />
+
+                    {/* Subscription Section */}
+                    <SubscriptionSection
+                        subscription={currentSub ?? null}
+                        history={subHistory ?? []}
+                        onCancel={async () => {
+                            await subscriptionService.cancelSubscription();
+                            mutateSub();
+                        }}
                     />
 
                     {/* Content Sections */}

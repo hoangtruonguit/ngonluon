@@ -18,6 +18,11 @@ export class AnalyticsController {
     return this.analyticsService.getOverviewStats();
   }
 
+  @Get('subscriptions')
+  getSubscriptionStats() {
+    return this.analyticsService.getSubscriptionStats();
+  }
+
   @Get('user-growth')
   getUserGrowth(@Query('period') period: '7d' | '30d' | '90d' = '30d') {
     return this.analyticsService.getUserGrowth(period);

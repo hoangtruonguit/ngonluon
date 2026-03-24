@@ -43,6 +43,7 @@ export default function WatchlistSection({ items, isLoading, onWatchlistUpdate }
                             slug={item.movie.slug}
                             showWatchButton={true}
                             onWatchlistUpdate={onWatchlistUpdate}
+                            isPremium={item.movie.isPremium}
                         />
                     ))}
                 </div>

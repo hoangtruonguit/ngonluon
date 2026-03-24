@@ -208,6 +208,7 @@ export interface MovieResponseDto {
     slug: string;
     rating: number;
     durationMinutes: number;
+    isPremium: boolean;
 }
 
 export interface WatchlistItemResponseDto {

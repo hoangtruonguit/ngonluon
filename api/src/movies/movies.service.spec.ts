@@ -16,7 +16,7 @@ const mockMovieWithGenres = {
   releaseYear: 2025,
   rating: 8.55,
   durationMinutes: 120,
-  isVip: false,
+  isPremium: false,
   type: 'MOVIE',
   createdAt: new Date(),
   updatedAt: new Date(),

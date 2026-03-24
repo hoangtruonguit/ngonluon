@@ -37,6 +37,14 @@ export interface GenrePopularityItem {
     watchlistCount: number;
 }
 
+export interface SubscriptionStats {
+    byPlan: { planName: string; count: number }[];
+    totalActive: number;
+    newThisMonth: number;
+    churnRate: number;
+    timeline: TimeSeriesPoint[];
+}
+
 export interface ActivityFeedItem {
     type: 'review' | 'comment' | 'registration';
     user: { id: string; fullName: string | null; avatarUrl: string | null };
@@ -82,7 +90,7 @@ export interface AdminMovie {
     durationMinutes: number | null;
     trailerUrl: string | null;
     type: 'MOVIE' | 'SERIES';
-    isVip: boolean;
+    isPremium: boolean;
     createdAt: string;
     updatedAt: string;
 }
@@ -154,6 +162,11 @@ class AdminService {
 
     // ─── Analytics ────────────────────────────────────
 
+    async getSubscriptionStats(): Promise<SubscriptionStats> {
+        const res = await apiClient.get<SubscriptionStats>('/admin/analytics/subscriptions');
+        return res.data;
+    }
+
     async getOverviewStats(): Promise<OverviewStats> {
         const res = await apiClient.get<OverviewStats>('/admin/analytics/overview');
         return res.data;
@@ -207,6 +220,10 @@ class AdminService {
     async toggleUserStatus(id: string, isActive: boolean): Promise<AdminUserDetail> {
         const res = await apiClient.patch<AdminUserDetail>(`/admin/users/${id}/status`, { isActive });
         return res.data;
+    }
+
+    async grantSubscription(userId: string): Promise<void> {
+        await apiClient.post(`/admin/users/${userId}/grant-subscription`, {});
     }
 }
 

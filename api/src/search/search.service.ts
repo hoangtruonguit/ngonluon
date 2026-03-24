@@ -62,6 +62,7 @@ export class SearchService {
       genres: hit.genres,
       description: (hit as { description?: string }).description,
       highlight: hit.highlight,
+      isPremium: hit.isPremium,
     }));
 
     // 2. Nếu ES ít kết quả (total < 40) hoặc không có -> fallback TMDB (chỉ khi có query)

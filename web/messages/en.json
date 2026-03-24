@@ -237,6 +237,9 @@
         "totalReviews": "Total Reviews",
         "totalComments": "Total Comments",
         "activeSubscriptions": "Active Subscriptions",
+        "newSubscriptions": "New This Month",
+        "churnRate": "Churn Rate",
+        "planBreakdown": "Plan Breakdown",
         "newUsers": "New Users",
         "last7days": "Last 7 days",
         "last30days": "Last 30 days",
@@ -300,5 +303,34 @@
         "noResultsMessage": "We couldn't find anything matching \"{query}\". Try adjusting your filters or checking your spelling.",
         "clearAllFilters": "Clear all filters",
         "genreTitle": "Genre: {name}"
+    },
+    "Pricing": {
+        "title": "Choose Your Plan",
+        "subtitle": "Unlock premium content with a subscription",
+        "allContentNote": "Both Basic and Premium plans unlock all movies and series",
+        "successMessage": "Subscription activated! Enjoy premium content.",
+        "cancelledMessage": "Checkout was cancelled. You can try again anytime.",
+        "currentPlan": "Current Plan",
+        "freePlan": "Free Plan",
+        "subscribe": "Subscribe",
+        "redirecting": "Redirecting...",
+        "popular": "Most Popular"
+    },
+    "Subscription": {
+        "title": "My Subscription",
+        "plan": "Plan",
+        "status": "Status",
+        "nextBilling": "Next billing",
+        "cancel": "Cancel Subscription",
+        "cancelConfirm": "Are you sure you want to cancel? Your subscription will remain active until the end of the billing period.",
+        "cancelled": "Cancelled",
+        "active": "Active",
+        "expired": "Expired",
+        "history": "Subscription History",
+        "noSubscription": "No active subscription",
+        "upgrade": "Upgrade Now",
+        "premiumRequired": "Premium Content",
+        "subscriptionRequired": "Subscribe to watch this content",
+        "unlockContent": "Unlock with a subscription"
     }
 }

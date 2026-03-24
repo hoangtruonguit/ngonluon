@@ -96,7 +96,7 @@ async function main() {
 
   try {
     // ── Ensure roles exist ──────────────────────────
-    const roles = ['ADMIN', 'USER', 'VIP'] as const;
+    const roles = ['ADMIN', 'USER'] as const;
     for (const name of roles) {
       await prisma.role.upsert({
         where: { name },
@@ -106,7 +106,6 @@ async function main() {
     }
     const allRoles = await prisma.role.findMany();
     const userRole = allRoles.find((r) => r.name === 'USER')!;
-    const vipRole = allRoles.find((r) => r.name === 'VIP')!;
     console.log('✓ Roles ensured');
 
     // ── Create users spread over 90 days ────────────
@@ -145,13 +144,6 @@ async function main() {
       await prisma.userRole.create({
         data: { userId: user.id, roleId: userRole.id },
       });
-
-      // 20% get VIP
-      if (Math.random() < 0.2) {
-        await prisma.userRole.create({
-          data: { userId: user.id, roleId: vipRole.id },
-        });
-      }
 
       createdUsers.push({ id: user.id });
       existingEmails.add(email);

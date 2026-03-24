@@ -237,6 +237,9 @@
         "totalReviews": "Tổng đánh giá",
         "totalComments": "Tổng bình luận",
         "activeSubscriptions": "Gói đang hoạt động",
+        "newSubscriptions": "Mới trong tháng",
+        "churnRate": "Tỷ lệ hủy",
+        "planBreakdown": "Phân bổ gói",
         "newUsers": "Người dùng mới",
         "last7days": "7 ngày qua",
         "last30days": "30 ngày qua",
@@ -300,5 +303,34 @@
         "noResultsMessage": "Chúng tôi không tìm thấy kết quả nào khớp với \"{query}\". Hãy thử điều chỉnh bộ lọc hoặc kiểm tra lại chính tả.",
         "clearAllFilters": "Xóa tất cả bộ lọc",
         "genreTitle": "Thể loại: {name}"
+    },
+    "Pricing": {
+        "title": "Chọn gói của bạn",
+        "subtitle": "Mở khóa nội dung premium với gói đăng ký",
+        "allContentNote": "Cả gói Basic và Premium đều mở khóa tất cả phim và series",
+        "successMessage": "Đăng ký thành công! Tận hưởng nội dung premium.",
+        "cancelledMessage": "Thanh toán đã bị hủy. Bạn có thể thử lại bất cứ lúc nào.",
+        "currentPlan": "Gói hiện tại",
+        "freePlan": "Gói miễn phí",
+        "subscribe": "Đăng ký",
+        "redirecting": "Đang chuyển hướng...",
+        "popular": "Phổ biến nhất"
+    },
+    "Subscription": {
+        "title": "Gói đăng ký của tôi",
+        "plan": "Gói",
+        "status": "Trạng thái",
+        "nextBilling": "Thanh toán tiếp theo",
+        "cancel": "Hủy đăng ký",
+        "cancelConfirm": "Bạn có chắc muốn hủy? Gói đăng ký sẽ vẫn hoạt động đến cuối kỳ thanh toán.",
+        "cancelled": "Đã hủy",
+        "active": "Đang hoạt động",
+        "expired": "Hết hạn",
+        "history": "Lịch sử đăng ký",
+        "noSubscription": "Chưa có gói đăng ký",
+        "upgrade": "Nâng cấp ngay",
+        "premiumRequired": "Nội dung Premium",
+        "subscriptionRequired": "Đăng ký để xem nội dung này",
+        "unlockContent": "Mở khóa với gói đăng ký"
     }
 }
