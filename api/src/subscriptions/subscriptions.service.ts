@@ -29,7 +29,7 @@ export class SubscriptionsService {
     private readonly mailProducer: MailProducer,
   ) {
     const secretKey = this.configService.get<string>('STRIPE_SECRET_KEY');
-    this.stripe = new Stripe(secretKey || '');
+    this.stripe = new Stripe(secretKey || 'sk_test_dummy_key');
 
     this.plans = [
       {
