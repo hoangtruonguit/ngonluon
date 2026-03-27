@@ -3,19 +3,23 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { movieService } from '@/services/movie.service';
+import { recommendationService, type MovieRecommendation } from '@/services/recommendation.service';
 import CommentSection from '@/components/movie/CommentSection';
 import MovieCard from '@/components/movie/MovieCard';
 import MovieActionButtons from '@/components/movie/MovieActionButtons';
 import type { Metadata } from 'next';
+import {cache} from "react";
 
 interface MovieDetailsPageProps {
     params: Promise<{ slug: string; locale: string }>;
 }
 
+const getMovie = cache((slug: string) => movieService.getMovieBySlug(slug));
+
 export async function generateMetadata({ params }: MovieDetailsPageProps): Promise<Metadata> {
     const { slug, locale } = await params;
     const t = await getTranslations({ locale, namespace: 'Watch' });
-    const movie = await movieService.getMovieBySlug(slug);
+    const movie = await getMovie(slug);
 
     if (!movie) {
         return { title: t('movieNotFound') };
@@ -68,14 +72,14 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
     const t = await getTranslations({ locale, namespace: 'Watch' });
     const tCommon = await getTranslations({ locale, namespace: 'Common' });
 
-    const [movie, similarMovies] = await Promise.all([
-        movieService.getMovieBySlug(slug),
-        movieService.getSimilarMovies(slug, 5),
-    ]);
+    const movie = await getMovie(slug);
 
     if (!movie) {
         notFound();
     }
+
+    // Fetch AI similar movies (public endpoint, uses movie UUID)
+    const similarRecs = await recommendationService.getSimilar(movie.id, 10);
 
     const actors = movie.cast.filter((c) => c.role === 'ACTOR').slice(0, 6);
 
@@ -149,9 +153,12 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
                         {/* Genre Tags */}
                         <div className="flex flex-wrap gap-2">
                             {movie.genres.map((genre) => (
-                                <div key={genre} className="px-4 py-1.5 rounded-full border border-white/20 text-sm bg-white/5 hover:bg-white/10 transition-colors cursor-default">
+                                <Link
+                                    key={genre}
+                                    href={`/genre/${genre}`}
+                                    className="px-4 py-1.5 rounded-full border border-white/20 text-sm bg-white/5 hover:bg-white/10 transition-colors cursor-default">
                                     {genre}
-                                </div>
+                                </Link>
                             ))}
                         </div>
 
@@ -207,33 +214,49 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
                     </section>
                 )}
 
-                {/* Reviews and Stats */}
-                <section className="grid lg:grid-cols-1 gap-12">
-                    {/* User Reviews */}
-                    <div className="lg:col-span-1 h-full">
-                        <CommentSection movieId={movie.id} className="h-full flex flex-col" />
-                    </div>
+                {/* Discussion & Rating */}
+                <section>
+                    <CommentSection
+                        movieId={movie.id}
+                        initialReviews={movie.reviews}
+                        initialAudienceRating={movie.audienceRating}
+                    />
                 </section>
 
-                {/* Recommended Movies */}
-                {similarMovies.length > 0 && (
+                {/* More Like This — AI-powered */}
+                {similarRecs.length > 0 && (
                     <section>
-                        <div className="flex items-center justify-between mb-8">
+                        <div className="flex items-center gap-3 mb-8">
                             <h2 className="text-2xl font-bold border-l-4 border-primary pl-4 uppercase tracking-wider">{t('recommendedTitle')}</h2>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30 uppercase tracking-wider">AI</span>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                            {similarMovies.map((movie) => (
-                                <MovieCard
-                                    key={movie.id}
-                                    id={movie.id}
-                                    title={movie.title}
-                                    rating={movie.rating.toString()}
-                                    description={movie.description}
-                                    imageUrl={movie.thumbnailUrl || movie.posterUrl}
-                                    showWatchButton={true}
-                                    slug={movie.slug}
-                                    isPremium={movie.isPremium}
-                                />
+                            {similarRecs.map((rec: MovieRecommendation) => (
+                                <div key={rec.movie.id} className="relative">
+                                    <MovieCard
+                                        id={rec.movie.id}
+                                        title={rec.movie.title}
+                                        rating={rec.movie.rating.toString()}
+                                        description=""
+                                        imageUrl={rec.movie.posterUrl ?? ''}
+                                        showWatchButton={true}
+                                        slug={rec.movie.slug}
+                                        isPremium={rec.movie.isPremium}
+                                    />
+                                    {rec.score > 0 && (
+                                        <div className="absolute top-2 right-2 z-10">
+                                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
+                                                rec.score >= 0.8
+                                                    ? 'text-green-400 border-green-400/30 bg-green-400/10'
+                                                    : rec.score >= 0.6
+                                                    ? 'text-yellow-400 border-yellow-400/30 bg-yellow-400/10'
+                                                    : 'text-slate-400 border-slate-400/30 bg-slate-400/10'
+                                            }`}>
+                                                {Math.round(rec.score * 100)}%
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
                             ))}
                         </div>
                     </section>
