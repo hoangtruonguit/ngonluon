@@ -194,6 +194,29 @@ class MovieService {
             return null;
         }
     }
+
+    async getReviewsByMovie(movieId: string, skip: number = 0, take: number = 20): Promise<MovieReview[]> {
+        try {
+            const response = await apiClient.get<MovieReview[]>(`/movies/${movieId}/reviews?skip=${skip}&take=${take}`);
+            return response.data;
+        } catch (error) {
+            console.error('Failed to fetch reviews', error);
+            return [];
+        }
+    }
+
+    async addReview(movieId: string, rating: number, comment?: string): Promise<MovieReview | null> {
+        try {
+            const response = await apiClient.post<MovieReview>(`/movies/${movieId}/reviews`, {
+                rating,
+                comment: comment || undefined,
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Failed to add review', error);
+            return null;
+        }
+    }
 }
 
 export const movieService = new MovieService();

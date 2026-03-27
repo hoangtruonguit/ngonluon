@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 
 interface LoginPromptModalProps {
@@ -17,6 +17,7 @@ export default function LoginPromptModal({
     message,
 }: LoginPromptModalProps) {
     const router = useRouter();
+    const pathname = usePathname();
     const t = useTranslations('LoginPrompt');
 
     const displayTitle = title || t('title');
@@ -49,7 +50,7 @@ export default function LoginPromptModal({
 
                     <div className="flex flex-col gap-3 w-full pt-2">
                         <button
-                            onClick={() => router.push('/login')}
+                            onClick={() => router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`)}
                             className="w-full bg-primary py-3 rounded-xl text-secondary font-bold hover:bg-primary/90 transition-all active:scale-95 shadow-lg shadow-primary/20"
                         >
                             {t('signInNow')}

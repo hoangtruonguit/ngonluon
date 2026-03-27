@@ -12,6 +12,7 @@ import { MoviesService } from './movies.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { User } from '../common/decorators/user.decorator';
 import { CreateCommentDto } from './dto/comment.dto';
+import { CreateReviewDto } from './dto/review.dto';
 import { SearchMoviesDto } from './dto/search-movies.dto';
 
 interface UserPayload {
@@ -83,6 +84,35 @@ export class MoviesController {
       throw new Error('User ID not found in token');
     }
     return this.moviesService.addComment(userId, movieId, dto);
+  }
+
+  @Post(':movieId/reviews')
+  @UseGuards(JwtAuthGuard)
+  async addReview(
+    @Param('movieId') movieId: string,
+    @User() user: UserPayload,
+    @Body() dto: CreateReviewDto,
+  ) {
+    const userId = user.userId || user.id;
+    if (!userId) {
+      throw new Error('User ID not found in token');
+    }
+    return this.moviesService.addReview(userId, movieId, dto);
+  }
+
+  @Get(':movieId/reviews')
+  async getReviews(
+    @Param('movieId') movieId: string,
+    @Query('skip') skip?: string,
+    @Query('take') take?: string,
+  ) {
+    const parsedSkip = skip ? parseInt(skip, 10) : 0;
+    const parsedTake = take ? parseInt(take, 10) : 20;
+    return this.moviesService.getReviewsByMovie(
+      movieId,
+      parsedSkip,
+      parsedTake,
+    );
   }
 
   @Get(':movieId/comments')

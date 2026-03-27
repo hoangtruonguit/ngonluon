@@ -10,7 +10,7 @@ services:
       - redis_data:/data
 
   postgres:
-    image: postgres:15-alpine
+    image: pgvector/pgvector:pg15
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres

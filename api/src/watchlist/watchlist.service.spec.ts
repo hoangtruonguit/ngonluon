@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { WatchlistService } from './watchlist.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConflictException, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 const mockMovie = { id: 'movie-1', title: 'Test Movie' };
 
@@ -35,6 +36,7 @@ describe('WatchlistService', () => {
       providers: [
         WatchlistService,
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: EventEmitter2, useValue: { emit: jest.fn() } },
       ],
     }).compile();
 

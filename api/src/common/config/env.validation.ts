@@ -86,6 +86,19 @@ class EnvironmentVariables {
   @IsOptional()
   @IsString()
   FRONTEND_URL?: string;
+
+  // AI Recommendations — local inference via ONNX (all optional, sensible defaults)
+  @IsOptional()
+  @IsString()
+  EMBEDDING_MODEL?: string;
+
+  @IsOptional()
+  @IsNumber()
+  EMBEDDING_DIMENSIONS?: number;
+
+  @IsOptional()
+  @IsNumber()
+  EMBEDDING_BATCH_SIZE?: number;
 }
 
 export function validate(config: Record<string, any>) {
@@ -98,6 +111,22 @@ export function validate(config: Record<string, any>) {
       ENABLE_MAIL: String(config.ENABLE_MAIL) === 'true',
       ...(config.REDIS_PORT
         ? { REDIS_PORT: parseInt(String(config.REDIS_PORT), 10) }
+        : {}),
+      ...(config.EMBEDDING_DIMENSIONS
+        ? {
+            EMBEDDING_DIMENSIONS: parseInt(
+              String(config.EMBEDDING_DIMENSIONS),
+              10,
+            ),
+          }
+        : {}),
+      ...(config.EMBEDDING_BATCH_SIZE
+        ? {
+            EMBEDDING_BATCH_SIZE: parseInt(
+              String(config.EMBEDDING_BATCH_SIZE),
+              10,
+            ),
+          }
         : {}),
     },
     { enableImplicitConversion: true },

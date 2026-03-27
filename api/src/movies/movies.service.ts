@@ -1,15 +1,21 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCommentDto } from './dto/comment.dto';
+import { CreateReviewDto } from './dto/review.dto';
 import { SearchMoviesDto } from './dto/search-movies.dto';
 import { Prisma } from '@prisma/client';
 import { MovieWithGenres, MovieDetailed } from './types/movie.types';
+import { ReviewCreatedEvent } from '../recommendations/recommendation-cache.listener';
 
 @Injectable()
 export class MoviesService {
   private readonly logger = new Logger(MoviesService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   async getTrendingMovies(limit: number = 20) {
     // Here we just order by rating to simulate "trending"
@@ -252,6 +258,68 @@ export class MoviesService {
     take: number = 20,
   ) {
     return this.prisma.comment.findMany({
+      where: { movieId },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take,
+      include: {
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            avatarUrl: true,
+          },
+        },
+      },
+    });
+  }
+
+  async addReview(userId: string, movieId: string, dto: CreateReviewDto) {
+    const movie = await this.prisma.movie.findUnique({
+      where: { id: movieId },
+    });
+    if (!movie) {
+      throw new Error('Movie not found');
+    }
+
+    this.logger.log(`Review upserted for movie ${movieId} by user ${userId}`);
+
+    const result = await this.prisma.review.upsert({
+      where: { userId_movieId: { userId, movieId } },
+      create: {
+        userId,
+        movieId,
+        rating: dto.rating,
+        comment: dto.comment,
+      },
+      update: {
+        rating: dto.rating,
+        comment: dto.comment,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            avatarUrl: true,
+          },
+        },
+      },
+    });
+
+    this.eventEmitter.emit(
+      ReviewCreatedEvent.name,
+      new ReviewCreatedEvent(userId),
+    );
+    return result;
+  }
+
+  async getReviewsByMovie(
+    movieId: string,
+    skip: number = 0,
+    take: number = 20,
+  ) {
+    return this.prisma.review.findMany({
       where: { movieId },
       orderBy: { createdAt: 'desc' },
       skip,

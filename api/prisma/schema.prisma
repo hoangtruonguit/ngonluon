@@ -183,6 +183,7 @@ model Review {
   movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, movieId])
   @@map("reviews")
 }
 

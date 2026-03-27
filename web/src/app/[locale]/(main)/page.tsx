@@ -1,6 +1,7 @@
 import { Link } from '@/i18n/routing';
 import MovieCard from '@/components/movie/MovieCard';
 import HeroCarousel from '@/components/movie/HeroCarousel';
+import RecommendationRow from '@/components/movie/RecommendationRow';
 import { movieService } from '@/services/movie.service';
 import { getTranslations } from 'next-intl/server';
 
@@ -75,8 +76,8 @@ export default async function Home() {
                 <section className="pl-6 lg:pl-24 max-w-[1440px] mx-auto overflow-hidden">
                     <div className="flex items-end justify-between pr-6 lg:pr-24 mb-6">
                         <h2 className="text-white text-2xl font-bold tracking-tight">{t('newReleases')}</h2>
-                        <Link 
-                            href="/category/new-releases" 
+                        <Link
+                            href="/category/new-releases"
                             className="text-primary text-sm font-bold flex items-center gap-1 hover:underline transition-all duration-300"
                         >
                             {t('viewAll')}
@@ -99,6 +100,10 @@ export default async function Home() {
                         ))}
                     </div>
                 </section>
+
+                {/* AI-Powered Personalized Rows (client-side, auth-required) */}
+                <RecommendationRow type="for-you" limit={12} />
+                <RecommendationRow type="trending-for-you" limit={10} />
             </main>
         </>
     );

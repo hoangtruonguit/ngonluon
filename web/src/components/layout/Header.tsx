@@ -79,7 +79,8 @@ export default function Header() {
                         <input
                             className="bg-white/10 border-none rounded-full pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary w-64 text-white placeholder:text-white/40"
                             placeholder={t('searchPlaceholder')}
-                            type="text"
+                            type="search"
+                            aria-label="Search movies"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onKeyDown={handleSearchSubmit}
@@ -96,6 +97,8 @@ export default function Header() {
                         className="lg:hidden text-white p-1"
                         onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
                         aria-label="Toggle navigation menu"
+                        aria-expanded={isMobileNavOpen}
+                        aria-controls="mobile-menu"
                     >
                         <span className="material-symbols-outlined text-2xl">
                             {isMobileNavOpen ? 'close' : 'menu'}
@@ -104,20 +107,29 @@ export default function Header() {
                     <div className="flex items-center gap-3">
                         {isLoggedIn && (
                             <div className="relative" ref={menuRef}>
-                                <div
-                                    className="size-9 rounded-full overflow-hidden cursor-pointer transition-all active:scale-95 border-2 border-purple-500"
-                                    title="Account menu"
-                                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                >
-                                        <Image
-                                            src={resolveAvatarUrl(user?.avatarUrl) || "https://lh3.googleusercontent.com/aida-public/AB6AXuD1Lf8ou0dErc0m7he9KunMHpoZUwHkhj8ivVp9cRwQ4mirIRJgnx_vIeGEnUtTLkYCKvlmYkFdb2joykQ0oV7gR_3PFj34pGk9-K3KR0IWd52SclJqQ9EzVsau7YEmrMYfR6oFnDaoAegwzxIQ7cw49DPaNUPO3vWht8VRkGTkWgbMydPRlrPZIZcJY1DQxmFRuicd6Cxv-h_tnrMtsx_yTNXQuwh625X2vYyrvMahidyo0JG6YSCm5kBK7QkI8HS24eOXJgXYPEU"}
-                                            alt="User profile avatar"
-                                            fill
-                                            sizes="36px"
-                                            className="object-cover"
-                                            unoptimized={!!user?.avatarUrl}
-                                        />
-                                    </div>
+                                    <button
+                                        aria-expanded={isMenuOpen}
+                                        aria-haspopup="true"
+                                        aria-label={`${user?.fullName} account menu`}
+                                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                        className="size-9 rounded-full overflow-hidden cursor-pointer transition-[transform] active:scale-95 border-2 border-purple-500 relative"
+                                    >
+                                        {resolveAvatarUrl(user?.avatarUrl) ? (
+                                            <Image
+                                                src={resolveAvatarUrl(user?.avatarUrl)!}
+                                                alt=""
+                                                fill
+                                                sizes="36px"
+                                                aria-hidden="true"
+                                                className="object-cover"
+                                                unoptimized
+                                            />
+                                        ) : (
+                                            <span aria-hidden="true" className="material-symbols-outlined w-full h-full flex items-center justify-center bg-purple-500/20 text-white text-xl">
+                                                person
+                                            </span>
+                                        )}
+                                    </button>
 
                                     {/* Dropdown Menu */}
                                     {isMenuOpen && (

@@ -55,4 +55,9 @@ export class AnalyticsController {
       Math.min(parseInt(limit, 10) || 20, 50),
     );
   }
+
+  @Get('recommendations')
+  getRecommendationStats() {
+    return this.analyticsService.getRecommendationStats();
+  }
 }

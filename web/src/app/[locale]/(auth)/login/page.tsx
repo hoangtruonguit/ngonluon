@@ -3,6 +3,7 @@
 import { useState, FormEvent } from 'react';
 import Image from 'next/image';
 import { Link, useRouter } from '@/i18n/routing';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
@@ -29,7 +30,12 @@ export default function LoginPage() {
     const t = useTranslations('Login');
     const tFooter = useTranslations('Footer');
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { login } = useAuth();
+
+    const rawCallback = searchParams.get('callbackUrl');
+    // Only allow relative paths to prevent open redirect
+    const callbackUrl = rawCallback?.startsWith('/') ? rawCallback : '/';
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -45,7 +51,7 @@ export default function LoginPage() {
         try {
             const response = await apiClient.login(email, password);
             login(response.data.user);
-            router.push('/');
+            router.push(callbackUrl as Parameters<typeof router.push>[0]);
         } catch (err: unknown) {
             console.error('Login failed:', err);
             const errorObj = err as { message?: string };

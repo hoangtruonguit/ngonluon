@@ -49,3 +49,11 @@ export interface OverviewStats {
   newUsersLast7d: number;
   newUsersLast30d: number;
 }
+
+export interface RecommendationStats {
+  totalEmbeddings: number;
+  moviesWithoutEmbeddings: number;
+  coverageRate: number; // % of catalog with embeddings
+  avgInteractionsPerUser: number;
+  topRecommendedMovies: { movieId: string; title: string; count: number }[];
+}
