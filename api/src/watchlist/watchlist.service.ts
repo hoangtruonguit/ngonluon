@@ -4,13 +4,18 @@ import {
   NotFoundException,
   Logger,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../prisma/prisma.service';
+import { WatchlistChangedEvent } from '../recommendations/recommendation-cache.listener';
 
 @Injectable()
 export class WatchlistService {
   private readonly logger = new Logger(WatchlistService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   async addToWatchlist(userId: string, movieId: string) {
     try {
@@ -23,7 +28,7 @@ export class WatchlistService {
         throw new NotFoundException(`Movie with ID ${movieId} not found`);
       }
 
-      return await this.prisma.watchlist.create({
+      const entry = await this.prisma.watchlist.create({
         data: {
           userId,
           movieId,
@@ -32,6 +37,11 @@ export class WatchlistService {
           movie: true,
         },
       });
+      this.eventEmitter.emit(
+        WatchlistChangedEvent.name,
+        new WatchlistChangedEvent(userId),
+      );
+      return entry;
     } catch (error) {
       this.logger.error(
         `Error adding to watchlist for user ${userId}, movie ${movieId}`,
@@ -70,11 +80,16 @@ export class WatchlistService {
       throw new NotFoundException('Movie not found in your watchlist');
     }
 
-    return this.prisma.watchlist.delete({
+    const result = await this.prisma.watchlist.delete({
       where: {
         id: watchlistEntry.id,
       },
     });
+    this.eventEmitter.emit(
+      WatchlistChangedEvent.name,
+      new WatchlistChangedEvent(userId),
+    );
+    return result;
   }
 
   async getStatus(userId: string, movieId: string) {

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RedisService } from '../../redis/redis.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { AnalyticsRepository } from './analytics.repository';
 import {
   TimeSeriesPoint,
@@ -9,6 +10,7 @@ import {
   ActivityFeedItem,
   OverviewStats,
   SubscriptionStats,
+  RecommendationStats,
 } from './interfaces/analytics.interfaces';
 
 export type {
@@ -19,6 +21,7 @@ export type {
   ActivityFeedItem,
   OverviewStats,
   SubscriptionStats,
+  RecommendationStats,
 };
 
 @Injectable()
@@ -28,6 +31,7 @@ export class AnalyticsService {
   constructor(
     private readonly repository: AnalyticsRepository,
     private readonly redis: RedisService,
+    private readonly prisma: PrismaService,
   ) {}
 
   async getOverviewStats() {
@@ -249,6 +253,77 @@ export class AnalyticsService {
 
     const result = await this.repository.getGenresWithCounts();
     result.sort((a, b) => b.views - a.views);
+
+    await this.redis.set(cacheKey, JSON.stringify(result), 600);
+    return result;
+  }
+
+  async getRecommendationStats(): Promise<RecommendationStats> {
+    const cacheKey = 'admin:recommendation-stats';
+    const cached = await this.redis.get(cacheKey);
+    if (cached) return JSON.parse(cached) as RecommendationStats;
+
+    const [totalMovies, embeddingRows, interactionRows, topMovieRows] =
+      await Promise.all([
+        this.prisma.movie.count(),
+
+        // Count movies with embeddings
+        this.prisma.$queryRaw<{ count: bigint }[]>`
+          SELECT COUNT(*)::bigint AS count FROM movie_embeddings
+        `,
+
+        // Average interactions (watch_history + watchlist + reviews) per user
+        this.prisma.$queryRaw<{ avg: number }[]>`
+          SELECT COALESCE(AVG(total), 0) AS avg
+          FROM (
+            SELECT user_id, COUNT(*) AS total
+            FROM (
+              SELECT user_id FROM watch_history
+              UNION ALL
+              SELECT user_id FROM watchlist
+              UNION ALL
+              SELECT user_id FROM reviews
+            ) combined
+            GROUP BY user_id
+          ) per_user
+        `,
+
+        // Top 10 most-watched movies (proxy for "most recommended")
+        this.prisma.$queryRaw<
+          { movie_id: string; title: string; count: bigint }[]
+        >`
+          SELECT wh.movie_id, m.title, COUNT(*)::bigint AS count
+          FROM watch_history wh
+          JOIN movies m ON m.id = wh.movie_id
+          WHERE wh.last_watched_at >= NOW() - INTERVAL '30 days'
+          GROUP BY wh.movie_id, m.title
+          ORDER BY count DESC
+          LIMIT 10
+        `,
+      ]);
+
+    const totalEmbeddings = Number(embeddingRows[0]?.count ?? 0);
+    const moviesWithoutEmbeddings = Math.max(0, totalMovies - totalEmbeddings);
+    const coverageRate =
+      totalMovies > 0
+        ? Math.round((totalEmbeddings / totalMovies) * 1000) / 10
+        : 0;
+    const avgInteractionsPerUser =
+      Math.round(Number(interactionRows[0]?.avg ?? 0) * 10) / 10;
+
+    const topRecommendedMovies = topMovieRows.map((r) => ({
+      movieId: r.movie_id,
+      title: r.title,
+      count: Number(r.count),
+    }));
+
+    const result: RecommendationStats = {
+      totalEmbeddings,
+      moviesWithoutEmbeddings,
+      coverageRate,
+      avgInteractionsPerUser,
+      topRecommendedMovies,
+    };
 
     await this.redis.set(cacheKey, JSON.stringify(result), 600);
     return result;

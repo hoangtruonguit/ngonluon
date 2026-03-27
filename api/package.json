@@ -19,14 +19,17 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "seed:reviews": "ts-node -r tsconfig-paths/register scripts/seed-reviews.ts",
     "seed:tmdb": "ts-node -r tsconfig-paths/register src/tmdb/seed.ts",
     "seed:trailers": "ts-node -r tsconfig-paths/register src/tmdb/seed-trailers.ts",
     "cli": "ts-node -r tsconfig-paths/register src/cli.ts",
     "cli:dev": "npx ts-node -r tsconfig-paths/register src/cli.ts",
-    "test:mq-mail": "ts-node test-mq-mail.ts"
+    "test:mq-mail": "ts-node test-mq-mail.ts",
+    "seed:embeddings": "ts-node -r tsconfig-paths/register scripts/seed-embeddings.ts"
   },
   "dependencies": {
     "@elastic/elasticsearch": "^9.3.4",
+    "@huggingface/transformers": "^3.8.1",
     "@nestjs-modules/ioredis": "^2.0.2",
     "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.0.1",
@@ -60,6 +63,7 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.17.2",
+    "pgvector": "^0.2.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "stripe": "^20.4.1",
@@ -84,6 +88,7 @@
     "@types/passport-jwt": "^4.0.1",
     "@types/pg": "^8.18.0",
     "@types/supertest": "^6.0.2",
+    "dotenv": "^17.3.1",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
@@ -116,5 +121,12 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "onnxruntime-node",
+      "protobufjs",
+      "sharp"
+    ]
   }
 }

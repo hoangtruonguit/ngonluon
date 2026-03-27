@@ -2,6 +2,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MoviesService } from './movies.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 const mockGenre = { id: 1, name: 'Action', slug: 'action' };
 
@@ -58,6 +59,10 @@ const mockPrismaService = {
     create: jest.fn(),
     findMany: jest.fn(),
   },
+  review: {
+    upsert: jest.fn(),
+    findMany: jest.fn(),
+  },
 };
 
 describe('MoviesService', () => {
@@ -70,6 +75,7 @@ describe('MoviesService', () => {
       providers: [
         MoviesService,
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: EventEmitter2, useValue: { emit: jest.fn() } },
       ],
     }).compile();
 
@@ -290,6 +296,67 @@ describe('MoviesService', () => {
           isSpoiler: false,
         }),
       ).rejects.toThrow('Movie not found');
+    });
+  });
+
+  describe('addReview()', () => {
+    it('should upsert review when movie exists', async () => {
+      mockPrismaService.movie.findUnique.mockResolvedValue(mockMovieWithGenres);
+      const mockReview = {
+        id: 'review-1',
+        rating: 5,
+        comment: 'Amazing!',
+        user: { id: 'user-1', fullName: 'User', avatarUrl: null },
+      };
+      mockPrismaService.review.upsert.mockResolvedValue(mockReview);
+
+      const result = await service.addReview('user-1', 'movie-1', {
+        rating: 5,
+        comment: 'Amazing!',
+      });
+
+      expect(result).toEqual(mockReview);
+      expect(mockPrismaService.review.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { userId_movieId: { userId: 'user-1', movieId: 'movie-1' } },
+          create: expect.objectContaining({ rating: 5, comment: 'Amazing!' }),
+          update: expect.objectContaining({ rating: 5, comment: 'Amazing!' }),
+        }),
+      );
+    });
+
+    it('should throw when movie not found', async () => {
+      mockPrismaService.movie.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.addReview('user-1', 'bad-id', { rating: 4 }),
+      ).rejects.toThrow('Movie not found');
+    });
+  });
+
+  describe('getReviewsByMovie()', () => {
+    it('should return paginated reviews', async () => {
+      const mockReviews = [
+        {
+          id: 'r1',
+          rating: 4,
+          comment: 'Good',
+          user: { id: 'u1', fullName: 'User 1', avatarUrl: null },
+        },
+      ];
+      mockPrismaService.review.findMany.mockResolvedValue(mockReviews);
+
+      const result = await service.getReviewsByMovie('movie-1', 0, 10);
+
+      expect(result).toEqual(mockReviews);
+      expect(mockPrismaService.review.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { movieId: 'movie-1' },
+          orderBy: { createdAt: 'desc' },
+          skip: 0,
+          take: 10,
+        }),
+      );
     });
   });
 

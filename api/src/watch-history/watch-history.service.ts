@@ -1,12 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../prisma/prisma.service';
 import { SaveProgressDto } from './dto/save-progress.dto';
+import { WatchHistorySavedEvent } from '../recommendations/recommendation-cache.listener';
 
 @Injectable()
 export class WatchHistoryService {
   private readonly logger = new Logger(WatchHistoryService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   async saveProgress(userId: string, dto: SaveProgressDto) {
     this.logger.log(`Saving progress for user ${userId}, movie ${dto.movieId}`);
@@ -18,8 +23,9 @@ export class WatchHistoryService {
       },
     });
 
+    let result;
     if (existing) {
-      return this.prisma.watchHistory.update({
+      result = await this.prisma.watchHistory.update({
         where: { id: existing.id },
         data: {
           progressSeconds: dto.progressSeconds,
@@ -27,17 +33,23 @@ export class WatchHistoryService {
           lastWatchedAt: new Date(),
         },
       });
+    } else {
+      result = await this.prisma.watchHistory.create({
+        data: {
+          userId,
+          movieId: dto.movieId,
+          episodeId: dto.episodeId ?? null,
+          progressSeconds: dto.progressSeconds,
+          isFinished: dto.isFinished,
+        },
+      });
     }
 
-    return this.prisma.watchHistory.create({
-      data: {
-        userId,
-        movieId: dto.movieId,
-        episodeId: dto.episodeId ?? null,
-        progressSeconds: dto.progressSeconds,
-        isFinished: dto.isFinished,
-      },
-    });
+    this.eventEmitter.emit(
+      WatchHistorySavedEvent.name,
+      new WatchHistorySavedEvent(userId),
+    );
+    return result as unknown;
   }
 
   async getProgress(userId: string, movieId: string, episodeId?: string) {

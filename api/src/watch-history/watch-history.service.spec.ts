@@ -2,6 +2,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { WatchHistoryService } from './watch-history.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 const mockHistoryEntry = {
   id: 'wh-1',
@@ -34,6 +35,7 @@ describe('WatchHistoryService', () => {
       providers: [
         WatchHistoryService,
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: EventEmitter2, useValue: { emit: jest.fn() } },
       ],
     }).compile();
 
@@ -58,7 +60,9 @@ describe('WatchHistoryService', () => {
         progressSeconds: 600,
       });
 
-      const result = await service.saveProgress('user-1', dto);
+      const result = (await service.saveProgress('user-1', dto)) as {
+        progressSeconds: number;
+      };
 
       expect(result.progressSeconds).toBe(600);
       expect(mockPrismaService.watchHistory.create).toHaveBeenCalledWith({
@@ -81,7 +85,9 @@ describe('WatchHistoryService', () => {
         progressSeconds: 600,
       });
 
-      const result = await service.saveProgress('user-1', dto);
+      const result = (await service.saveProgress('user-1', dto)) as {
+        progressSeconds: number;
+      };
 
       expect(result.progressSeconds).toBe(600);
       expect(mockPrismaService.watchHistory.update).toHaveBeenCalledWith({
