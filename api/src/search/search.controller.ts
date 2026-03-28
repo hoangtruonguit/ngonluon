@@ -6,13 +6,17 @@ import {
   ImportTmdbDto,
   SuggestQueryDto,
 } from './dto/search-query.dto';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
+@ApiTags('Search')
 @Controller('search')
 export class SearchController {
   constructor(private readonly searchService: SearchService) {}
 
   // GET /search?q=avengers&genre=Action&limit=20
   @Get()
+  @ApiOperation({ summary: 'Full-text search movies with Elasticsearch' })
+  @ApiResponse({ status: 200, description: 'Search results' })
   async search(@Query() dto: SearchQueryDto, @Req() req: Request) {
     return this.searchService.search(dto.q, {
       limit: dto.limit,
@@ -29,12 +33,16 @@ export class SearchController {
 
   // GET /search/suggest?q=aven
   @Get('suggest')
+  @ApiOperation({ summary: 'Autocomplete search suggestions' })
+  @ApiResponse({ status: 200, description: 'Suggestion results' })
   async suggest(@Query() dto: SuggestQueryDto, @Req() req: Request) {
     return this.searchService.suggest(dto.q, `${req.method} ${req.url}`);
   }
 
-  // POST /search/import — user click phim TMDB → import vào DB
+  // POST /search/import
   @Post('import')
+  @ApiOperation({ summary: 'Import a movie from TMDB into the database' })
+  @ApiResponse({ status: 201, description: 'Movie imported successfully' })
   async importFromTmdb(@Body() dto: ImportTmdbDto) {
     const slug = await this.searchService.importFromTmdb(dto.tmdbId);
     return { slug };

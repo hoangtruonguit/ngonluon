@@ -339,33 +339,33 @@ export default function VideoPlayer({ movie }: VideoPlayerProps) {
                     </div>
 
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1 sm:gap-3">
                             <button onClick={togglePlay} className="hover:text-primary transition-colors text-white z-40">
-                                <span className="material-symbols-outlined text-3xl fill">{isPlaying ? 'pause' : 'play_arrow'}</span>
+                                <span className="material-symbols-outlined text-xl sm:text-3xl fill">{isPlaying ? 'pause' : 'play_arrow'}</span>
                             </button>
                             <button onClick={rewind} className="hover:text-primary transition-colors text-white z-40">
-                                <span className="material-symbols-outlined">replay_10</span>
+                                <span className="material-symbols-outlined text-[20px] sm:text-[24px]">replay_10</span>
                             </button>
                             <button onClick={forward} className="hover:text-primary transition-colors text-white z-40">
-                                <span className="material-symbols-outlined">forward_10</span>
+                                <span className="material-symbols-outlined text-[20px] sm:text-[24px]">forward_10</span>
                             </button>
-                            <div className="flex items-center gap-2 group/vol">
+                            <div className="flex items-center gap-1 sm:gap-2 group/vol">
                                 <button onClick={toggleMute} className="hover:text-primary transition-colors text-white z-40">
-                                    <span className="material-symbols-outlined">
+                                    <span className="material-symbols-outlined text-[20px] sm:text-[24px]">
                                         {isMuted || volume === 0 ? 'volume_off' : volume < 0.5 ? 'volume_down' : 'volume_up'}
                                     </span>
                                 </button>
-                                <div className="w-0 overflow-hidden group-hover/vol:w-20 transition-all duration-300 ease-in-out relative flex items-center z-40">
+                                <div className="hidden sm:block w-0 overflow-hidden group-hover/vol:w-20 transition-all duration-300 ease-in-out relative flex items-center z-40">
                                     <input type="range" min="0" max="1" step="0.01" value={isMuted ? 0 : volume} onChange={handleVolumeChange} className="w-20 h-1 bg-white/20 rounded-full appearance-none cursor-pointer accent-white" />
                                 </div>
                             </div>
-                            <span className="text-sm font-medium text-white">{formatTime(currentTime)} / {formatTime(duration)}</span>
+                            <span className="hidden sm:inline text-xs sm:text-sm font-medium text-white">{formatTime(currentTime)} / {formatTime(duration)}</span>
                         </div>
-                        <div className="flex items-center gap-4 text-white">
-                            <button className="hover:text-primary transition-colors z-40"><span className="material-symbols-outlined">closed_caption</span></button>
-                            <button className="hover:text-primary transition-colors z-40"><span className="material-symbols-outlined">settings</span></button>
+                        <div className="flex items-center gap-1 sm:gap-4 text-white">
+                            <button className="hidden sm:block hover:text-primary transition-colors z-40"><span className="material-symbols-outlined text-[20px] sm:text-[24px]">closed_caption</span></button>
+                            <button className="hover:text-primary transition-colors z-40"><span className="material-symbols-outlined text-[20px] sm:text-[24px]">settings</span></button>
                             <button onClick={toggleFullScreen} className="hover:text-primary transition-colors z-40">
-                                <span className="material-symbols-outlined">{isFullScreen ? 'fullscreen_exit' : 'fullscreen'}</span>
+                                <span className="material-symbols-outlined text-[20px] sm:text-[24px]">{isFullScreen ? 'fullscreen_exit' : 'fullscreen'}</span>
                             </button>
                         </div>
                     </div>

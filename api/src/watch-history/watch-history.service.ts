@@ -15,35 +15,27 @@ export class WatchHistoryService {
 
   async saveProgress(userId: string, dto: SaveProgressDto) {
     this.logger.log(`Saving progress for user ${userId}, movie ${dto.movieId}`);
-    const existing = await this.prisma.watchHistory.findFirst({
+    const result = await this.prisma.watchHistory.upsert({
       where: {
+        userId_movieId_episodeId: {
+          userId,
+          movieId: dto.movieId,
+          episodeId: dto.episodeId ?? '',
+        },
+      },
+      create: {
         userId,
         movieId: dto.movieId,
         episodeId: dto.episodeId ?? null,
+        progressSeconds: dto.progressSeconds,
+        isFinished: dto.isFinished,
+      },
+      update: {
+        progressSeconds: dto.progressSeconds,
+        isFinished: dto.isFinished,
+        lastWatchedAt: new Date(),
       },
     });
-
-    let result;
-    if (existing) {
-      result = await this.prisma.watchHistory.update({
-        where: { id: existing.id },
-        data: {
-          progressSeconds: dto.progressSeconds,
-          isFinished: dto.isFinished,
-          lastWatchedAt: new Date(),
-        },
-      });
-    } else {
-      result = await this.prisma.watchHistory.create({
-        data: {
-          userId,
-          movieId: dto.movieId,
-          episodeId: dto.episodeId ?? null,
-          progressSeconds: dto.progressSeconds,
-          isFinished: dto.isFinished,
-        },
-      });
-    }
 
     this.eventEmitter.emit(
       WatchHistorySavedEvent.name,

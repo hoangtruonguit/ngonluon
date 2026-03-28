@@ -17,6 +17,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
+import { AddToWatchlistDto } from './dto/add-to-watchlist.dto';
 
 @ApiTags('Watchlist')
 @Controller('watchlist')
@@ -31,9 +32,9 @@ export class WatchlistController {
   @ResponseMessage('Added to watchlist successfully')
   async addToWatchlist(
     @User() user: { userId: string },
-    @Body('movieId') movieId: string,
+    @Body() dto: AddToWatchlistDto,
   ) {
-    return this.watchlistService.addToWatchlist(user.userId, movieId);
+    return this.watchlistService.addToWatchlist(user.userId, dto.movieId);
   }
 
   @Delete(':movieId')

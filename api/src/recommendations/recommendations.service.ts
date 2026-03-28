@@ -378,77 +378,40 @@ export class RecommendationsService {
     limit: number,
   ): Promise<MovieRecommendation[]> {
     try {
-      const source = await this.repo['prisma'].movie.findUnique({
-        where: { id: movieId },
-        include: { genres: true },
-      });
-      if (!source) return [];
+      const similar = await this.repo.findSimilarByGenreFallback(
+        movieId,
+        limit,
+      );
+      if (similar.length === 0) return [];
 
-      const genreIds = source.genres.map((g: { genreId: number }) => g.genreId);
-      const similar = await this.repo['prisma'].movie.findMany({
-        where: {
-          id: { not: movieId },
-          genres: { some: { genreId: { in: genreIds } } },
-        },
-        orderBy: { rating: 'desc' },
-        take: limit,
-      });
-
-      const ids = similar.map((m: { id: string }) => m.id);
+      const ids = similar.map((m) => m.id);
       const genreMap = await this.repo.getGenresForMovies(ids);
 
-      return similar.map(
-        (m: {
-          id: string;
-          title: string;
-          slug: string;
-          posterUrl: string | null;
-          releaseYear: number | null;
-          rating: number;
-          type: string;
-          isPremium: boolean;
-        }) => ({
-          movie: {
-            id: m.id,
-            title: m.title,
-            slug: m.slug,
-            posterUrl: m.posterUrl,
-            releaseYear: m.releaseYear,
-            rating: m.rating,
-            type: m.type,
-            genres: genreMap.get(m.id) ?? [],
-            isPremium: m.isPremium,
-          },
-          score: 0,
-          source: 'similar' as const,
-        }),
-      );
+      return similar.map((m) => ({
+        movie: {
+          id: m.id,
+          title: m.title,
+          slug: m.slug,
+          posterUrl: m.posterUrl,
+          releaseYear: m.releaseYear,
+          rating: Number(m.rating),
+          type: m.type,
+          genres: genreMap.get(m.id) ?? [],
+          isPremium: m.isPremium,
+        },
+        score: 0,
+        source: 'similar' as const,
+      }));
     } catch {
       return [];
     }
   }
 
   private async getMovieTitle(movieId: string): Promise<string | null> {
-    const movie = await this.repo['prisma'].movie.findUnique({
-      where: { id: movieId },
-      select: { title: true },
-    });
-    return movie?.title ?? null;
+    return this.repo.findMovieTitle(movieId);
   }
 
   private async getMoviesByIds(ids: string[]) {
-    return this.repo['prisma'].movie.findMany({
-      where: { id: { in: ids } },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        posterUrl: true,
-        releaseYear: true,
-        rating: true,
-        type: true,
-        isPremium: true,
-      },
-    });
+    return this.repo.findMoviesByIds(ids);
   }
 }

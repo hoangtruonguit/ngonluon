@@ -19,6 +19,7 @@ import {
 } from '@nestjs/swagger';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
 import { SaveProgressDto } from './dto/save-progress.dto';
+import { ParseJsonBodyPipe } from './pipe/parse-json-body.pipe';
 
 @ApiTags('Watch History')
 @Controller('watch-history')
@@ -31,11 +32,10 @@ export class WatchHistoryController {
   @ApiOperation({ summary: 'Save movie/episode watch progress' })
   @ApiResponse({ status: 200, description: 'Progress saved successfully.' })
   @ResponseMessage('Watch progress saved')
-  async saveProgress(@User() user: { userId: string }, @Body() body: unknown) {
-    // Handle sendBeacon sending body as text/plain string
-    const dto = (
-      typeof body === 'string' ? JSON.parse(body) : body
-    ) as SaveProgressDto;
+  async saveProgress(
+    @User() user: { userId: string },
+    @Body(new ParseJsonBodyPipe()) dto: SaveProgressDto,
+  ) {
     return this.watchHistoryService.saveProgress(user.userId, dto);
   }
 

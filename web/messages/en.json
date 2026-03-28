@@ -54,6 +54,8 @@
         "details": "Details",
         "myList": "My List",
         "inMyList": "In My List",
+        "addToWatchlist": "Add to Watchlist",
+        "removeFromWatchlist": "Remove from Watchlist",
         "importMovie": "Import Movie",
         "importing": "Importing…",
         "loading": "Loading…",

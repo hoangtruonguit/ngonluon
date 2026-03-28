@@ -16,12 +16,12 @@ import { ElasticsearchModule } from './elasticsearch/elasticsearch.module';
 import { SearchModule } from './search/search.module';
 import { WatchlistModule } from './watchlist/watchlist.module';
 import { WatchHistoryModule } from './watch-history/watch-history.module';
-import { MovieSyncListener } from './elasticsearch/moive-sync.listener';
 import { validate } from './common/config/env.validation';
 import { RabbitMQModule } from './rabbitmq/rabbitmq.module';
 import { AdminModule } from './admin/admin.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { RecommendationsModule } from './recommendations/recommendations.module';
+import { HealthModule } from './health/health.module';
 
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -53,17 +53,23 @@ import { join } from 'path';
     AdminModule,
     SubscriptionsModule,
     RecommendationsModule,
+    HealthModule,
     ThrottlerModule.forRoot([
       {
+        name: 'default',
         ttl: 60000,
         limit: 100,
+      },
+      {
+        name: 'auth',
+        ttl: 60000,
+        limit: 3,
       },
     ]),
   ],
   controllers: [AppController],
   providers: [
     AppService,
-    MovieSyncListener,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

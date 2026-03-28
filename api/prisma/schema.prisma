@@ -7,23 +7,23 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
-  password      String
-  fullName      String?        @map("full_name")
-  avatarUrl     String?        @map("avatar_url")
-  isActive      Boolean        @default(true) @map("is_active")
-  publicKey     String?        @map("public_key")
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
+  id               String         @id @default(uuid())
+  email            String         @unique
+  password         String
+  fullName         String?        @map("full_name")
+  avatarUrl        String?        @map("avatar_url")
+  isActive         Boolean        @default(true) @map("is_active")
+  publicKey        String?        @map("public_key")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
   refreshToken     String?        @map("refresh_token")
   stripeCustomerId String?        @unique @map("stripe_customer_id")
   reviews          Review[]
   comments         Comment[]
   subscriptions    Subscription[]
   roles            UserRole[]
-  watchHistory  WatchHistory[]
-  watchlist     Watchlist[]
+  watchHistory     WatchHistory[]
+  watchlist        Watchlist[]
 
   @@map("users")
 }
@@ -202,18 +202,17 @@ model Comment {
 }
 
 model Subscription {
-  id                   String             @id @default(uuid())
-  userId               String             @map("user_id")
-  planName             String             @map("plan_name")
-  startDate            DateTime           @map("start_date")
-  endDate              DateTime           @map("end_date")
-  status               SubscriptionStatus @default(ACTIVE)
-  stripeCustomerId     String?            @map("stripe_customer_id")
-  stripeSubscriptionId String?            @unique @map("stripe_subscription_id")
-  stripePriceId        String?            @map("stripe_price_id")
-  cancelledAt          DateTime?          @map("cancelled_at")
-  createdAt            DateTime           @default(now()) @map("created_at")
-  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String             @id @default(uuid())
+  userId           String             @map("user_id")
+  planName         String             @map("plan_name")
+  startDate        DateTime           @map("start_date")
+  endDate          DateTime           @map("end_date")
+  status           SubscriptionStatus @default(ACTIVE)
+  stripeCustomerId String?            @map("stripe_customer_id")
+  stripePriceId    String?            @map("stripe_price_id")
+  cancelledAt      DateTime?          @map("cancelled_at")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("subscriptions")
 }

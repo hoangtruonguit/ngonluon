@@ -29,6 +29,10 @@ export class MoviesRepository {
     });
   }
 
+  async count(where?: Prisma.MovieWhereInput) {
+    return this.prisma.movie.count({ where });
+  }
+
   async findById(id: string) {
     return this.prisma.movie.findUnique({
       where: { id },

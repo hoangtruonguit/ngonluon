@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { MoviesService } from './movies.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { SortByOption } from '../common/dto/search-query.dto';
 
 const mockGenre = { id: 1, name: 'Action', slug: 'action' };
 
@@ -173,7 +174,7 @@ describe('MoviesService', () => {
       mockPrismaService.movie.count.mockResolvedValue(0);
       mockPrismaService.movie.findMany.mockResolvedValue([]);
 
-      await service.searchMovies({ year: '2025' });
+      await service.searchMovies({ yearFrom: 2025 });
 
       expect(mockPrismaService.movie.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -186,7 +187,7 @@ describe('MoviesService', () => {
       mockPrismaService.movie.count.mockResolvedValue(0);
       mockPrismaService.movie.findMany.mockResolvedValue([]);
 
-      await service.searchMovies({ rating: '7.5' });
+      await service.searchMovies({ minRating: 7.5 });
 
       expect(mockPrismaService.movie.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -199,7 +200,7 @@ describe('MoviesService', () => {
       mockPrismaService.movie.count.mockResolvedValue(25);
       mockPrismaService.movie.findMany.mockResolvedValue([]);
 
-      const result = await service.searchMovies({ page: '2', limit: '10' });
+      const result = await service.searchMovies({ page: 2, limit: 10 });
 
       expect(result.meta).toEqual({
         total: 25,
@@ -216,7 +217,7 @@ describe('MoviesService', () => {
       mockPrismaService.movie.count.mockResolvedValue(0);
       mockPrismaService.movie.findMany.mockResolvedValue([]);
 
-      await service.searchMovies({ sortBy: 'newest' });
+      await service.searchMovies({ sortBy: SortByOption.NEWEST });
 
       expect(mockPrismaService.movie.findMany).toHaveBeenCalledWith(
         expect.objectContaining({ orderBy: { releaseYear: 'desc' } }),
@@ -227,7 +228,7 @@ describe('MoviesService', () => {
       mockPrismaService.movie.count.mockResolvedValue(0);
       mockPrismaService.movie.findMany.mockResolvedValue([]);
 
-      await service.searchMovies({ sortBy: 'rating' });
+      await service.searchMovies({ sortBy: SortByOption.RATING });
 
       expect(mockPrismaService.movie.findMany).toHaveBeenCalledWith(
         expect.objectContaining({ orderBy: { rating: 'desc' } }),
@@ -295,7 +296,7 @@ describe('MoviesService', () => {
           content: 'Nice!',
           isSpoiler: false,
         }),
-      ).rejects.toThrow('Movie not found');
+      ).rejects.toThrow('Movie with ID bad-id not found');
     });
   });
 
@@ -330,7 +331,7 @@ describe('MoviesService', () => {
 
       await expect(
         service.addReview('user-1', 'bad-id', { rating: 4 }),
-      ).rejects.toThrow('Movie not found');
+      ).rejects.toThrow('Movie with ID bad-id not found');
     });
   });
 

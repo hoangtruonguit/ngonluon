@@ -14,7 +14,7 @@ export default function MovieInfo({ movie }: MovieInfoProps) {
         <div className="mt-8 flex flex-col md:flex-row gap-6">
             <div className="shrink-0 hidden md:block">
                 <img
-                    alt="Poster"
+                    alt={movie.title}
                     className="w-40 h-60 object-cover rounded-lg border border-white/10 shadow-lg"
                     src={movie.posterUrl || 'https://placehold.co/400x600/1a1a1a/FFF?text=No+Poster'}
                 />

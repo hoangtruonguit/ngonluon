@@ -5,6 +5,7 @@ import { ElasticsearchService } from './elasticsearch.service';
 import { SyncService } from './sync.service';
 import { SyncCommand } from './sync.command';
 import { PrismaModule } from '../prisma/prisma.module';
+import { MovieSyncListener } from './moive-sync.listener';
 
 @Module({
   imports: [
@@ -20,7 +21,12 @@ import { PrismaModule } from '../prisma/prisma.module';
     }),
     PrismaModule,
   ],
-  providers: [ElasticsearchService, SyncService, SyncCommand],
+  providers: [
+    ElasticsearchService,
+    SyncService,
+    SyncCommand,
+    MovieSyncListener,
+  ],
   exports: [ElasticsearchService, SyncService],
 })
 export class ElasticsearchModule {}

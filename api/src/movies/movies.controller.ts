@@ -13,7 +13,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { User } from '../common/decorators/user.decorator';
 import { CreateCommentDto } from './dto/comment.dto';
 import { CreateReviewDto } from './dto/review.dto';
-import { SearchMoviesDto } from './dto/search-movies.dto';
+import { SearchQueryDto } from '../common/dto/search-query.dto';
 
 interface UserPayload {
   id?: string;
@@ -49,7 +49,7 @@ export class MoviesController {
   }
 
   @Get('search')
-  async searchMovies(@Query() query: SearchMoviesDto) {
+  async searchMovies(@Query() query: SearchQueryDto) {
     return this.moviesService.searchMovies(query);
   }
 
