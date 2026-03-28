@@ -137,6 +137,10 @@ jobs:
       REDIS_PORT: 6379
       RABBITMQ_URL: amqp://localhost:5672
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      STRIPE_SECRET_KEY: sk_test_dummy_ci
+      STRIPE_WEBHOOK_SECRET: whsec_dummy_ci
+      STRIPE_PRICE_BASIC: price_dummy_basic
+      STRIPE_PRICE_PREMIUM: price_dummy_premium
 
     steps:
       - name: Checkout code

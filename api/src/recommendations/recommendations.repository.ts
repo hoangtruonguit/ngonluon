@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   RawMovieRow,
@@ -17,13 +18,7 @@ export class RecommendationsRepository {
     excludeIds: string[] = [],
   ): Promise<RawMovieRow[]> {
     const excludeList = [movieId, ...excludeIds];
-    // Use string interpolation for the array since Prisma raw doesn't support arrays well
-    const excludePlaceholders = excludeList
-      .map((_, i) => `$${i + 2}`)
-      .join(', ');
-
-    const rows = await this.prisma.$queryRawUnsafe<RawMovieRow[]>(
-      `
+    return this.prisma.$queryRaw<RawMovieRow[]>`
       SELECT
         m.id, m.title, m.slug, m.poster_url, m.release_year,
         m.rating, m.type, m.is_premium,
@@ -31,17 +26,12 @@ export class RecommendationsRepository {
       FROM movie_embeddings me
       JOIN movies m ON m.id = me.movie_id
       CROSS JOIN (
-        SELECT embedding FROM movie_embeddings WHERE movie_id = $1
+        SELECT embedding FROM movie_embeddings WHERE movie_id = ${movieId}
       ) target
-      WHERE me.movie_id NOT IN (${excludePlaceholders})
+      WHERE me.movie_id NOT IN (${Prisma.join(excludeList)})
       ORDER BY me.embedding <=> target.embedding
       LIMIT ${limit}
-      `,
-      movieId,
-      ...excludeList,
-    );
-
-    return rows;
+    `;
   }
 
   async findByUserVector(
@@ -49,40 +39,34 @@ export class RecommendationsRepository {
     limit: number,
     excludeIds: string[],
   ): Promise<RawMovieRow[]> {
+    // Build the vector string and pass as a $N parameter — PostgreSQL casts $1::vector safely.
+    // Never interpolate vectorLiteral directly into SQL: that was the SQL injection vector.
     const vectorLiteral = `[${userVector.join(',')}]`;
 
     if (excludeIds.length === 0) {
-      return this.prisma.$queryRawUnsafe<RawMovieRow[]>(
-        `
+      return this.prisma.$queryRaw<RawMovieRow[]>`
         SELECT
           m.id, m.title, m.slug, m.poster_url, m.release_year,
           m.rating, m.type, m.is_premium,
-          1 - (me.embedding <=> '${vectorLiteral}'::vector) AS similarity
+          1 - (me.embedding <=> ${vectorLiteral}::vector) AS similarity
         FROM movie_embeddings me
         JOIN movies m ON m.id = me.movie_id
-        ORDER BY me.embedding <=> '${vectorLiteral}'::vector
+        ORDER BY me.embedding <=> ${vectorLiteral}::vector
         LIMIT ${limit}
-        `,
-      );
+      `;
     }
 
-    const excludePlaceholders = excludeIds
-      .map((_, i) => `$${i + 1}`)
-      .join(', ');
-    return this.prisma.$queryRawUnsafe<RawMovieRow[]>(
-      `
+    return this.prisma.$queryRaw<RawMovieRow[]>`
       SELECT
         m.id, m.title, m.slug, m.poster_url, m.release_year,
         m.rating, m.type, m.is_premium,
-        1 - (me.embedding <=> '${vectorLiteral}'::vector) AS similarity
+        1 - (me.embedding <=> ${vectorLiteral}::vector) AS similarity
       FROM movie_embeddings me
       JOIN movies m ON m.id = me.movie_id
-      WHERE me.movie_id NOT IN (${excludePlaceholders})
-      ORDER BY me.embedding <=> '${vectorLiteral}'::vector
+      WHERE me.movie_id NOT IN (${Prisma.join(excludeIds)})
+      ORDER BY me.embedding <=> ${vectorLiteral}::vector
       LIMIT ${limit}
-      `,
-      ...excludeIds,
-    );
+    `;
   }
 
   // ─── Collaborative filtering queries ──────────────────────────────────────
@@ -91,7 +75,6 @@ export class RecommendationsRepository {
     userId: string,
     limit: number,
   ): Promise<string[]> {
-    // Find users who watched the same movies as this user and rated them similarly
     const rows = await this.prisma.$queryRaw<
       { user_id: string; overlap: number }[]
     >`
@@ -117,36 +100,36 @@ export class RecommendationsRepository {
   ): Promise<RawMovieRow[]> {
     if (similarUserIds.length === 0) return [];
 
-    const userPlaceholders = similarUserIds
-      .map((_, i) => `$${i + 1}`)
-      .join(', ');
-    const excludeOffset = similarUserIds.length;
-    const excludePlaceholders =
-      excludeIds.length > 0
-        ? excludeIds.map((_, i) => `$${excludeOffset + i + 1}`).join(', ')
-        : null;
+    const userCount = similarUserIds.length;
 
-    const excludeClause = excludePlaceholders
-      ? `AND wh.movie_id NOT IN (${excludePlaceholders})`
-      : '';
+    if (excludeIds.length > 0) {
+      return this.prisma.$queryRaw<RawMovieRow[]>`
+        SELECT
+          m.id, m.title, m.slug, m.poster_url, m.release_year,
+          m.rating, m.type, m.is_premium,
+          COUNT(wh.user_id)::float / ${userCount} AS similarity
+        FROM watch_history wh
+        JOIN movies m ON m.id = wh.movie_id
+        WHERE wh.user_id IN (${Prisma.join(similarUserIds)})
+          AND wh.movie_id NOT IN (${Prisma.join(excludeIds)})
+        GROUP BY m.id, m.title, m.slug, m.poster_url, m.release_year, m.rating, m.type, m.is_premium
+        ORDER BY similarity DESC, m.rating DESC
+        LIMIT ${limit}
+      `;
+    }
 
-    return this.prisma.$queryRawUnsafe<RawMovieRow[]>(
-      `
+    return this.prisma.$queryRaw<RawMovieRow[]>`
       SELECT
         m.id, m.title, m.slug, m.poster_url, m.release_year,
         m.rating, m.type, m.is_premium,
-        COUNT(wh.user_id)::float / ${similarUserIds.length} AS similarity
+        COUNT(wh.user_id)::float / ${userCount} AS similarity
       FROM watch_history wh
       JOIN movies m ON m.id = wh.movie_id
-      WHERE wh.user_id IN (${userPlaceholders})
-        ${excludeClause}
+      WHERE wh.user_id IN (${Prisma.join(similarUserIds)})
       GROUP BY m.id, m.title, m.slug, m.poster_url, m.release_year, m.rating, m.type, m.is_premium
       ORDER BY similarity DESC, m.rating DESC
       LIMIT ${limit}
-      `,
-      ...similarUserIds,
-      ...excludeIds,
-    );
+    `;
   }
 
   // ─── User interaction data ─────────────────────────────────────────────────
@@ -225,15 +208,68 @@ export class RecommendationsRepository {
   }
 
   async getTrendingMovieIds(days: number, limit: number): Promise<string[]> {
-    const rows = await this.prisma.$queryRaw<{ movie_id: string }[]>`
-      SELECT movie_id, COUNT(*) AS watch_count
-      FROM watch_history
-      WHERE last_watched_at >= NOW() - INTERVAL '${days} days'
-      GROUP BY movie_id
-      ORDER BY watch_count DESC
-      LIMIT ${limit}
-    `;
-    return rows.map((r) => r.movie_id);
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const rows = await this.prisma.watchHistory.groupBy({
+      by: ['movieId'],
+      where: { lastWatchedAt: { gte: since } },
+      _count: { movieId: true },
+      orderBy: { _count: { movieId: 'desc' } },
+      take: limit,
+    });
+    return rows.map((r) => r.movieId);
+  }
+
+  async findSimilarByGenreFallback(movieId: string, limit: number) {
+    const source = await this.prisma.movie.findUnique({
+      where: { id: movieId },
+      include: { genres: true },
+    });
+    if (!source) return [];
+
+    const genreIds = source.genres.map((g) => g.genreId);
+    return this.prisma.movie.findMany({
+      where: {
+        id: { not: movieId },
+        genres: { some: { genreId: { in: genreIds } } },
+      },
+      orderBy: { rating: 'desc' },
+      take: limit,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        posterUrl: true,
+        releaseYear: true,
+        rating: true,
+        type: true,
+        isPremium: true,
+      },
+    });
+  }
+
+  async findMovieTitle(movieId: string): Promise<string | null> {
+    const movie = await this.prisma.movie.findUnique({
+      where: { id: movieId },
+      select: { title: true },
+    });
+    return movie?.title ?? null;
+  }
+
+  async findMoviesByIds(ids: string[]) {
+    if (ids.length === 0) return [];
+    return this.prisma.movie.findMany({
+      where: { id: { in: ids } },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        posterUrl: true,
+        releaseYear: true,
+        rating: true,
+        type: true,
+        isPremium: true,
+      },
+    });
   }
 
   async getGenresForMovies(movieIds: string[]): Promise<Map<string, string[]>> {

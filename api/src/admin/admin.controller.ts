@@ -43,13 +43,24 @@ export class AdminController {
     const parsedLimit = Math.min(parseInt(limit, 10) || 20, 100);
     const skip = (parsedPage - 1) * parsedLimit;
 
-    const movies = await this.moviesRepository.findMany({
-      skip,
-      take: parsedLimit,
-      orderBy: { createdAt: 'desc' },
-    });
+    const [movies, totalCount] = await Promise.all([
+      this.moviesRepository.findMany({
+        skip,
+        take: parsedLimit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.moviesRepository.count(),
+    ]);
 
-    return { data: movies, meta: { page: parsedPage, limit: parsedLimit } };
+    return {
+      data: movies,
+      meta: {
+        page: parsedPage,
+        limit: parsedLimit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / parsedLimit),
+      },
+    };
   }
 
   @Get('movies/:id')

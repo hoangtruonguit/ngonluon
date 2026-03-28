@@ -101,7 +101,7 @@ export default function HeroCarousel({ movies }: HeroCarouselProps) {
                             <span className="text-primary font-bold tracking-widest uppercase text-sm">
                                 {tHome('featuredMovie')}
                             </span>
-                                <h1 className="text-white text-5xl lg:text-7xl font-black max-w-2xl leading-tight">
+                                <h1 className="text-white text-3xl sm:text-5xl lg:text-7xl font-black max-w-2xl leading-tight">
                                     {movie.title}
                                 </h1>
                             </div>

@@ -1,4 +1,5 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_V1_URL = `${API_BASE_URL}/v1`;
 
 export interface ApiResponse<T = unknown> {
     statusCode: number;
@@ -235,4 +236,4 @@ export interface WatchProgressResponseDto {
     isFinished: boolean;
 }
 
-export const apiClient = new ApiClient(API_BASE_URL);
+export const apiClient = new ApiClient(API_V1_URL);

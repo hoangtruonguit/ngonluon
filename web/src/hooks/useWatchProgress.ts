@@ -87,7 +87,7 @@ export function useWatchProgress({
 
       const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      navigator.sendBeacon(`${apiUrl}/watch-history`, blob);
+      navigator.sendBeacon(`${apiUrl}/v1/watch-history`, blob);
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);

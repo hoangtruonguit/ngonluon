@@ -17,10 +17,9 @@ const mockHistoryEntry = {
 
 const mockPrismaService = {
   watchHistory: {
+    upsert: jest.fn(),
     findFirst: jest.fn(),
     findMany: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
     deleteMany: jest.fn(),
   },
 };
@@ -53,9 +52,8 @@ describe('WatchHistoryService', () => {
       isFinished: false,
     };
 
-    it('should create new entry when no existing record', async () => {
-      mockPrismaService.watchHistory.findFirst.mockResolvedValue(null);
-      mockPrismaService.watchHistory.create.mockResolvedValue({
+    it('should upsert progress entry', async () => {
+      mockPrismaService.watchHistory.upsert.mockResolvedValue({
         ...mockHistoryEntry,
         progressSeconds: 600,
       });
@@ -65,57 +63,63 @@ describe('WatchHistoryService', () => {
       };
 
       expect(result.progressSeconds).toBe(600);
-      expect(mockPrismaService.watchHistory.create).toHaveBeenCalledWith({
-        data: {
-          userId: 'user-1',
-          movieId: 'movie-1',
-          episodeId: null,
-          progressSeconds: 600,
-          isFinished: false,
-        },
-      });
+      expect(mockPrismaService.watchHistory.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            userId_movieId_episodeId: {
+              userId: 'user-1',
+              movieId: 'movie-1',
+              episodeId: '',
+            },
+          },
+          create: expect.objectContaining({
+            userId: 'user-1',
+            movieId: 'movie-1',
+            progressSeconds: 600,
+            isFinished: false,
+          }),
+          update: expect.objectContaining({
+            progressSeconds: 600,
+            isFinished: false,
+            lastWatchedAt: expect.any(Date),
+          }),
+        }),
+      );
     });
 
-    it('should update existing entry', async () => {
-      mockPrismaService.watchHistory.findFirst.mockResolvedValue(
-        mockHistoryEntry,
+    it('should use null episodeId in create when not provided', async () => {
+      mockPrismaService.watchHistory.upsert.mockResolvedValue(mockHistoryEntry);
+
+      await service.saveProgress('user-1', dto);
+
+      expect(mockPrismaService.watchHistory.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          create: expect.objectContaining({ episodeId: null }),
+        }),
       );
-      mockPrismaService.watchHistory.update.mockResolvedValue({
-        ...mockHistoryEntry,
-        progressSeconds: 600,
-      });
-
-      const result = (await service.saveProgress('user-1', dto)) as {
-        progressSeconds: number;
-      };
-
-      expect(result.progressSeconds).toBe(600);
-      expect(mockPrismaService.watchHistory.update).toHaveBeenCalledWith({
-        where: { id: 'wh-1' },
-        data: {
-          progressSeconds: 600,
-          isFinished: false,
-          lastWatchedAt: expect.any(Date),
-        },
-      });
     });
 
     it('should handle episodeId correctly', async () => {
       const dtoWithEpisode = { ...dto, episodeId: 'ep-1' };
-      mockPrismaService.watchHistory.findFirst.mockResolvedValue(null);
-      mockPrismaService.watchHistory.create.mockResolvedValue({
+      mockPrismaService.watchHistory.upsert.mockResolvedValue({
         ...mockHistoryEntry,
         episodeId: 'ep-1',
       });
 
       await service.saveProgress('user-1', dtoWithEpisode);
 
-      expect(mockPrismaService.watchHistory.findFirst).toHaveBeenCalledWith({
-        where: { userId: 'user-1', movieId: 'movie-1', episodeId: 'ep-1' },
-      });
-      expect(mockPrismaService.watchHistory.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({ episodeId: 'ep-1' }),
-      });
+      expect(mockPrismaService.watchHistory.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            userId_movieId_episodeId: {
+              userId: 'user-1',
+              movieId: 'movie-1',
+              episodeId: 'ep-1',
+            },
+          },
+          create: expect.objectContaining({ episodeId: 'ep-1' }),
+        }),
+      );
     });
   });
 

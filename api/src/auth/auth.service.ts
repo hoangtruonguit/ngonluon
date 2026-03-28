@@ -101,9 +101,7 @@ export class AuthService {
     const refreshToken = this.jwtService.sign(
       { sub: user.id },
       {
-        secret:
-          this.configService.get<string>('JWT_REFRESH_SECRET') ||
-          'refresh_secret',
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
         expiresIn: '7d',
       },
     );
@@ -147,9 +145,7 @@ export class AuthService {
       // 1. Verify Refresh Token
 
       const payload = this.jwtService.verify<{ sub: string }>(refreshToken, {
-        secret:
-          this.configService.get<string>('JWT_REFRESH_SECRET') ||
-          'refresh_secret',
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
       });
 
       const userId = payload.sub;

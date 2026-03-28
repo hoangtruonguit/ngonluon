@@ -15,6 +15,7 @@ import { Response } from 'express';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { User } from '../common/decorators/user.decorator';
 import { UserResponseDto } from './dto/auth-response.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -29,11 +30,13 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'User successfully registered.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ResponseMessage('User registered successfully')
+  @Throttle({ auth: { limit: 3, ttl: 60000 } })
   async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
   }
 
   @Post('login')
+  @Throttle({ auth: { limit: 3, ttl: 60000 } })
   @ApiOperation({ summary: 'Login and get access token (RS256 JWT)' })
   @ApiResponse({
     status: 200,

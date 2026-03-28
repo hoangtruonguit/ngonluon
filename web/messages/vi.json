@@ -54,6 +54,8 @@
         "details": "Chi tiết",
         "myList": "Danh sách",
         "inMyList": "Đã thêm",
+        "addToWatchlist": "Thêm vào danh sách xem",
+        "removeFromWatchlist": "Xóa khỏi danh sách xem",
         "importMovie": "Nhập phim",
         "importing": "Đang nhập…",
         "loading": "Đang tải…",
