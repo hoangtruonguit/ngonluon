@@ -54,18 +54,21 @@ import { join } from 'path';
     SubscriptionsModule,
     RecommendationsModule,
     HealthModule,
-    ThrottlerModule.forRoot([
-      {
-        name: 'default',
-        ttl: 60000,
-        limit: 100,
-      },
-      {
-        name: 'auth',
-        ttl: 60000,
-        limit: 3,
-      },
-    ]),
+    ThrottlerModule.forRoot({
+      skipIf: () => process.env.NODE_ENV === 'test',
+      throttlers: [
+        {
+          name: 'default',
+          ttl: 60000,
+          limit: 100,
+        },
+        {
+          name: 'auth',
+          ttl: 60000,
+          limit: 3,
+        },
+      ],
+    }),
   ],
   controllers: [AppController],
   providers: [

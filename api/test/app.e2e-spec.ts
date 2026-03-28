@@ -1,52 +1,37 @@
-import { Test, TestingModule } from '@nestjs/testing';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { AppModule } from './../src/app.module';
-import { RabbitMQService } from './../src/rabbitmq/rabbitmq.service';
+import { createTestApp } from './helpers/create-test-app';
 
-describe('AppController (e2e)', () => {
+describe('App (e2e)', () => {
   let app: INestApplication<App>;
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider('AMQP_CONNECTION_MANAGER')
-      .useValue({
-        createChannel: () => ({
-          addSetup: () => Promise.resolve(),
-          publish: () => Promise.resolve(),
-          close: () => Promise.resolve(),
-          on: () => ({}),
-          waitForConnect: () => Promise.resolve(),
-        }),
-        close: () => Promise.resolve(),
-      })
-      .overrideProvider(RabbitMQService)
-      .useValue({
-        onModuleInit: () => {},
-        onModuleDestroy: () => Promise.resolve(),
-        publish: () => Promise.resolve(),
-        consume: () => Promise.resolve(),
-        consumeDLQ: () => Promise.resolve(),
-      })
-      .compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
+  beforeAll(async () => {
+    app = await createTestApp();
   });
 
-  afterEach(async () => {
-    if (app) {
-      await app.close();
-    }
+  afterAll(async () => {
+    await app.close();
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+  it('GET /health returns database status', async () => {
+    const { body } = await request(app.getHttpServer())
+      .get('/health')
+      .expect(200);
+
+    // Health endpoint is VERSION_NEUTRAL and bypasses TransformInterceptor
+    // Response shape depends on @nestjs/terminus (status/info at top level or in data)
+    const healthBody = body.data ?? body;
+    expect(healthBody.status).toBe('ok');
+    expect(healthBody.info?.database?.status).toBe('up');
+  });
+
+  it('GET /v1/movies/trending returns movie list', async () => {
+    const { body } = await request(app.getHttpServer())
+      .get('/v1/movies/trending')
+      .expect(200);
+
+    expect(Array.isArray(body.data)).toBe(true);
   });
 });
