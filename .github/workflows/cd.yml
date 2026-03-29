@@ -31,6 +31,10 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+        working-directory: ./web
+
       - name: Pull Vercel environment & project info
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: ./web
