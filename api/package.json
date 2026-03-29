@@ -25,7 +25,9 @@
     "cli": "ts-node -r tsconfig-paths/register src/cli.ts",
     "cli:dev": "npx ts-node -r tsconfig-paths/register src/cli.ts",
     "test:mq-mail": "ts-node test-mq-mail.ts",
-    "seed:embeddings": "ts-node -r tsconfig-paths/register scripts/seed-embeddings.ts"
+    "seed:embeddings": "ts-node -r tsconfig-paths/register scripts/seed-embeddings.ts",
+    "seed:all": "ts-node -r tsconfig-paths/register scripts/seed-all.ts",
+    "seed:all:fast": "ts-node -r tsconfig-paths/register scripts/seed-all.ts --skip-embeddings"
   },
   "dependencies": {
     "@elastic/elasticsearch": "^9.3.4",
