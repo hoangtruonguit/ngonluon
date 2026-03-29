@@ -62,11 +62,6 @@ import { join } from 'path';
           ttl: 60000,
           limit: 100,
         },
-        {
-          name: 'auth',
-          ttl: 60000,
-          limit: 3,
-        },
       ],
     }),
   ],

@@ -59,6 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch {
             setUser(null);
             setWatchlistIds(new Set());
+            document.cookie = 'is_logged_in=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         } finally {
             setIsLoading(false);
         }
