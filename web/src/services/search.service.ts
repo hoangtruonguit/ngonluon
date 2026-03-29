@@ -47,7 +47,7 @@ export const searchService = {
             if (params.yearFrom) queryParams.append('yearFrom', params.yearFrom.toString());
             if (params.yearTo) queryParams.append('yearTo', params.yearTo.toString());
             if (params.minRating) queryParams.append('minRating', params.minRating.toString());
-            if (params.sortBy) queryParams.append('sortBy', params.sortBy);
+            if (params.sortBy && params.sortBy !== 'relevance') queryParams.append('sortBy', params.sortBy);
 
             const response = await apiClient.get<SearchResponse>(`/search?${queryParams.toString()}`);
             return response.data;
