@@ -36,6 +36,10 @@ const steps: Array<{ name: string; cmd: string; skip?: boolean }> = [
     cmd: 'ts-node -r tsconfig-paths/register scripts/seed-premium.ts',
   },
   {
+    name: 'Analytics & movies',
+    cmd: 'ts-node -r tsconfig-paths/register scripts/seed-analytics.ts',
+  },
+  {
     name: 'Reviews & comments',
     cmd: 'ts-node -r tsconfig-paths/register scripts/seed-reviews.ts',
   },
