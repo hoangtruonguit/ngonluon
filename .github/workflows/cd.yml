@@ -33,7 +33,6 @@ jobs:
 
       - name: Deploy to Vercel
         run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: ./web
 
   deploy-backend:
     name: Deploy Backend to EC2
