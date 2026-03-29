@@ -12,6 +12,8 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 import * as dotenv from 'dotenv';
 
 dotenv.config({ path: '.env' });
@@ -56,7 +58,9 @@ function generateMovieText(movie: {
 }
 
 async function main() {
-  const prisma = new PrismaClient();
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const adapter = new PrismaPg(pool);
+  const prisma = new PrismaClient({ adapter });
 
   console.log(`Loading embedding model: ${MODEL_NAME}...`);
   const { pipeline } = await import('@huggingface/transformers');
@@ -130,6 +134,7 @@ async function main() {
   console.log(`\n✓ Done: embedded ${processed} movies in ${total}s`);
 
   await prisma.$disconnect();
+  await pool.end();
 }
 
 main().catch((err) => {
