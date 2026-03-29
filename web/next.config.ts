@@ -49,7 +49,12 @@ const nextConfig: NextConfig = {
         hostname: 'localhost',
         port: '3001',
         pathname: '/uploads/avatars/**',
-      }
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.phimtot.online',
+        pathname: '/uploads/avatars/**',
+      },
     ],
   },
 };
