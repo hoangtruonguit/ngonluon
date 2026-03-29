@@ -43,6 +43,7 @@ export default function MovieCard({
     const router = useRouter();
     const { isLoggedIn, watchlistIds, updateWatchlist, openLoginPrompt } = useAuth();
     const [isWatchlistLoading, setIsWatchlistLoading] = useState(false);
+    const [imageLoaded, setImageLoaded] = useState(false);
     const t = useTranslations('Common');
 
     const isInWatchlist = id ? watchlistIds.has(id) : false;
@@ -78,6 +79,10 @@ export default function MovieCard({
 
     const card = (
         <div className="movie-card relative min-w-[200px] lg:min-w-[240px] aspect-[2/3] rounded-xl overflow-hidden cursor-pointer group shadow-2xl flex-shrink-0">
+            {/* Skeleton while image loads */}
+            {!imageLoaded && (
+                <div className="absolute inset-0 bg-white/5 animate-pulse" />
+            )}
             <Link href={`/movies/${slug}`}>
                 <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-110">
                     <Image
@@ -85,8 +90,9 @@ export default function MovieCard({
                         alt={title}
                         fill
                         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 250px"
-                        className="object-cover"
+                        className={`object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
                         unoptimized={!highResImageUrl || highResImageUrl.includes('placehold.co')}
+                        onLoad={() => setImageLoaded(true)}
                     />
                 </div>
 
