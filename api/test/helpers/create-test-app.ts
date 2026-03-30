@@ -33,15 +33,18 @@ const RABBITMQ_MOCK = {
 };
 
 const EMBEDDING_MOCK = {
-  onModuleInit: async () => {},
-  retryLoad: async () => {},
-  get isReady() { return true; },
+  onModuleInit: () => Promise.resolve(),
+  retryLoad: () => Promise.resolve(),
+  get isReady() {
+    return true;
+  },
   generateMovieText: () => 'mock text',
-  embedText: async () => Array(384).fill(0.1),
-  embedMany: async (texts: string[]) => texts.map(() => Array(384).fill(0.1)),
-  embedMovie: async () => {},
-  embedAllMovies: async () => {},
-  deleteEmbedding: async () => {},
+  embedText: () => Promise.resolve(Array(384).fill(0.1) as number[]),
+  embedMany: (texts: string[]) =>
+    Promise.resolve(texts.map(() => Array(384).fill(0.1) as number[])),
+  embedMovie: () => Promise.resolve(),
+  embedAllMovies: () => Promise.resolve(),
+  deleteEmbedding: () => Promise.resolve(),
 };
 
 export async function createTestApp(): Promise<INestApplication> {
