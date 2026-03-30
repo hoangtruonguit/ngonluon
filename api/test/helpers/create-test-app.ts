@@ -11,6 +11,7 @@ import { HttpExceptionFilter } from '../../src/common/filters/http-exception.fil
 import { PrismaExceptionFilter } from '../../src/common/filters/prisma-exception.filter';
 import { Reflector } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
+import { EmbeddingService } from '../../src/recommendations/embedding.service';
 
 const AMQP_MOCK = {
   createChannel: () => ({
@@ -31,6 +32,21 @@ const RABBITMQ_MOCK = {
   consumeDLQ: () => Promise.resolve(),
 };
 
+const EMBEDDING_MOCK = {
+  onModuleInit: () => Promise.resolve(),
+  retryLoad: () => Promise.resolve(),
+  get isReady() {
+    return true;
+  },
+  generateMovieText: () => 'mock text',
+  embedText: () => Promise.resolve(Array(384).fill(0.1) as number[]),
+  embedMany: (texts: string[]) =>
+    Promise.resolve(texts.map(() => Array(384).fill(0.1) as number[])),
+  embedMovie: () => Promise.resolve(),
+  embedAllMovies: () => Promise.resolve(),
+  deleteEmbedding: () => Promise.resolve(),
+};
+
 export async function createTestApp(): Promise<INestApplication> {
   const moduleFixture: TestingModule = await Test.createTestingModule({
     imports: [AppModule],
@@ -39,6 +55,8 @@ export async function createTestApp(): Promise<INestApplication> {
     .useValue(AMQP_MOCK)
     .overrideProvider(RabbitMQService)
     .useValue(RABBITMQ_MOCK)
+    .overrideProvider(EmbeddingService)
+    .useValue(EMBEDDING_MOCK)
     .compile();
 
   const app = moduleFixture.createNestApplication();
