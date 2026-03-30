@@ -1,0 +1,124 @@
+# docker-compose.prod.yml
+version: '3.8'
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: STRONG_PASSWORD_HERE  # khớp với DATABASE_URL
+      POSTGRES_DB: ngonluon_prod
+    ports:
+      - "127.0.0.1:5432:5432"   # chỉ bind localhost, không expose ra ngoài
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:alpine
+    restart: always
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --save 60 1 --loglevel warning
+
+  elasticsearch:
+    image: elasticsearch:7.17.10
+    restart: always
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"   # giới hạn heap cho c7i-flex.large
+      - xpack.security.enabled=false
+    ports:
+      - "127.0.0.1:9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    restart: always
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"   # management UI — chỉ localhost
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  # ── Monitoring Stack ────────────────────────────────────────────
+
+  prometheus:
+    image: prom/prometheus:latest
+    restart: always
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  grafana:
+    image: grafana/grafana:latest
+    restart: always
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-StrongGrafanaPass123}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=https://grafana.phimtot.online
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - prometheus
+      - loki
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    restart: always
+    command:
+      - '--path.rootfs=/host'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    volumes:
+      - /:/host:ro,rslave
+    network_mode: host
+    pid: host
+
+  loki:
+    image: grafana/loki:latest
+    restart: always
+    command: -config.file=/etc/loki/loki.yml
+    volumes:
+      - ./monitoring/loki.yml:/etc/loki/loki.yml:ro
+      - loki_data:/loki
+    ports:
+      - "127.0.0.1:3200:3100"
+
+  promtail:
+    image: grafana/promtail:latest
+    restart: always
+    command: -config.file=/etc/promtail/promtail.yml
+    volumes:
+      - ./monitoring/promtail.yml:/etc/promtail/promtail.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/log:/var/log:ro
+    depends_on:
+      - loki
+
+volumes:
+  postgres_data:
+  redis_data:
+  es_data:
+  rabbitmq_data:
+  prometheus_data:
+  grafana_data:
+  loki_data:
