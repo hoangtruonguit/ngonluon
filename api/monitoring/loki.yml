@@ -5,7 +5,7 @@ server:
   grpc_listen_port: 9096
 
 common:
-  instance_addr: 127.0.0.1
+  instance_addr: 0.0.0.0
   path_prefix: /loki
   storage:
     filesystem:
@@ -42,3 +42,11 @@ compactor:
   working_directory: /loki/compactor
   retention_enabled: true
   retention_delete_delay: 2h
+
+ruler:
+  alertmanager_url: http://localhost:9093
+  storage:
+    type: local
+    local:
+      directory: /loki/rules
+  rule_path: /loki/rules-temp
